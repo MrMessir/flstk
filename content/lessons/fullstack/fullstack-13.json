@@ -1,0 +1,87 @@
+{
+  "id": "fullstack-13",
+  "part": "fullstack",
+  "module": "fs-admin",
+  "order": 13,
+  "title": "i18n и SEO для SPA (обзор)",
+  "goal": "Поймёшь ограничения SEO у SPA и базовый i18n.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Проблема SPA и поисковиков"
+    },
+    {
+      "type": "paragraph",
+      "content": "Одностраничное приложение отдаёт почти пустой index.html и строит страницу в браузере. Современный Google умеет выполнять JavaScript, но делает это позже и менее надёжно, а превью для соцсетей и мессенджеров (Open Graph) читаются только из исходного HTML: скрипты они не запускают. Поэтому публичным страницам (лендинг, статьи, каталог) нужен рендеринг на сервере (SSR), статическая генерация (SSG) или предрендер. Закрытые разделы приложения можно оставить обычной SPA."
+    },
+    {
+      "type": "heading",
+      "content": "Метаданные"
+    },
+    {
+      "type": "list",
+      "items": [
+        "title и description уникальны для каждой страницы; в SPA их меняет react-helmet-async или встроенные средства роутера.",
+        "Open Graph: og:title, og:description, og:image (около 1200×630) для красивого превью при шаринге.",
+        "canonical-ссылка против дублей, robots.txt и sitemap.xml для индексации.",
+        "Для Next метаданные задаются в коде страницы и попадают в первый HTML."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Основы i18n"
+    },
+    {
+      "type": "paragraph",
+      "content": "Не пиши текст интерфейса в JSX: вынеси в файлы переводов (ru.json, en.json) и подключай через ключи: t('posts.title'). В react-i18next язык выбирается из сохранённой настройки или из заголовка Accept-Language, а выбор пользователя запоминается. Тексты с числами требуют правил множественного числа (в русском три формы: 1 пост, 2 поста, 5 постов), их библиотека умеет."
+    },
+    {
+      "type": "paragraph",
+      "content": "Даты, числа и валюты форматируй через Intl (Intl.DateTimeFormat, Intl.NumberFormat), а не вручную. Для SEO укажи язык документа (атрибут lang у html) и ссылки на языковые версии (hreflang). Проверь результат инструментами: «Просмотр исходного кода» страницы показывает, что видят боты, а отладчик шаринга соцсети — как выглядит превью."
+    }
+  ],
+  "codeExample": "import { useTranslation } from 'react-i18next';\n\nexport function PostsPage() {\n  const { t } = useTranslation();\n  return <h1>{t('posts.title')}</h1>;\n}",
+  "practice": [
+    {
+      "title": "Два языка",
+      "description": "Добавь ru/en JSON с 10 строками. Переключатель меняет язык без перезагрузки."
+    },
+    {
+      "title": "title per route",
+      "description": "На /posts title «Посты — Мой блог». Проверь вкладку браузера."
+    },
+    {
+      "title": "Запиши SEO-риск SPA",
+      "description": "В README одним абзацем опиши, какие страницы нужно prerender/SSR и почему."
+    }
+  ],
+  "checklist": [
+    "Понимаю, почему чистая SPA слаба для SEO контента",
+    "Выношу UI-строки в файлы перевода",
+    "Задаю title/description для публичных страниц",
+    "Форматирую даты через Intl, а не ручную строку"
+  ],
+  "links": [
+    {
+      "title": "react-i18next",
+      "url": "https://react.i18next.com/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "SSR",
+      "meaning": "HTML генерируется на сервере.",
+      "example": "Next.js"
+    },
+    {
+      "term": "locale",
+      "meaning": "Код языка и региональных правил.",
+      "example": "ru-RU"
+    },
+    {
+      "term": "Open Graph",
+      "meaning": "Meta для превью в соцсетях.",
+      "example": "og:image"
+    }
+  ]
+}

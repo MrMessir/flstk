@@ -1,0 +1,83 @@
+{
+  "id": "react-12",
+  "part": "react",
+  "module": "react-ui",
+  "order": 12,
+  "title": "Стилизация: Tailwind и компоненты",
+  "goal": "Подключишь Tailwind к Vite и соберёшь кнопку и карточку utility-классами.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Tailwind — utility-first CSS: className=\"flex gap-2 p-4 rounded-lg bg-slate-900 text-white\" вместо отдельного .card в CSS файле. PostCSS плагин tailwindcss сканирует src на классы и генерирует минимальный bundle. @tailwind base/components/utilities в index.css — точка входа."
+    },
+    {
+      "type": "heading",
+      "content": "Компонентный подход"
+    },
+    {
+      "type": "paragraph",
+      "content": "Повторяющиеся наборы классов выносят в компонент Button variant=\"primary\" или через clsx/cn: cn('px-4 py-2', disabled && 'opacity-50'). shadcn/ui — копируемые компоненты на Tailwind + Radix, не black-box npm. Design tokens: theme.extend.colors в tailwind.config."
+    },
+    {
+      "type": "heading",
+      "content": "CSS modules альтернатива"
+    },
+    {
+      "type": "paragraph",
+      "content": "import styles from './Card.module.css' и className={styles.card} изолирует имена. Tailwind быстрее для прототипа; modules — когда нужны сложные анимации отдельно от разметки. Не смешивай inline style и tailwind без причины."
+    }
+  ],
+  "codeExample": "type ButtonProps = {\n  children: React.ReactNode;\n  variant?: \"primary\" | \"ghost\";\n} & React.ButtonHTMLAttributes<HTMLButtonElement>;\n\nconst variants = {\n  primary: \"bg-indigo-600 hover:bg-indigo-500 text-white\",\n  ghost: \"bg-transparent hover:bg-slate-800 text-slate-100\",\n};\n\nexport function Button({ children, variant = \"primary\", className = \"\", ...rest }: ButtonProps) {\n  return (\n    <button\n      type=\"button\"\n      className={`rounded-md px-4 py-2 font-medium ${variants[variant]} ${className}`}\n      {...rest}\n    >\n      {children}\n    </button>\n  );\n}",
+  "practice": [
+    {
+      "title": "Tailwind install",
+      "description": "Следуй tailwindcss.com docs для Vite: install, postcss.config, @import tailwindcss в CSS. div с class text-3xl font-bold text-center виден на странице."
+    },
+    {
+      "title": "Button primary/ghost",
+      "description": "Компонент Button из примера. Две кнопки на App — разные variant. Hover меняет фон."
+    },
+    {
+      "title": "ProductCard layout",
+      "description": "Card: flex flex-col gap-2 border border-slate-700 p-4 rounded-xl max-w-sm. Title text-lg, price text-emerald-400."
+    }
+  ],
+  "checklist": [
+    "Tailwind подключён к Vite без ошибок сборки",
+    "Выношу повторяющиеся классы в компоненты",
+    "Использую responsive префиксы md: при необходимости",
+    "Держу className читаемым через cn/variants"
+  ],
+  "links": [
+    {
+      "title": "Tailwind: Install with Vite",
+      "url": "https://tailwindcss.com/docs/installation/using-vite"
+    },
+    {
+      "title": "React: className",
+      "url": "https://react.dev/reference/react-dom/components/common#className"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "utility class",
+      "meaning": "Один класс — одно CSS-правило.",
+      "example": "p-4"
+    },
+    {
+      "term": "Tailwind",
+      "meaning": "CSS-фреймворк через className в JSX.",
+      "example": "flex gap-2"
+    },
+    {
+      "term": "variant",
+      "meaning": "Вариант оформления одного компонента.",
+      "example": "primary | ghost"
+    },
+    {
+      "term": "cn/clsx",
+      "meaning": "Склеивание className по условию.",
+      "example": "cn('a', active && 'b')"
+    }
+  ]
+}

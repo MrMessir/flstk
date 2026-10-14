@@ -1,0 +1,83 @@
+{
+  "id": "react-11",
+  "part": "react",
+  "module": "react-data",
+  "order": 11,
+  "title": "Глобальное состояние: Context и Zustand",
+  "goal": "Прокинешь theme через Context и вынесешь корзину в Zustand без prop drilling.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Context передаёт value глубоко без props на каждом уровне: createContext, Provider value={...}, useContext(ThemeContext). Минус — любое изменение value перерисовывает всех потребителей. Подходит для редко меняющихся данных: тема, locale, auth user после login."
+    },
+    {
+      "type": "heading",
+      "content": "Zustand store"
+    },
+    {
+      "type": "paragraph",
+      "content": "create((set) => ({ count: 0, inc: () => set((s) => ({ count: s.count + 1 })) })) — вне React дерево. useStore(s => s.count) подписывается на slice и ре-render только при изменении count. Проще Redux для малого и среднего клиентского state: корзина, UI flags."
+    },
+    {
+      "type": "heading",
+      "content": "Что где хранить"
+    },
+    {
+      "type": "paragraph",
+      "content": "Локальный useState — поле формы. Context — тема/язык. Zustand/Query — корзина и server cache соответственно. Не клади всё в один global store: чем меньше связность, тем проще сопровождать."
+    }
+  ],
+  "codeExample": "import { createContext, useContext, useState } from \"react\";\nimport { create } from \"zustand\";\n\nconst ThemeContext = createContext<\"light\" | \"dark\">(\"light\");\n\nexport function ThemeProvider({ children }: { children: React.ReactNode }) {\n  const [theme] = useState<\"light\" | \"dark\">(\"light\");\n  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;\n}\n\nexport function useTheme() {\n  return useContext(ThemeContext);\n}\n\ntype CartStore = { items: string[]; add: (id: string) => void };\n\nexport const useCart = create<CartStore>((set) => ({\n  items: [],\n  add: (id) => set((s) => ({ items: [...s.items, id] })),\n}));",
+  "practice": [
+    {
+      "title": "ThemeContext",
+      "description": "ThemeProvider оборачивает App. Компонент ThemeBadge через useTheme показывает текущую тему. Переключатель меняет state в Provider (useState в Provider)."
+    },
+    {
+      "title": "Zustand корзина",
+      "description": "useCart: add(id) и items. ProductCard onAdd вызывает add(product.id). Header показывает items.length без props drilling."
+    },
+    {
+      "title": "Селектор Zustand",
+      "description": "Header использует useCart(s => s.items.length) — при add меняется только Header, не все ProductCard (проверь DevTools)."
+    }
+  ],
+  "checklist": [
+    "Использую Context для редко меняющихся глобальных настроек",
+    "Создаю Zustand store для клиентского shared state",
+    "Подписываюсь на slice store селектором",
+    "Не дублирую server data в Zustand без нужды"
+  ],
+  "links": [
+    {
+      "title": "React: Context",
+      "url": "https://react.dev/learn/passing-data-deeply-with-context"
+    },
+    {
+      "title": "Zustand",
+      "url": "https://docs.pmnd.rs/zustand/getting-started/introduction"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Context",
+      "meaning": "Механизм передачи value через дерево без props.",
+      "example": "ThemeContext.Provider"
+    },
+    {
+      "term": "prop drilling",
+      "meaning": "Прокидывание props через многие уровни.",
+      "example": "решается Context/Zustand"
+    },
+    {
+      "term": "Zustand",
+      "meaning": "Лёгкий global store для React.",
+      "example": "create(...)"
+    },
+    {
+      "term": "selector",
+      "meaning": "Функция выбора части store для подписки.",
+      "example": "s => s.items.length"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "id": "security-07",
+  "part": "security",
+  "module": "sec-tokens",
+  "order": 7,
+  "title": "OAuth 2.0 обзор",
+  "goal": "Поймёшь authorization code flow и подключишь вход через Google или GitHub к учебному API.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "OAuth делегирует login провайдеру. Authorization Code flow: редирект на Google → user consent → redirect back с ?code= → backend обменивает code на tokens (client_secret на сервере, never in SPA). Получаешь profile email, создаёшь или link local User."
+    },
+    {
+      "type": "heading",
+      "content": "PKCE для public clients"
+    },
+    {
+      "type": "paragraph",
+      "content": "SPA/mobile без secret используют PKCE: code_verifier + challenge. Backend route /auth/google/callback принимает code, state сравниваешь с cookie против CSRF."
+    },
+    {
+      "type": "heading",
+      "content": "Account linking"
+    },
+    {
+      "type": "paragraph",
+      "content": "Таблица OAuthAccount: provider, providerAccountId, userId. Email от Google совпал с существующим — merge или ошибка по политике."
+    }
+  ],
+  "codeExample": "// redirect start\nres.redirect(\n  `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({\n    client_id: process.env.GOOGLE_CLIENT_ID,\n    redirect_uri: process.env.OAUTH_REDIRECT_URI,\n    response_type: \"code\",\n    scope: \"openid email profile\",\n    state: req.session.oauthState,\n  })}`,\n);",
+  "practice": [
+    {
+      "title": "OAuth app console",
+      "description": "Создай OAuth client Google или GitHub. Redirect URI http://localhost:3000/auth/google/callback. Client id/secret в .env.example без значений."
+    },
+    {
+      "title": "Callback route",
+      "description": "GET /auth/google/callback: проверь state, POST token endpoint, fetch userinfo. findOrCreate User по email. Выдай session или JWT как в модуле."
+    },
+    {
+      "title": "Документ flow",
+      "description": "docs/oauth-flow.md: нумерованные шаги 1–6 browser → API → provider. ASCII sequence optional."
+    }
+  ],
+  "checklist": [
+    "Secret только на backend",
+    "state parameter против CSRF",
+    "OAuthAccount или аналог в schema",
+    "Callback создаёт session/JWT"
+  ],
+  "links": [
+    {
+      "title": "OAuth 2.0 RFC",
+      "url": "https://datatracker.ietf.org/doc/html/rfc6749"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "authorization code",
+      "meaning": "Краткоживный code для обмена на tokens.",
+      "example": "?code=...&state=..."
+    },
+    {
+      "term": "PKCE",
+      "meaning": "Proof Key for Code Exchange для public clients.",
+      "example": "code_challenge S256"
+    },
+    {
+      "term": "state",
+      "meaning": "Random string против CSRF в OAuth redirect.",
+      "example": "req.session.oauthState"
+    }
+  ]
+}

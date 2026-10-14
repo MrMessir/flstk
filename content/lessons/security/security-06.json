@@ -1,0 +1,74 @@
+{
+  "id": "security-06",
+  "part": "security",
+  "module": "sec-tokens",
+  "order": 6,
+  "title": "Middleware авторизации и роли",
+  "goal": "Закроешь маршруты auth middleware и проверишь владельца ресурса перед PATCH и DELETE.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "requireAuth вешается на router.use для /posts mutating methods. requireRole('admin') читает req.user.role из JWT или session. Owner check — async middleware: load post by id, compare authorId. 403 если не owner и не admin."
+    },
+    {
+      "type": "heading",
+      "content": "Policy vs route"
+    },
+    {
+      "type": "paragraph",
+      "content": "Централизуй canEditPost(user, post) в service — middleware тонкий. Тестируй policy без HTTP. Admin override явный: if (user.role === 'admin') return true."
+    },
+    {
+      "type": "heading",
+      "content": "403 vs 401"
+    },
+    {
+      "type": "paragraph",
+      "content": "401 — не аутентифицирован. 403 — identity известна, права недостаточны. Не превращай 403 в 404 «скрыть существование» без нужды — для публичных id часто 403 ок."
+    }
+  ],
+  "codeExample": "router.patch(\n  \"/:id\",\n  authBearer,\n  requireOwner(async (id) => {\n    const p = await prisma.post.findUnique({ where: { id }, select: { authorId: true } });\n    return p?.authorId;\n  }),\n  updatePostHandler,\n);\n\nexport function requireRole(role) {\n  return (req, res, next) => {\n    if (req.user?.role !== role) return res.status(403).json({ error: \"Forbidden\" });\n    next();\n  };\n}",
+  "practice": [
+    {
+      "title": "PATCH чужого поста",
+      "description": "User A token, PATCH post user B — 403. Свой post — 200. Postman collection с двумя users из seed."
+    },
+    {
+      "title": "Admin route",
+      "description": "DELETE /users/:id только requireRole('admin'). User token — 403. Admin seed — 204."
+    },
+    {
+      "title": "canEditPost unit",
+      "description": "Файл policies/posts.js с функцией canEditPost. Три expect: owner, admin, stranger — без запуска Express."
+    }
+  ],
+  "checklist": [
+    "authBearer перед owner check",
+    "403 на чужой PATCH/DELETE",
+    "admin role на отдельных routes",
+    "Логика прав в policy/service"
+  ],
+  "links": [
+    {
+      "title": "OWASP Authorization Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "requireOwner",
+      "meaning": "Middleware проверки владельца ресурса.",
+      "example": "authorId === req.user.sub"
+    },
+    {
+      "term": "403 Forbidden",
+      "meaning": "Аутентифицирован, но нет прав.",
+      "example": "PATCH чужого post"
+    },
+    {
+      "term": "policy",
+      "meaning": "Чистая функция прав без HTTP.",
+      "example": "canEditPost(user, post)"
+    }
+  ]
+}

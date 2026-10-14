@@ -1,0 +1,74 @@
+{
+  "id": "security-03",
+  "part": "security",
+  "module": "sec-auth",
+  "order": 3,
+  "title": "Регистрация и вход",
+  "goal": "Сделаешь signup/login с zod, rate limit на login и без утечки «email занят» в лишних деталях.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "POST /auth/register: email, password (min длина, сложность по политике курса). Хеш пароля, UNIQUE email — конфликт 409 или общий текст. POST /auth/login: 401 при ошибке, body без hint какое поле неверно для атакующего."
+    },
+    {
+      "type": "heading",
+      "content": "Валидация и ответы"
+    },
+    {
+      "type": "paragraph",
+      "content": "zod на register/login до БД. Не возвращай passwordHash в JSON user. accessToken в теле или cookie — решение следующих уроков; сейчас достаточно { user: { id, email } } после login."
+    },
+    {
+      "type": "heading",
+      "content": "Brute force"
+    },
+    {
+      "type": "paragraph",
+      "content": "Limit попыток login по IP+email (express-rate-limit позже). Задержка 200–500 ms на неудачу. Account lockout optional — осторожно с DoS на чужой email."
+    }
+  ],
+  "codeExample": "const registerSchema = z.object({\n  email: z.string().email(),\n  password: z.string().min(10),\n});\n\nrouter.post(\"/register\", async (req, res, next) => {\n  const body = registerSchema.parse(req.body);\n  const passwordHash = await hashPassword(body.password);\n  const user = await prisma.user.create({\n    data: { email: body.email, passwordHash },\n    select: { id: true, email: true },\n  });\n  res.status(201).json({ user });\n});",
+  "practice": [
+    {
+      "title": "Register Postman",
+      "description": "POST /auth/register с email и password 10+ символов. 201 и user без passwordHash. Повтор email — 409 или 400 по твоей политике."
+    },
+    {
+      "title": "Login success",
+      "description": "POST /auth/login с теми же данными — 200 и user id совпадает. Неверный пароль — 401, тело { error: 'Invalid credentials' }."
+    },
+    {
+      "title": "zod errors",
+      "description": "Register с password 'short' — 400 flatten. Login с не-email — 400. Зафиксируй в Postman tests статусы."
+    }
+  ],
+  "checklist": [
+    "register и login с zod",
+    "Ответ user без секретных полей",
+    "Единое сообщение при failed login",
+    "Postman сценарий register → login"
+  ],
+  "links": [
+    {
+      "title": "OWASP Authentication Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "signup",
+      "meaning": "Регистрация нового пользователя.",
+      "example": "POST /auth/register"
+    },
+    {
+      "term": "credential stuffing",
+      "meaning": "Перебор утёкших пар login/password.",
+      "example": "rate limit login"
+    },
+    {
+      "term": "select",
+      "meaning": "Prisma: выбор полей ответа без hash.",
+      "example": "select: { id, email }"
+    }
+  ]
+}

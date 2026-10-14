@@ -1,0 +1,91 @@
+{
+  "id": "fullstack-10",
+  "part": "fullstack",
+  "module": "fs-features",
+  "order": 10,
+  "title": "Платежи Stripe Checkout (тест)",
+  "goal": "Проведёшь тестовую оплату и обработаешь webhook.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Почему Checkout"
+    },
+    {
+      "type": "paragraph",
+      "content": "Принимать карты самому сложно и опасно: данные карты подпадают под строгие требования PCI DSS. Stripe Checkout — страница оплаты на стороне Stripe: пользователь перенаправляется туда, вводит карту, а твой сервер никогда не видит номер. Твоя задача: создать Checkout Session на сервере и узнать об успешной оплате."
+    },
+    {
+      "type": "heading",
+      "content": "Сессия оплаты"
+    },
+    {
+      "type": "paragraph",
+      "content": "Секретный ключ (sk_) используется только на сервере. В запросе указываются товары (line_items с price), режим (payment или subscription), адреса success_url и cancel_url. Сумма не должна приходить от клиента: цену берут из своей базы или из Price в Stripe. Иначе пользователь подставит 1 рубль."
+    },
+    {
+      "type": "heading",
+      "content": "Webhook — источник правды"
+    },
+    {
+      "type": "paragraph",
+      "content": "Возврат пользователя на success_url не доказывает оплату: он мог закрыть вкладку или открыть адрес вручную. Заказ считается оплаченным, когда пришёл webhook checkout.session.completed. Локально его гоняют через Stripe CLI: stripe listen --forward-to localhost:3000/webhooks/stripe."
+    },
+    {
+      "type": "list",
+      "items": [
+        "Проверяй подпись: stripe.webhooks.constructEvent(rawBody, signature, endpointSecret). Для этого маршрута нужно сырое тело (express.raw), а не разобранный JSON, поэтому он подключается до express.json.",
+        "Событие может прийти повторно: храни id обработанных событий и при повторе возвращай 200 без повторной выдачи товара.",
+        "Отвечай 2xx быстро, тяжёлую работу выноси в очередь, иначе Stripe будет считать доставку неудачной и повторять.",
+        "Тестовые ключи sk_test_ и карта 4242 4242 4242 4242 деньги не списывают; боевые ключи хранятся отдельно в env."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Храни у себя связь заказа и сессии (metadata или client_reference_id), чтобы по событию найти нужный заказ."
+    }
+  ],
+  "codeExample": "const session = await stripe.checkout.sessions.create({\n  mode: 'payment',\n  line_items: [{ price: priceId, quantity: 1 }],\n  success_url: `${APP_URL}/billing/success`,\n  cancel_url: `${APP_URL}/billing/cancel`,\n});",
+  "practice": [
+    {
+      "title": "Session endpoint",
+      "description": "POST /billing/checkout создаёт session и возвращает url. Кнопка «Оплатить» делает window.location = url."
+    },
+    {
+      "title": "Webhook",
+      "description": "Обработай checkout.session.completed: пометь заказ paid в БД. Проверь подпись stripe-signature."
+    },
+    {
+      "title": "Test оплата",
+      "description": "Пройди checkout test-картой. Убедись, что статус заказа обновился только после webhook, не после redirect."
+    }
+  ],
+  "checklist": [
+    "Создаю Checkout Session только на сервере с secret key",
+    "Проверяю подпись webhook raw body",
+    "Делаю обработку webhook идемпотентной",
+    "Не путаю success redirect с фактом оплаты"
+  ],
+  "links": [
+    {
+      "title": "Stripe Checkout",
+      "url": "https://docs.stripe.com/payments/checkout"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Checkout Session",
+      "meaning": "Объект hosted-оплаты Stripe.",
+      "example": "mode: payment"
+    },
+    {
+      "term": "webhook",
+      "meaning": "HTTP callback от Stripe о событии.",
+      "example": "checkout.session.completed"
+    },
+    {
+      "term": "test mode",
+      "meaning": "Режим без реальных списаний.",
+      "example": "sk_test_…"
+    }
+  ]
+}

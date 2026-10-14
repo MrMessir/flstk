@@ -1,0 +1,83 @@
+{
+  "id": "js-project-game",
+  "part": "javascript",
+  "module": "project",
+  "order": 30,
+  "title": "Мини-проект: простая игра",
+  "goal": "Сделаешь крестики-нолики или memory с отдельной логикой состояния и отрисовкой.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Игра на чистом JS — проверка DOM, массивов и условий в одном месте. Храни состояние отдельно от HTML: массив из девяти ячеек для крестиков-ноликов или пары id карточек для memory. После каждого хода функция render() синхронизирует экран с state. Так проще отладить победу и рестарт, чем читать символы прямо из textContent клеток."
+    },
+    {
+      "type": "heading",
+      "content": "Крестики-нолики"
+    },
+    {
+      "type": "paragraph",
+      "content": "state = Array(9).fill(null), currentPlayer = 'X'. Клик по пустой клетке записывает символ, проверяешь WIN_LINES — массив троек индексов [0,1,2], [3,4,5], … При победе или ничьей показываешь #status и блокируешь до «Заново». Кнопка reset обнуляет state и снова render()."
+    },
+    {
+      "type": "heading",
+      "content": "Memory (альтернатива)"
+    },
+    {
+      "type": "paragraph",
+      "content": "Колода — массив пар emoji, перемешанный shuffle. Две открытые карты: если совпали — оставить открытыми, иначе через setTimeout перевернуть обратно и locked = false. Счётчик ходов увеличивай на каждую пару попыток. locked не даёт кликать во время задержки — типичный баг без флага."
+    }
+  ],
+  "codeExample": "const WIN = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];\n\nfunction checkWinner(board) {\n  for (const [a,b,c] of WIN) {\n    if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];\n  }\n  return board.includes(null) ? null : \"draw\";\n}\n\nlet board = Array(9).fill(null);\nlet player = \"X\";\n\nfunction play(i) {\n  if (board[i] || checkWinner(board)) return;\n  board[i] = player;\n  player = player === \"X\" ? \"O\" : \"X\";\n}",
+  "practice": [
+    {
+      "title": "Поле 3×3 и ходы",
+      "description": "index.html: div#board с девятью button data-i=\"0\"…\"8\". game.js: клик ставит X/O по очереди, пустую клетку повторный клик не меняет. #status показывает чей ход."
+    },
+    {
+      "title": "Победа и кнопка «Заново»",
+      "description": "После третьего в ряд status «Победил X» и клики игнорируются. Кнопка #reset очищает board и текст. Прогони партию до ничьей — status «Ничья»."
+    },
+    {
+      "title": "Репозиторий и разделение",
+      "description": "Вынеси checkWinner и play в logic.js, render в ui.js. README с GIF или скрином середины партии. Ссылка на GitHub в сдаче."
+    }
+  ],
+  "checklist": [
+    "Игра доводится до победы или ничьей",
+    "Рестарт сбрасывает состояние полностью",
+    "Логика не завязана только на DOM-текст",
+    "Код в репозитории с README"
+  ],
+  "links": [
+    {
+      "title": "MDN: addEventListener",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/EventTarget/addEventListener"
+    },
+    {
+      "title": "MDN: массивы",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Array"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "game state",
+      "meaning": "Данные партии: доска, игрок, счёт.",
+      "example": "Array(9).fill(null)"
+    },
+    {
+      "term": "render",
+      "meaning": "Обновить DOM из state.",
+      "example": "cells[i].textContent = board[i]"
+    },
+    {
+      "term": "WIN_LINES",
+      "meaning": "Наборы индексов выигрышных троек.",
+      "example": "[0,1,2]"
+    },
+    {
+      "term": "locked",
+      "meaning": "Флаг блокировки ввода на время анимации.",
+      "example": "memory flip delay"
+    }
+  ]
+}

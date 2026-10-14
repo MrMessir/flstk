@@ -1,0 +1,80 @@
+{
+  "id": "css-10",
+  "part": "css",
+  "module": "css-layout",
+  "order": 10,
+  "title": "Grid: сетка по клеткам",
+  "goal": "Сделаешь галерею 3×3 и простой макет с шапкой и боковой колонкой.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "CSS Grid — сетка по строкам и колонкам сразу. Flex удобен для одной линии. Grid — когда нужно «как таблица, но для макета»."
+    },
+    {
+      "type": "list",
+      "items": [
+        "display: grid; — включить сетку на родителе.",
+        "grid-template-columns: 1fr 1fr 1fr; — три равные колонки. fr — доля свободного места.",
+        "grid-template-rows — то же для строк.",
+        "gap — промежутки между клетками.",
+        "grid-auto-rows: 120px; — высота строк, которые появляются сами."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "1fr 2fr значит: вторая колонка в два раза шире первой."
+    },
+    {
+      "type": "paragraph",
+      "content": "Grid задаёт сетку на родителе: строки и колонки одним правилом. gap заменяет старые margin между ячейками. repeat(3, 1fr) делит ширину на три равные доли без калькулятора в процентах."
+    }
+  ],
+  "codeExample": ".gallery {\n  display: grid;\n  grid-template-columns: 1fr 1fr 1fr;\n  gap: 12px;\n}\n\n.gallery div {\n  background: #d7f3f1;\n  min-height: 100px;\n  padding: 12px;\n}\n\n.page {\n  display: grid;\n  grid-template-columns: 200px 1fr;\n  grid-template-rows: auto 1fr;\n  gap: 12px;\n}\n\n.page header { grid-column: 1 / -1; }",
+  "practice": [
+    {
+      "title": "Grid 3 колонки",
+      "description": ".gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }. Шесть div-карточек — две строки по три. На узком окне уменьши до repeat(2, 1fr) в @media или вручную для проверки."
+    },
+    {
+      "title": "gap в grid",
+      "description": "Поменяй gap на 20px — расстояние между ячейками растёт без margin на детях. Убедись, что у детей нет лишних margin, мешающих сетке."
+    },
+    {
+      "title": "grid-column span",
+      "description": "Первому элементу .gallery__wide { grid-column: span 2; } — он занимает две колонки. F5 — первый блок шире соседей."
+    }
+  ],
+  "checklist": [
+    "Включаю сетку через display: grid",
+    "Задаю колонки через grid-template-columns",
+    "Использую fr для долей ширины",
+    "Ставлю gap вместо ручных отступов между клетками"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: CSS Grid",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/CSS_layout/Grids"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "display: grid",
+      "meaning": "Сетка по колонкам и строкам.",
+      "example": "display: grid;"
+    },
+    {
+      "term": "grid-template-columns",
+      "meaning": "Сколько колонок и какой ширины.",
+      "example": "grid-template-columns: 1fr 1fr 1fr;"
+    },
+    {
+      "term": "fr",
+      "meaning": "Доля свободного места в сетке.",
+      "example": "1fr 2fr"
+    }
+  ]
+}

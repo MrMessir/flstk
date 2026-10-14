@@ -1,0 +1,83 @@
+{
+  "id": "react-06",
+  "part": "react",
+  "module": "react-hooks",
+  "order": 6,
+  "title": "useEffect: эффекты и очистка",
+  "goal": "Загрузишь данные при монтировании и отменишь подписку в cleanup.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "useEffect(() => { ... }, [deps]) выполняется после отрисовки. Пустой deps [] — один раз при mount (и cleanup при unmount). С deps [userId] — при смене userId эффект перезапускается: сначала cleanup прошлого запуска, потом новый effect. Без deps эффект после каждого render — почти никогда не нужно."
+    },
+    {
+      "type": "heading",
+      "content": "Fetch в effect"
+    },
+    {
+      "type": "paragraph",
+      "content": "let ignore = false; fetch(...).then(data => { if (!ignore) setData(data); }); return () => { ignore = true; } — защита от гонки, когда id сменился быстрее ответа. Альтернатива — AbortController signal. loading и error state рядом с data."
+    },
+    {
+      "type": "heading",
+      "content": "Cleanup"
+    },
+    {
+      "type": "paragraph",
+      "content": "return () => clearInterval(id), removeEventListener, socket.close(). Cleanup перед следующим effect и при размонтировании. document.title = ... в effect синхронизирует вкладку с route. Не клади весь бизнес-fetch без deps в App — только осознанные зависимости."
+    }
+  ],
+  "codeExample": "import { useEffect, useState } from \"react\";\n\nexport function UserCard({ userId }: { userId: string }) {\n  const [user, setUser] = useState<{ name: string } | null>(null);\n  const [error, setError] = useState<string | null>(null);\n\n  useEffect(() => {\n    let ignore = false;\n    setUser(null);\n    setError(null);\n    fetch(`https://jsonplaceholder.typicode.com/users/${userId}`)\n      .then((r) => r.json())\n      .then((data) => {\n        if (!ignore) setUser({ name: data.name });\n      })\n      .catch(() => {\n        if (!ignore) setError(\"Ошибка сети\");\n      });\n    return () => {\n      ignore = true;\n    };\n  }, [userId]);\n\n  if (error) return <p role=\"alert\">{error}</p>;\n  if (!user) return <p>Загрузка…</p>;\n  return <p>{user.name}</p>;\n}",
+  "practice": [
+    {
+      "title": "UserCard userId=1",
+      "description": "UserCard с userId prop. Показывает имя с jsonplaceholder. Переключи userId 1↔2 в App — имя меняется, без мигания чужого имени (ignore flag)."
+    },
+    {
+      "title": "document.title",
+      "description": "useEffect меняет document.title на `User: ${name}` при успехе. Cleanup возвращает 'React App' при unmount."
+    },
+    {
+      "title": "AbortController",
+      "description": "Перепиши fetch с signal: controller.abort() в cleanup. Быстро переключай userId — в Network отменённые запросы (optional)."
+    }
+  ],
+  "checklist": [
+    "Указываю массив зависимостей осознанно",
+    "Делаю cleanup для таймеров и fetch-гонок",
+    "Не вызываю setState на размонтированном без guard",
+    "Разделяю loading / error / data в UI"
+  ],
+  "links": [
+    {
+      "title": "React: useEffect",
+      "url": "https://react.dev/reference/react/useEffect"
+    },
+    {
+      "title": "React: You Might Not Need an Effect",
+      "url": "https://react.dev/learn/you-might-not-need-an-effect"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "useEffect",
+      "meaning": "Хук побочных эффектов после render.",
+      "example": "useEffect(() => {}, [id])"
+    },
+    {
+      "term": "cleanup",
+      "meaning": "Функция отмены в return effect.",
+      "example": "return () => clearInterval"
+    },
+    {
+      "term": "dependency array",
+      "meaning": "Список значений, при смене которых effect перезапускается.",
+      "example": "[userId]"
+    },
+    {
+      "term": "race condition",
+      "meaning": "Старый ответ перезаписывает новый запрос.",
+      "example": "ignore / abort"
+    }
+  ]
+}

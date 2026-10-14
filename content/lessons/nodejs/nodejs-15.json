@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-15",
+  "part": "nodejs",
+  "module": "node-arch",
+  "order": 15,
+  "title": "Практика: логи и ошибки",
+  "goal": "Добавишь структурные логи pino и единый error handler в учебный сервер.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "console.log в production теряет контекст: нет уровня, requestId, JSON для Loki/Datadog. pino — быстрый JSON-logger: logger.info({ reqId, userId }, 'post created'). pino-http автоматически логирует запросы. morgan можно убрать или оставить только в dev."
+    },
+    {
+      "type": "heading",
+      "content": "Уровни и redaction"
+    },
+    {
+      "type": "paragraph",
+      "content": "debug — локальная отладка, info — бизнес-события, warn — деградация, error — с полем err и stack. redact: ['req.headers.authorization', 'password'] — пароли не попадают в логи. LOG_LEVEL=info на проде."
+    },
+    {
+      "type": "heading",
+      "content": "Связка с error middleware"
+    },
+    {
+      "type": "paragraph",
+      "content": "В error handler: logger.error({ err, reqId: req.id }, err.message). Клиенту — короткий message, в лог — полный объект ошибки. 404 AppError логируй как warn, не error."
+    }
+  ],
+  "codeExample": "import pino from \"pino\";\nimport pinoHttp from \"pino-http\";\n\nexport const logger = pino({\n  level: process.env.LOG_LEVEL ?? \"info\",\n  redact: [\"req.headers.authorization\"],\n});\n\napp.use(\n  pinoHttp({\n    logger,\n    genReqId: (req) => req.id,\n  }),\n);\n\napp.use((err, req, res, _next) => {\n  req.log.error({ err }, \"request failed\");\n  res.status(err.statusCode ?? 500).json({ error: err.message });\n});",
+  "practice": [
+    {
+      "title": "Установка pino",
+      "description": "npm install pino pino-http. Подключи pinoHttp после middleware requestId. Сделай GET /health — в консоли одна JSON-строка с req.method и statusCode."
+    },
+    {
+      "title": "LOG_LEVEL",
+      "description": "Запусти с LOG_LEVEL=warn. GET /health не должен логироваться на info (зависит от конфига pino-http). Вызови ошибку 500 — error-лог остаётся."
+    },
+    {
+      "title": "Redact заголовка",
+      "description": "Отправь запрос с заголовком Authorization: Bearer secret-test. Убедись в логе, что значение заменено на [Redacted] или отсутствует."
+    }
+  ],
+  "checklist": [
+    "Логи в JSON через pino",
+    "requestId попадает в лог запроса",
+    "Error middleware пишет err через req.log",
+    "Redact для authorization настроен"
+  ],
+  "links": [
+    {
+      "title": "pino",
+      "url": "https://getpino.io/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "structured logging",
+      "meaning": "Логи как JSON-поля, не одна строка текста.",
+      "example": "{ \"level\":30, \"reqId\":\"...\" }"
+    },
+    {
+      "term": "redact",
+      "meaning": "Маскирование чувствительных полей в логах.",
+      "example": "redact: ['password']"
+    },
+    {
+      "term": "pino-http",
+      "meaning": "Middleware логирования HTTP для Express.",
+      "example": "app.use(pinoHttp({ logger }))"
+    }
+  ]
+}

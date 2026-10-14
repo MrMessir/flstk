@@ -1,0 +1,87 @@
+{
+  "id": "tools-08",
+  "part": "tools",
+  "module": "git",
+  "order": 8,
+  "title": "Git, часть 2: ветки и merge",
+  "goal": "Создашь ветку, вольёшь изменения и разберёшь простой конфликт.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Зачем ветки"
+    },
+    {
+      "type": "paragraph",
+      "content": "Ветка — отдельная линия истории. main (или master) — основная, с которой деплоят. feature/readme — эксперимент или задача, не ломая main. Переключение git switch меняет файлы в рабочей папке на снимок ветки."
+    },
+    {
+      "type": "paragraph",
+      "content": "git switch -c feature/footer создаёт ветку и сразу на неё переходит. git merge feature/footer вливает коммиты в текущую ветку. После merge feature можно удалить: git branch -d feature/footer."
+    },
+    {
+      "type": "heading",
+      "content": "Конфликт слияния"
+    },
+    {
+      "type": "paragraph",
+      "content": "Конфликт бывает, если две ветки изменили одни и те же строки. Git помечает файл маркерами <<<<<<<, =======, >>>>>>>. Ты оставляешь нужный текст, убираешь маркеры, git add и git commit завершают merge."
+    },
+    {
+      "type": "paragraph",
+      "content": "Перед merge полезно git status и убедиться, что рабочая копия чистая. VS Code подсветит конфликт и предложит Accept Current / Incoming."
+    }
+  ],
+  "codeExample": "git switch -c feature/footer\necho 'Footer 2026' >> README.md\ngit add README.md && git commit -m \"feat: footer line\"\ngit switch main\ngit merge feature/footer",
+  "practice": [
+    {
+      "title": "Ветка с одним коммитом",
+      "description": "В terminal-demo на main выполни git switch -c feature/note. Добавь в README строку «Ветка feature/note», commit -m \"feat: branch note\". git log --oneline — один коммит только на этой ветке."
+    },
+    {
+      "title": "Merge в main",
+      "description": "git switch main. git merge feature/note. README на main должен содержать строку из ветки. git log --oneline --graph — видно слияние."
+    },
+    {
+      "title": "Смоделируй конфликт",
+      "description": "На main измени первую строку README на «Main version». Commit. git switch -c conflict-demo, измени ту же строку на «Branch version», commit. git switch main && git merge conflict-demo. Разреши конфликт в редакторе, add, commit -m \"merge: resolve readme\"."
+    }
+  ],
+  "checklist": [
+    "Создаю ветку git switch -c",
+    "Вливаю изменения через git merge",
+    "Убираю маркеры конфликта и завершаю merge",
+    "Смотрю историю git log --oneline --graph"
+  ],
+  "links": [
+    {
+      "title": "Pro Git: ветвление",
+      "url": "https://git-scm.com/book/ru/v2/Ветвление-в-Git-Основы-ветвления-и-слияния"
+    },
+    {
+      "title": "GitHub Docs: resolve merge conflict",
+      "url": "https://docs.github.com/ru/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/resolving-a-merge-conflict-using-the-command-line"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "ветка",
+      "meaning": "Отдельная линия коммитов.",
+      "example": "feature/readme"
+    },
+    {
+      "term": "merge",
+      "meaning": "Слияние одной ветки в текущую.",
+      "example": "git merge feature/footer"
+    },
+    {
+      "term": "конфликт",
+      "meaning": "Git не смог сам слить правки одной строки.",
+      "example": "<<<<<<< HEAD"
+    },
+    {
+      "term": "main",
+      "meaning": "Основная ветка репозитория.",
+      "example": "git switch main"
+    }
+  ]
+}

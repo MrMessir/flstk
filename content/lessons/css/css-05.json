@@ -1,0 +1,80 @@
+{
+  "id": "css-05",
+  "part": "css",
+  "module": "css-box",
+  "order": 5,
+  "title": "Коробка: отступ, рамка, поле",
+  "goal": "Поймёшь, из чего складывается размер блока, и выровняешь две карточки.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Каждый элемент — коробка. Внутри — содержимое. Дальше padding — внутренний отступ от текста до края. Потом border — рамка. Снаружи margin — расстояние до соседних блоков. Это и есть box model."
+    },
+    {
+      "type": "paragraph",
+      "content": "По умолчанию width: 200px — ширина содержимого. Padding и border добавляются сверху. Поэтому две «одинаковые» карточки могут отличаться. Исправление: box-sizing: border-box; — тогда width включает padding и border."
+    },
+    {
+      "type": "list",
+      "items": [
+        "padding: 16px; — со всех сторон.",
+        "padding: 8px 16px; — сверху/снизу 8, слева/справа 16.",
+        "margin: 0 auto; — часто центрирует блок с заданной шириной.",
+        "border: 1px solid #ccc; — тонкая серая рамка."
+      ]
+    }
+  ],
+  "codeExample": "* { box-sizing: border-box; }\n\n.card {\n  width: 260px;\n  padding: 16px;\n  margin: 12px;\n  border: 1px solid #ccc;\n  background: white;\n}\n\n.wrap {\n  width: 560px;\n  margin: 0 auto;\n}",
+  "practice": [
+    {
+      "title": "Padding vs margin",
+      "description": "На .card задай padding: 16px; margin: 24px; border: 2px solid #ccc; background: #fff;. В DevTools Box Model посмотри, где зелёный (padding) и оранжевый (margin)."
+    },
+    {
+      "title": "box-sizing border-box",
+      "description": "Добавь * { box-sizing: border-box; }. Задай .card width: 200px и padding: 20px. Ширина блока не должна «раздуваться» за 200px на экране."
+    },
+    {
+      "title": "Схлопывание margin",
+      "description": "Два соседних p с margin-bottom: 20px и margin-top: 30px. Расстояние между ними 30px, не 50. Увеличь только margin-top второго до 40px — зазор станет 40px."
+    }
+  ],
+  "checklist": [
+    "Различаю padding, border и margin",
+    "Ставлю box-sizing: border-box на страницу",
+    "Задаю ширину карточки и внутренний отступ",
+    "Центрирую блок через margin: 0 auto"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: box model",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Styling_basics/Box_model"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "box model",
+      "meaning": "Коробка элемента: content + padding + border + margin.",
+      "example": "padding: 16px; border: 1px solid #ccc;"
+    },
+    {
+      "term": "padding",
+      "meaning": "Внутренний отступ от текста до края.",
+      "example": "padding: 16px;"
+    },
+    {
+      "term": "margin",
+      "meaning": "Внешний отступ до соседних блоков.",
+      "example": "margin: 12px;"
+    },
+    {
+      "term": "box-sizing: border-box",
+      "meaning": "width включает padding и border.",
+      "example": "* { box-sizing: border-box; }"
+    }
+  ]
+}

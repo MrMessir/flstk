@@ -1,0 +1,91 @@
+{
+  "id": "js-21",
+  "part": "javascript",
+  "module": "js-advanced",
+  "order": 21,
+  "title": "Замыкания и hoisting на практике",
+  "goal": "Объяснишь замыкание и покажешь, почему let/const безопаснее var при подъёме объявлений.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Замыкание — это функция вместе с переменными из той области, где она была создана. Внешняя функция уже завершилась, но внутренняя всё ещё «видит» её let и может менять их. Так делают счётчик кликов, очередь задач и скрытые настройки: снаружи нет доступа к n, а returned-функция каждый раз увеличивает одно и то же число."
+    },
+    {
+      "type": "heading",
+      "content": "Hoisting и var"
+    },
+    {
+      "type": "paragraph",
+      "content": "Движок JavaScript перед выполнением «поднимает» объявления function и var: имя уже существует, но значение var до строки присваивания равно undefined. Поэтому console.log(a); var a = 1 не падает — ты читаешь undefined, а не ReferenceError. function declaration тоже поднимается целиком, и её можно вызвать до строки объявления в файле."
+    },
+    {
+      "type": "heading",
+      "content": "let, const и TDZ"
+    },
+    {
+      "type": "paragraph",
+      "content": "let и const тоже поднимаются, но попадают во временную мёртвую зону (TDZ): до строки объявления обращаться к имени нельзя, будет ReferenceError. В цикле for (let i = 0; …) каждая итерация получает свой i — обработчики click не «залипают» на последнем значении, как это часто бывает с var в старых примерах."
+    },
+    {
+      "type": "list",
+      "items": [
+        "makeCounter возвращает функцию — это замыкание над let n.",
+        "var в цикле + setTimeout — классическая ловушка: все таймеры печатают одно число.",
+        "let в том же цикле — каждый колбэк помнит свой i."
+      ]
+    }
+  ],
+  "codeExample": "function makeCounter() {\n  let n = 0;\n  return () => ++n;\n}\nconst c = makeCounter();\nconsole.log(c(), c()); // 1, 2\n\nfor (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(\"var\", i), 0);\n}\nfor (let j = 0; j < 3; j++) {\n  setTimeout(() => console.log(\"let\", j), 0);\n}",
+  "practice": [
+    {
+      "title": "Счётчик через замыкание",
+      "description": "В файле closure.js опиши makeCounter как в примере урока. Подключи его в index.html через <script type=\"module\">, вызови c() три раза в консоли. Ожидай 1, 2, 3 без глобальной переменной n."
+    },
+    {
+      "title": "Поймай hoisting у var",
+      "description": "В hoisting.js напиши сверху console.log(typeof x); var x = 5; и отдельно попробуй то же с let y до объявления. Запусти через Live Server или node hoisting.js (для let — только в браузере). Зафиксируй: var даёт undefined, let — ReferenceError."
+    },
+    {
+      "title": "Три кнопки и let в цикле",
+      "description": "Сделай index.html с тремя кнопками и script.js: в цикле for (let i = 0; i < 3; i++) повесь click, который alert(i). Клик по каждой кнопке должен показать 0, 1 или 2. Замени let на var и убедись, что все три alert показывают 3 — верни let."
+    }
+  ],
+  "checklist": [
+    "Объясняю замыкание своими словами на примере счётчика",
+    "Знаю разницу между undefined у var и TDZ у let",
+    "Не использую var в новых циклах с асинхронными колбэками",
+    "Могу воспроизвести баг с var в setTimeout и исправить его"
+  ],
+  "links": [
+    {
+      "title": "MDN: замыкания",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Closures"
+    },
+    {
+      "title": "MDN: hoisting",
+      "url": "https://developer.mozilla.org/ru/docs/Glossary/Hoisting"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "замыкание",
+      "meaning": "Функция, которая помнит переменные внешней области после её завершения.",
+      "example": "return () => ++n"
+    },
+    {
+      "term": "hoisting",
+      "meaning": "Подъём объявлений var и function до выполнения кода построчно.",
+      "example": "var a; // до a = 1"
+    },
+    {
+      "term": "TDZ",
+      "meaning": "Временная мёртвая зона: let/const нельзя читать до строки объявления.",
+      "example": "ReferenceError на console.log(y)"
+    },
+    {
+      "term": "лексическая область",
+      "meaning": "Видимость переменных определяется местом объявления в коде, а не местом вызова.",
+      "example": "внутренняя функция видит let снаружи"
+    }
+  ]
+}

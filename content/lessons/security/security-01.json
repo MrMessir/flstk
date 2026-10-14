@@ -1,0 +1,79 @@
+{
+  "id": "security-01",
+  "part": "security",
+  "module": "sec-auth",
+  "order": 1,
+  "title": "Аутентификация и авторизация",
+  "goal": "Различишь проверку личности и проверку прав и спроектируешь их для API блога.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Authentication отвечает на «кто ты»: логин, пароль, OAuth, сертификат. Authorization — «можно ли тебе это действие»: роль admin, владелец поста, scope read:posts. Путать их опасно: выдать JWT после login (auth) и на каждом PATCH проверять authorId (authz)."
+    },
+    {
+      "type": "heading",
+      "content": "Модели для SPA + API"
+    },
+    {
+      "type": "paragraph",
+      "content": "Session cookie: сервер хранит session id, cookie httpOnly. JWT: сервер подписывает claims, клиент шлёт Authorization Bearer. OAuth: делегируешь login Google/GitHub, свой API доверяет id_token или обмениваешь code на tokens."
+    },
+    {
+      "type": "heading",
+      "content": "Сервер — источник правды"
+    },
+    {
+      "type": "paragraph",
+      "content": "Скрытая кнопка «Удалить» во фронте не защита. Каждый DELETE /posts/:id проверяет req.user.id === post.authorId или role admin. IDOR — классическая ошибка, когда меняют id в URL."
+    }
+  ],
+  "codeExample": "export function requireAuth(req, res, next) {\n  if (!req.user) return res.status(401).json({ error: \"Unauthorized\" });\n  next();\n}\n\nexport function requireOwner(getPostAuthorId) {\n  return async (req, res, next) => {\n    const authorId = await getPostAuthorId(req.params.id);\n    if (authorId !== req.user.id) return res.status(403).json({ error: \"Forbidden\" });\n    next();\n  };\n}",
+  "practice": [
+    {
+      "title": "Таблица auth vs authz",
+      "description": "В docs/auth.md таблица из 5 сценариев блога (login, delete чужого поста, admin ban, refresh token, public read). Колонки: auth или authz."
+    },
+    {
+      "title": "Заглушки middleware",
+      "description": "Создай middleware/requireAuth.js и requireRole('admin'). На GET /posts/:id/auth-test повесь requireAuth — без user 401."
+    },
+    {
+      "title": "IDOR кейс",
+      "description": "Опиши в README атаку: user A меняет id в DELETE /posts/{id_B}. Какой статус должен вернуть сервер и какая проверка."
+    }
+  ],
+  "checklist": [
+    "Различаю 401 и 403",
+    "Проверяю права на сервере, не во фронте",
+    "Знаю три модели: session, JWT, OAuth",
+    "Написал requireAuth заглушку"
+  ],
+  "links": [
+    {
+      "title": "OWASP Authentication Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "аутентификация",
+      "meaning": "Установление identity пользователя.",
+      "example": "POST /auth/login"
+    },
+    {
+      "term": "авторизация",
+      "meaning": "Проверка разрешения на действие.",
+      "example": "authorId === req.user.id"
+    },
+    {
+      "term": "IDOR",
+      "meaning": "Insecure Direct Object Reference — доступ к чужому id.",
+      "example": "DELETE чужого post"
+    },
+    {
+      "term": "RBAC",
+      "meaning": "Role-Based Access Control.",
+      "example": "role: admin | author"
+    }
+  ]
+}

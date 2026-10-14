@@ -1,0 +1,81 @@
+{
+  "id": "css-11",
+  "part": "css",
+  "module": "css-layout",
+  "order": 11,
+  "title": "Grid: куда встаёт каждый блок",
+  "goal": "Разложишь блоки по именованным областям и сделаешь сетку, которая сама перестраивается.",
+  "theory": [
+    {
+      "type": "list",
+      "items": [
+        "grid-column: 1 / 3; — занять колонки с 1 по 3 (не включая 3).",
+        "grid-row — то же для строк.",
+        "grid-template-areas — нарисовать макет словами.",
+        "У ребёнка grid-area: header; — встать в область с этим именем.",
+        "minmax(200px, 1fr) — не уже 200px, но может расти.",
+        "repeat(auto-fit, minmax(220px, 1fr)) — столько колонок, сколько влезает. Карточки сами перестраиваются."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "auto-fit удобен для списка карточек: на широком экране их много в ряд, на узком — мало, без отдельного медиазапроса."
+    },
+    {
+      "type": "paragraph",
+      "content": "grid-template-areas рисует макет буквами: каждая строка в кавычках — ряд сетки. Так видно «шапка на всю ширину, слева sidebar, справа main» без лишних классов на каждой линии."
+    },
+    {
+      "type": "paragraph",
+      "content": "Имена областей должны совпадать в grid-template-areas и в grid-area у детей — опечатка ломает всю сетку сразу."
+    }
+  ],
+  "codeExample": ".layout {\n  display: grid;\n  gap: 12px;\n  grid-template-areas:\n    \"head head\"\n    \"side main\"\n    \"foot foot\";\n  grid-template-columns: 200px 1fr;\n}\n\n.layout header { grid-area: head; }\n.layout aside { grid-area: side; }\n.layout main { grid-area: main; }\n.layout footer { grid-area: foot; }\n\n.cards {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));\n  gap: 12px;\n}",
+  "practice": [
+    {
+      "title": "grid-template-areas",
+      "description": "На .page задай grid-template-areas: \"head head\" \"side main\" \"foot foot\"; и grid-template-columns: 200px 1fr;. Назначь header, aside, main, footer через grid-area. F5 — макет как таблица областей."
+    },
+    {
+      "title": "Переименуй area",
+      "description": "Поменяй side и main местами в строке areas и в grid-area у блоков. Страница перестроится без правки HTML — только CSS."
+    },
+    {
+      "title": "Мобильный столбец",
+      "description": "@media (max-width: 600px) { .page { grid-template-areas: \"head\" \"main\" \"side\" \"foot\"; grid-template-columns: 1fr; } } — DevTools device mode 375px, sidebar под main."
+    }
+  ],
+  "checklist": [
+    "Ставлю блок в область через grid-area",
+    "Описываю макет словами в grid-template-areas",
+    "Делаю адаптивные карточки через auto-fit и minmax",
+    "Растягиваю элемент через span"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: grid-template-areas",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS/Reference/Properties/grid-template-areas"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "grid-area",
+      "meaning": "Имя области, куда встаёт блок.",
+      "example": "grid-area: header;"
+    },
+    {
+      "term": "grid-template-areas",
+      "meaning": "Макет сетки словами.",
+      "example": "\"head head\" \"side main\""
+    },
+    {
+      "term": "auto-fit + minmax",
+      "meaning": "Колонки сами подстраиваются под ширину окна.",
+      "example": "repeat(auto-fit, minmax(220px, 1fr))"
+    }
+  ]
+}

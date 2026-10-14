@@ -1,0 +1,83 @@
+{
+  "id": "react-14",
+  "part": "react",
+  "module": "react-ui",
+  "order": 14,
+  "title": "React + TypeScript на практике",
+  "goal": "Типизируешь props, children и события в react-ts без any.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "react-ts шаблон Vite уже настроен. Props типизируй interface или type; для компонента React.FC сегодня не обязателен — function Component(props: Props). children: React.ReactNode. События: React.ChangeEvent<HTMLInputElement>, FormEvent, MouseEvent<HTMLButtonElement>."
+    },
+    {
+      "type": "heading",
+      "content": "PropsWithChildren и generics"
+    },
+    {
+      "type": "paragraph",
+      "content": "type CardProps = PropsWithChildren<{ title: string }>. Generic list: function List<T>({ items, render }: { items: T[]; render: (item: T) => ReactNode }). ref forwardRef<HTMLInputElement, Props> для библиотечных input. defaultProps заменяют default parameters в destructuring."
+    },
+    {
+      "type": "heading",
+      "content": "Строгая типизация hooks"
+    },
+    {
+      "type": "paragraph",
+      "content": "useState<User | null>(null). useReducer с union Action. useRef<HTMLDialogElement>(null). Константы as const для variants. Типы из zod: type Form = z.infer<typeof Schema> в формах с react-hook-form — обзор связки."
+    }
+  ],
+  "codeExample": "import type { PropsWithChildren, ReactNode } from \"react\";\n\ntype SelectProps<T extends string> = {\n  value: T;\n  options: readonly T[];\n  onChange: (value: T) => void;\n};\n\nexport function Select<T extends string>({ value, options, onChange }: SelectProps<T>) {\n  return (\n    <select value={value} onChange={(e) => onChange(e.target.value as T)}>\n      {options.map((o) => (\n        <option key={o} value={o}>{o}</option>\n      ))}\n    </select>\n  );\n}\n\nexport function Panel({ title, children }: PropsWithChildren<{ title: string }>) {\n  return (\n    <section aria-labelledby=\"t\">\n      <h2 id=\"t\">{title}</h2>\n      {children}\n    </section>\n  );\n}",
+  "practice": [
+    {
+      "title": "Select<string union>",
+      "description": "Select<'light'|'dark'> с options as const. onChange меняет theme state typed. TS ругается на лишний option value."
+    },
+    {
+      "title": "Input с forwardRef",
+      "description": "TextInput forwardRef<HTMLInputElement, { label: string }>. Родитель focus() через ref после mount."
+    },
+    {
+      "title": "Убери any из App",
+      "description": "eslint @typescript-eslint/no-explicit-any. Найди any в проекте react-ts, замени на unknown + guard или конкретный тип."
+    }
+  ],
+  "checklist": [
+    "Типизирую props и state без any",
+    "Использую ReactNode для children",
+    "Беру типы событий из React namespace",
+    "Generic-компоненты для списков и select"
+  ],
+  "links": [
+    {
+      "title": "React TypeScript Cheatsheet",
+      "url": "https://react-typescript-cheatsheet.netlify.app/"
+    },
+    {
+      "title": "React: TypeScript",
+      "url": "https://react.dev/learn/typescript"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "PropsWithChildren",
+      "meaning": "Utility тип с optional children.",
+      "example": "PropsWithChildren<{ id: string }>"
+    },
+    {
+      "term": "ReactNode",
+      "meaning": "Всё, что React может отрендерить.",
+      "example": "string | JSX | null"
+    },
+    {
+      "term": "forwardRef",
+      "meaning": "Проброс ref на DOM или компонент.",
+      "example": "forwardRef<HTMLInputElement>"
+    },
+    {
+      "term": "ChangeEvent",
+      "meaning": "Тип события input/select.",
+      "example": "ChangeEvent<HTMLInputElement>"
+    }
+  ]
+}

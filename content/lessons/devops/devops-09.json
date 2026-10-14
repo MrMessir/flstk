@@ -1,0 +1,91 @@
+{
+  "id": "devops-09",
+  "part": "devops",
+  "module": "ops-prod",
+  "order": 9,
+  "title": "VPS, nginx, HTTPS",
+  "goal": "Настроишь reverse proxy и Let's Encrypt.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Зачем перед приложением стоит nginx"
+    },
+    {
+      "type": "paragraph",
+      "content": "Node-приложение слушает внутренний порт, например 3000, но выставлять его в интернет напрямую неудобно и небезопасно. Обратный прокси nginx принимает запросы на портах 80 и 443, расшифровывает HTTPS, отдаёт статику и пересылает остальное приложению на 127.0.0.1:3000. Он же умеет сжатие, лимиты и несколько приложений на одном сервере по разным доменам."
+    },
+    {
+      "type": "heading",
+      "content": "Конфигурация"
+    },
+    {
+      "type": "list",
+      "items": [
+        "server_name — домен, для которого работает блок.",
+        "location / { proxy_pass http://127.0.0.1:3000; } — куда пересылать запросы.",
+        "proxy_set_header Host $host и X-Forwarded-For $proxy_add_x_forwarded_for — чтобы приложение видело настоящий домен и IP клиента.",
+        "Закрой порт 3000 в файрволе для внешнего мира: доступ только через nginx."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Перед перезагрузкой всегда проверяй конфигурацию: sudo nginx -t, затем sudo systemctl reload nginx. Ошибка в конфиге с reload оставит старую рабочую версию, а restart с ошибкой уронит сайт."
+    },
+    {
+      "type": "heading",
+      "content": "HTTPS через Let's Encrypt"
+    },
+    {
+      "type": "paragraph",
+      "content": "Certbot (sudo certbot --nginx -d api.example.com) выдаёт бесплатный сертификат и сам правит конфиг nginx. Сертификат действует около трёх месяцев, обновление идёт автоматически таймером; проверь его командой certbot renew --dry-run, чтобы не узнать о просрочке в выходной."
+    },
+    {
+      "type": "paragraph",
+      "content": "Настрой редирект с HTTP на HTTPS: в блоке listen 80 вернуть 301 на https://$host$request_uri. Заголовок HSTS включай, когда уверен, что HTTPS стабилен, иначе браузеры запомнят правило и не пустят на сайт при проблемах с сертификатом. Ещё раз проверь снаружи: curl -I http://api.example.com должен вернуть 301, а curl -I https://api.example.com — 200 с корректным сертификатом (на SSL Labs его можно проверить подробнее)."
+    }
+  ],
+  "codeExample": "server {\n  listen 443 ssl;\n  server_name api.example.com;\n  location / {\n    proxy_pass http://127.0.0.1:3000;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n  }\n}",
+  "practice": [
+    {
+      "title": "nginx config test",
+      "description": "sudo nginx -t после правки. reload без downtime."
+    },
+    {
+      "title": "certbot",
+      "description": "Получи cert на тестовый домен, проверь https в браузере padlock."
+    },
+    {
+      "title": "proxy headers",
+      "description": "API видит X-Forwarded-Proto https для secure cookies."
+    }
+  ],
+  "checklist": [
+    "Проксирую API через nginx, не открываю 3000 наружу",
+    "Проверяю nginx -t перед reload",
+    "Настраиваю auto-renew certbot timer",
+    "Передаю forwarded headers в upstream"
+  ],
+  "links": [
+    {
+      "title": "Let's Encrypt",
+      "url": "https://letsencrypt.org/getting-started/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "reverse proxy",
+      "meaning": "Передний сервер к backend.",
+      "example": "nginx → Node"
+    },
+    {
+      "term": "TLS",
+      "meaning": "Шифрование HTTPS.",
+      "example": "Let's Encrypt"
+    },
+    {
+      "term": "upstream",
+      "meaning": "Backend за proxy.",
+      "example": "127.0.0.1:3000"
+    }
+  ]
+}

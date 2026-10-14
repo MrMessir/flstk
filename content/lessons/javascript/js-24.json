@@ -1,0 +1,83 @@
+{
+  "id": "js-24",
+  "part": "javascript",
+  "module": "js-advanced",
+  "order": 24,
+  "title": "Map, Set и обзор генераторов",
+  "goal": "Выберешь Map и Set вместо plain object и массива, когда это упрощает код.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Set хранит уникальные значения: new Set([1, 1, 2]) даёт {1, 2}. Добавление set.add(x), проверка set.has(x), удаление set.delete(x) работают за O(1) в среднем. Удобно убрать дубликаты из массива: [...new Set(items)] или посчитать уникальных посетителей без ручного объекта-флага."
+    },
+    {
+      "type": "heading",
+      "content": "Map против обычного объекта"
+    },
+    {
+      "type": "paragraph",
+      "content": "Map — коллекция пар ключ → значение, где ключом может быть объект, DOM-элемент или число, не только строка. map.set(user, settings), map.get(user), map.size и map.delete(key) предсказуемы. Обычный {} приводит ключи к строкам и наследует лишнее из Object.prototype; Map для частых добавлений/удалений и нестроковых ключей читается чище."
+    },
+    {
+      "type": "heading",
+      "content": "Генераторы — короткий обзор"
+    },
+    {
+      "type": "paragraph",
+      "content": "function* range(n) { for (let i = 0; i < n; i++) yield i; } — генератор отдаёт значения лениво через yield, а не собирает массив сразу. Цикл for (const x of range(3)) работает, потому что генератор итерируем. На junior-уровне достаточно узнать, что такой синтаксис существует в библиотеках и async-генераторах; в своём коде чаще хватит map/filter и обычных циклов."
+    }
+  ],
+  "codeExample": "const tags = new Set([\"js\", \"js\", \"css\", \"js\"]);\nconsole.log([...tags]); // [\"js\", \"css\"]\n\nconst lastSeen = new Map();\nconst u1 = { id: 1 };\nlastSeen.set(u1, Date.now());\nconsole.log(lastSeen.get(u1));\n\nfunction* ids() {\n  yield 1;\n  yield 2;\n}\nconsole.log([...ids()]);",
+  "practice": [
+    {
+      "title": "Уникальные email из списка",
+      "description": "В collections.js функция uniqueEmails(list) возвращает массив без повторов (регистр не меняй). Проверь в консоли: uniqueEmails([\"a@x.ru\", \"a@x.ru\", \"b@x.ru\"]) → два элемента. Используй Set, не двойной цикл."
+    },
+    {
+      "title": "Map: счётчик слов",
+      "description": "Функция wordCount(text) режет text по пробелам и возвращает Map слово → число вхождений. Для \"js js ts\" map.get(\"js\") === 2. Выведи [...map.entries()] и убедись, что порядок вставки сохраняется."
+    },
+    {
+      "title": "Ключ-объект в Map",
+      "description": "Создай const key = { room: \"A\" }, const cache = new Map(), cache.set(key, \"данные\"). Получи значение через cache.get({ room: \"A\" }) и через cache.get(key) — объясни в комментарии, почему второй вызов работает, а первый даёт undefined."
+    }
+  ],
+  "checklist": [
+    "Убираю дубликаты через Set, когда не нужен полный массив с повторами",
+    "Беру Map, если ключ — объект или частые set/delete",
+    "Обхожу Map и Set через for...of или [...map]",
+    "Понимаю, что yield в генераторе отдаёт значение по одному"
+  ],
+  "links": [
+    {
+      "title": "MDN: Set",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Set"
+    },
+    {
+      "title": "MDN: Map",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Map"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Set",
+      "meaning": "Коллекция уникальных значений любого типа.",
+      "example": "new Set([1, 1, 2])"
+    },
+    {
+      "term": "Map",
+      "meaning": "Пары ключ-значение с любыми ключами.",
+      "example": "map.set(element, data)"
+    },
+    {
+      "term": "yield",
+      "meaning": "Ключевое слово генератора: отдать следующее значение.",
+      "example": "function* g() { yield 1; }"
+    },
+    {
+      "term": "итерируемый объект",
+      "meaning": "Объект, который можно обойти в for...of.",
+      "example": "Set, Map, массив"
+    }
+  ]
+}

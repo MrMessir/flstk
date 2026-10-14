@@ -1,0 +1,74 @@
+{
+  "id": "database-04",
+  "part": "database",
+  "module": "db-sql",
+  "order": 4,
+  "title": "CRUD в SQL",
+  "goal": "Напишешь SELECT, INSERT, UPDATE и DELETE с WHERE и LIMIT для таблицы posts.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "SELECT выбирает столбцы FROM таблицы. WHERE фильтрует строки до сортировки. INSERT INTO ... VALUES или INSERT ... SELECT добавляет данные. UPDATE меняет поля, DELETE удаляет — без WHERE на большой таблице опасно. RETURNING * после INSERT/UPDATE отдаёт созданную строку одним запросом — удобно в API."
+    },
+    {
+      "type": "heading",
+      "content": "Параметры и инъекции"
+    },
+    {
+      "type": "paragraph",
+      "content": "Никогда не склеивай SQL строкой с email пользователя. В psql используй переменные или в Node pg/prisma — плейсхолдеры $1, $2. Так ломается классическая SQL-инъекция ' OR 1=1 --."
+    },
+    {
+      "type": "heading",
+      "content": "LIMIT и ORDER BY"
+    },
+    {
+      "type": "paragraph",
+      "content": "ORDER BY created_at DESC LIMIT 20 — последние посты. OFFSET 20 для второй страницы на маленьких данных ок; на больших — cursor pagination по id (урок позже)."
+    }
+  ],
+  "codeExample": "INSERT INTO posts (author_id, title, body)\nVALUES ($1, $2, $3)\nRETURNING id, title, created_at;\n\nSELECT id, title FROM posts\nWHERE author_id = $1\nORDER BY created_at DESC\nLIMIT 10;\n\nUPDATE posts SET title = $2 WHERE id = $1 RETURNING *;\n\nDELETE FROM posts WHERE id = $1;",
+  "practice": [
+    {
+      "title": "Seed вручную",
+      "description": "В psql вставь одного user и три post через INSERT ... RETURNING id. Запиши uuid автора для следующих запросов."
+    },
+    {
+      "title": "SELECT с фильтром",
+      "description": "SELECT все посты автора ORDER BY created_at DESC LIMIT 2. UPDATE title одного поста. SELECT снова — порядок изменился если менял created_at, title точно новый."
+    },
+    {
+      "title": "DELETE и проверка",
+      "description": "DELETE один post по id. SELECT count(*) FROM posts — счётчик уменьшился на 1. Попробуй DELETE без WHERE в транзакции BEGIN...ROLLBACK — увидишь масштаб риска."
+    }
+  ],
+  "checklist": [
+    "Пишу RETURNING после INSERT/UPDATE",
+    "Использую WHERE на UPDATE/DELETE",
+    "Сортировка и LIMIT для списков",
+    "Понимаю, зачем параметры $1 вместо конкатенации"
+  ],
+  "links": [
+    {
+      "title": "PostgreSQL: SELECT",
+      "url": "https://www.postgresql.org/docs/current/sql-select.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "RETURNING",
+      "meaning": "Возврат изменённых строк из INSERT/UPDATE/DELETE.",
+      "example": "INSERT ... RETURNING id"
+    },
+    {
+      "term": "WHERE",
+      "meaning": "Условие фильтрации строк.",
+      "example": "WHERE id = $1"
+    },
+    {
+      "term": "SQL-инъекция",
+      "meaning": "Выполнение чужого SQL через неэкранированный ввод.",
+      "example": "параметризованные запросы"
+    }
+  ]
+}

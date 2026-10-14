@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-13",
+  "part": "nodejs",
+  "module": "node-arch",
+  "order": 13,
+  "title": "TypeScript на бэкенде",
+  "goal": "Типизируешь DTO и ответы API и соберёшь проект через tsc или tsx.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "JavaScript на сервере прощает undefined до продакшена. TypeScript фиксирует форму req.body после zod (z.infer<typeof schema>), возвращаемые типы service и поля модели. tsconfig: module NodeNext, strict true, outDir dist. Запуск: tsx watch src/index.ts в dev, node dist/index.js в prod после tsc."
+    },
+    {
+      "type": "heading",
+      "content": "Типы Express"
+    },
+    {
+      "type": "paragraph",
+      "content": "Пакет @types/express добавляет Request, Response. Расширь Request через declaration merging: interface Request { validated?: CreatePostDto }. Не используй any для res.json — опиши Post или ApiError."
+    },
+    {
+      "type": "heading",
+      "content": "Zod + TypeScript"
+    },
+    {
+      "type": "paragraph",
+      "content": "export type CreatePostDto = z.infer<typeof createPostSchema> — один источник правды для runtime и compile-time. При изменении схемы TypeScript подсветит места, где поля устарели."
+    }
+  ],
+  "codeExample": "import { z } from \"zod\";\n\nexport const createPostSchema = z.object({\n  title: z.string().min(1),\n  body: z.string().min(1),\n});\n\nexport type CreatePostDto = z.infer<typeof createPostSchema>;\n\nexport type Post = CreatePostDto & {\n  id: string;\n  createdAt: string;\n};",
+  "practice": [
+    {
+      "title": "Инициализация TS",
+      "description": "npm install -D typescript tsx @types/express @types/node. npx tsc --init, включи strict и moduleResolution NodeNext. Переименуй src/index.js → index.ts, исправь импорты .js при ESM если нужно."
+    },
+    {
+      "title": "Типы DTO",
+      "description": "В schemas/post.ts экспортируй createPostSchema и CreatePostDto. В service create принимает CreatePostDto и возвращает Post. Запусти npx tsc --noEmit — ноль ошибок."
+    },
+    {
+      "title": "Скрипты package.json",
+      "description": "Добавь \"dev\": \"tsx watch src/index.ts\", \"build\": \"tsc\", \"start\": \"node dist/index.js\". Выполни npm run build и npm start — API работает из dist."
+    }
+  ],
+  "checklist": [
+    "strict включён, проект проходит tsc --noEmit",
+    "DTO выведены из zod через z.infer",
+    "Разделил dev (tsx) и prod (tsc + node)",
+    "Расширил Request для validated body"
+  ],
+  "links": [
+    {
+      "title": "TypeScript: modules Node",
+      "url": "https://www.typescriptlang.org/docs/handbook/modules/theory.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "z.infer",
+      "meaning": "Вывод TypeScript-типа из zod-схемы.",
+      "example": "type D = z.infer<typeof schema>"
+    },
+    {
+      "term": "tsx",
+      "meaning": "Запуск TypeScript без предварительной сборки.",
+      "example": "tsx watch src/index.ts"
+    },
+    {
+      "term": "strict",
+      "meaning": "Строгий режим проверки типов TS.",
+      "example": "\"strict\": true"
+    }
+  ]
+}

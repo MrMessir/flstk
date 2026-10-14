@@ -1,0 +1,104 @@
+{
+  "id": "react-20",
+  "part": "react",
+  "module": "react-next",
+  "order": 20,
+  "title": "Next.js: данные на сервере и граница client",
+  "goal": "Загрузишь данные в Server Component и вынесешь интерактив в client island.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Server Component может быть async и делать fetch/БД прямо в компоненте. По умолчанию fetch в Next кэшируется; для динамики — cache: 'no-store' или revalidate. Передавать в Client Component можно только сериализуемые props. Хуки (useState, useEffect) — только после 'use client'. Паттерн: сервер готовит данные → клиентский виджет отвечает за клики."
+    },
+    {
+      "type": "heading",
+      "content": "Когда оставаться на Vite SPA"
+    },
+    {
+      "type": "paragraph",
+      "content": "Админка за логином, тяжёлый canvas, офлайн-first — часто проще Vite SPA + отдельный API. Маркетинг, SEO-каталог, dashboard с cookie-auth — Next. В курсе основной портфельный React-проект остаётся Vite; Next-уроки закрывают пробел рынка. Не смешивай без нужды: один репозиторий — один способ роутинга."
+    },
+    {
+      "type": "list",
+      "items": [
+        "async Server Component + fetch.",
+        "'use client' только для интерактива.",
+        "Не импортируй серверный модуль с секретами в client.",
+        "Для SEO смотри View Source — контент должен быть в HTML."
+      ]
+    }
+  ],
+  "codeExample": "// app/posts/page.tsx — Server Component\nasync function getPosts() {\n  const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5', {\n    next: { revalidate: 60 },\n  });\n  return res.json();\n}\n\nexport default async function PostsPage() {\n  const posts = await getPosts();\n  return (\n    <main>\n      <h1>Посты</h1>\n      <PostListClient initial={posts} />\n    </main>\n  );\n}\n\n// app/posts/post-list-client.tsx\n'use client';\nexport function PostListClient({ initial }: { initial: { id: number; title: string }[] }) {\n  return <ul>{initial.map((p) => <li key={p.id}>{p.title}</li>)}</ul>;\n}",
+  "practice": [
+    {
+      "title": "Server fetch",
+      "description": "Страница /posts: async page, 5 постов, title в HTML (View Source)."
+    },
+    {
+      "title": "Client island",
+      "description": "Кнопка «Показать id» в 'use client' компоненте; данные приходят props с сервера."
+    },
+    {
+      "title": "no-store",
+      "description": "Сделай вариант fetch с cache: 'no-store' и сравни поведение при обновлении."
+    }
+  ],
+  "checklist": [
+    "Умею async Server Component с fetch",
+    "Вынес интерактив в client component",
+    "Проверил контент в View Source",
+    "Понимаю, когда Vite SPA уместнее Next"
+  ],
+  "links": [
+    {
+      "title": "Next.js: Data Fetching",
+      "url": "https://nextjs.org/docs/app/building-your-application/data-fetching"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Server Component",
+      "meaning": "Компонент на сервере без хуков клиента.",
+      "example": "async function Page()"
+    },
+    {
+      "term": "client island",
+      "meaning": "Островок 'use client' внутри серверного дерева.",
+      "example": "кнопка с useState"
+    },
+    {
+      "term": "revalidate",
+      "meaning": "Интервал ISR/кэша fetch.",
+      "example": "next: { revalidate: 60 }"
+    },
+    {
+      "term": "no-store",
+      "meaning": "Не кэшировать fetch.",
+      "example": "cache: 'no-store'"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-20-q1",
+      "prompt": "Можно ли вызывать useState в Server Component?",
+      "options": [
+        "Нет — хуки только в Client Components",
+        "Да, всегда",
+        "Только в CSS modules",
+        "Только через iframe"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "react-20-q2",
+      "prompt": "Как проверить, что SEO-контент пришёл с сервера?",
+      "options": [
+        "View Source / «Просмотр кода страницы» — текст в HTML",
+        "Только React DevTools Components",
+        "Только Lighthouse mobile",
+        "Только ping DNS"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

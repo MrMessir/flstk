@@ -1,0 +1,96 @@
+{
+  "id": "fullstack-03",
+  "part": "fullstack",
+  "module": "fs-connect",
+  "order": 3,
+  "title": "Аутентификация на клиенте",
+  "goal": "Сделаешь login/logout, refresh и protected routes.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Что хранить на клиенте"
+    },
+    {
+      "type": "paragraph",
+      "content": "Вход на клиенте — это форма, запрос на /auth/login и признак «я вошёл». Не храни токены доступа в localStorage: любой XSS-скрипт может их прочитать. Надёжнее httpOnly cookie, недоступная для JavaScript, или короткий access-токен в памяти плюс refresh в httpOnly cookie. Для cookie-сессий добавь защиту от CSRF: SameSite=Lax или Strict, а для чувствительных действий токен CSRF."
+    },
+    {
+      "type": "heading",
+      "content": "Состояние пользователя"
+    },
+    {
+      "type": "paragraph",
+      "content": "При запуске приложение не знает, есть ли сессия, поэтому спрашивает сервер (GET /auth/me). Пока ответа нет, состояние «загрузка», а не «гость»: иначе авторизованного пользователя на секунду выбросит на страницу входа. Контекст useAuth отдаёт user, loading и методы login и logout."
+    },
+    {
+      "type": "heading",
+      "content": "Защищённые маршруты"
+    },
+    {
+      "type": "list",
+      "items": [
+        "ProtectedRoute не монтирует страницу для гостя и перенаправляет на /login.",
+        "Сохраняй адрес, куда шёл пользователь (returnUrl), и после входа возвращай туда.",
+        "returnUrl проверяй: допускай только внутренние пути, начинающиеся с одного слэша, иначе получится открытое перенаправление на чужой сайт.",
+        "Это удобство интерфейса, а не безопасность: настоящая проверка прав всегда на API."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Выход"
+    },
+    {
+      "type": "paragraph",
+      "content": "Logout вызывает POST /auth/logout, чтобы сервер погасил сессию или refresh-токен и очистил cookie. Затем очищается клиентское состояние и кэш запросов (иначе следующий пользователь на этом устройстве на мгновение увидит чужие данные) и выполняется переход на главную. Если несколько вкладок, подпишись на событие storage или BroadcastChannel, чтобы выход в одной вкладке завершал сессию в остальных."
+    }
+  ],
+  "codeExample": "export function ProtectedRoute({ children }: { children: React.ReactNode }) {\n  const { user, loading } = useAuth();\n  if (loading) return <p>Загрузка…</p>;\n  if (!user) return <Navigate to=\"/login\" replace />;\n  return <>{children}</>;\n}",
+  "practice": [
+    {
+      "title": "Сделай страницу login",
+      "description": "Форма email/password отправляет POST на API. При успехе сохрани user в контексте и перейди на /app. При ошибке покажи текст с сервера, не alert('ошибка')."
+    },
+    {
+      "title": "Закрой маршрут",
+      "description": "Оберни личный кабинет в ProtectedRoute. Открой /app в инкогнито — должен быть редирект на login."
+    },
+    {
+      "title": "Кнопка выхода",
+      "description": "Logout сбрасывает user в null и зовёт API logout. Обнови страницу — ты всё ещё гость."
+    }
+  ],
+  "checklist": [
+    "Разделяю публичные и приватные маршруты на уровне роутера",
+    "Не считаю «залогинен» только потому, что token лежит в localStorage",
+    "Обрабатываю loading, пока проверяю сессию при первом заходе",
+    "Делаю logout, который чистит и клиент, и cookie на сервере"
+  ],
+  "links": [
+    {
+      "title": "OWASP: Session Management",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "access token",
+      "meaning": "Короткий ключ для API-запросов.",
+      "example": "JWT 15 минут"
+    },
+    {
+      "term": "refresh token",
+      "meaning": "Долгий ключ только для обновления access.",
+      "example": "POST /auth/refresh"
+    },
+    {
+      "term": "ProtectedRoute",
+      "meaning": "Компонент, пускающий только авторизованных.",
+      "example": "<ProtectedRoute>…</ProtectedRoute>"
+    },
+    {
+      "term": "httpOnly cookie",
+      "meaning": "Cookie, недоступная из JavaScript.",
+      "example": "Set-Cookie httpOnly"
+    }
+  ]
+}

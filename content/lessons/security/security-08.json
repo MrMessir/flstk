@@ -1,0 +1,74 @@
+{
+  "id": "security-08",
+  "part": "security",
+  "module": "sec-auth",
+  "order": 8,
+  "title": "Сброс пароля и подтверждение email",
+  "goal": "Спроектируешь one-time токены с TTL для reset password и verify email.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "POST /auth/forgot-password принимает email, всегда отвечает 200 «если аккаунт есть, письмо отправлено». Токен — crypto.randomBytes(32) hex, hash в таблице password_reset_tokens с expiresAt. Ссылка https://app/reset?token=... одноразовая."
+    },
+    {
+      "type": "heading",
+      "content": "Хранение токена"
+    },
+    {
+      "type": "paragraph",
+      "content": "В БД hash(token), не plaintext. При POST /auth/reset-password ищи по hash, проверь expiry, обнови passwordHash, delete token row. Email verification — тот же паттерн с флагом user.emailVerified."
+    },
+    {
+      "type": "heading",
+      "content": "TTL и rate limit"
+    },
+    {
+      "type": "paragraph",
+      "content": "Reset token 15–60 минут. Не более N запросов forgot в час с IP. Логируй событие без token value."
+    }
+  ],
+  "codeExample": "import { createHash, randomBytes } from \"node:crypto\";\n\nconst raw = randomBytes(32).toString(\"hex\");\nconst tokenHash = createHash(\"sha256\").update(raw).digest(\"hex\");\n\nawait prisma.passwordResetToken.create({\n  data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 3600_000) },\n});\n\nconst link = `${process.env.APP_URL}/reset?token=${raw}`;\nawait mailService.sendPasswordReset(user.email, link);",
+  "practice": [
+    {
+      "title": "Prisma model ResetToken",
+      "description": "model PasswordResetToken { tokenHash, userId, expiresAt }. migrate. forgot-password создаёт row и логирует link (dev)."
+    },
+    {
+      "title": "Reset password",
+      "description": "POST /auth/reset-password { token, newPassword }. Успех — login новым паролем. Повтор token — 400."
+    },
+    {
+      "title": "Verify email stub",
+      "description": "GET /auth/verify-email?token=... помечает emailVerified true. Невалидный token — 400."
+    }
+  ],
+  "checklist": [
+    "forgot всегда neutral 200 message",
+    "token hash в БД, TTL enforced",
+    "one-time use reset token",
+    "dev mail лог без реального SMTP"
+  ],
+  "links": [
+    {
+      "title": "OWASP Forgot Password",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "one-time token",
+      "meaning": "Секрет для одной операции, потом invalid.",
+      "example": "password reset link"
+    },
+    {
+      "term": "TTL",
+      "meaning": "Time to live — срок годности токена.",
+      "example": "expiresAt +1h"
+    },
+    {
+      "term": "emailVerified",
+      "meaning": "Флаг подтверждённого email пользователя.",
+      "example": "User.emailVerified"
+    }
+  ]
+}

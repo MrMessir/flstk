@@ -1,0 +1,88 @@
+{
+  "id": "js-11",
+  "part": "javascript",
+  "module": "js-data",
+  "order": 11,
+  "title": "Строки: текст и проверки",
+  "goal": "Проверишь палиндром и приведёшь имя к нормальному виду методами строки.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Строки каждый день"
+    },
+    {
+      "type": "paragraph",
+      "content": "Почти всё, что вводит пользователь — строка. Шаблонные строки в обратных кавычках вставляют выражения через ${}. trim убирает пробелы по краям, includes/startsWith/endsWith проверяют вхождение без ручных циклов."
+    },
+    {
+      "type": "paragraph",
+      "content": "slice вырезает кусок. toLowerCase/toUpperCase пригодятся для сравнения без учёта регистра. Для сложного разбора позже понадобятся регулярные выражения — пока хватит методов строки."
+    },
+    {
+      "type": "list",
+      "items": [
+        "`Привет, ${name}` — шаблонная строка в обратных кавычках.",
+        "length — длина.",
+        "toUpperCase / toLowerCase — регистр.",
+        "includes / startsWith / endsWith — проверки.",
+        "indexOf — позиция или -1.",
+        "slice — вырезать кусок.",
+        "split — разрезать в массив. trim — убрать пробелы по краям.",
+        "replace — заменить первое совпадение."
+      ]
+    }
+  ],
+  "codeExample": "const raw = \"  аНнА  \";\nconst name = raw.trim().toLowerCase();\nconst nice = name[0].toUpperCase() + name.slice(1);\nconsole.log(nice); // Анна\n\nfunction isPalindrome(text) {\n  const clean = text.toLowerCase().replaceAll(\" \", \"\");\n  return clean === clean.split(\"\").reverse().join(\"\");\n}\n\nconsole.log(isPalindrome(\"А роза упала на лапу Азора\"));",
+  "practice": [
+    {
+      "title": "trim и length",
+      "description": "const raw = \"  hello  \"; console.log(raw.trim(), raw.trim().length) → hello и 5."
+    },
+    {
+      "title": "includes и startsWith",
+      "description": "email = \"user@mail.ru\"; проверь includes(\"@\") && endsWith(\".ru\"). Для \"bad\" выведи false."
+    },
+    {
+      "title": "slice и replace",
+      "description": "\"fullstacker\".slice(0,4) → \"full\". replace(\"stack\",\"STACK\") один раз — зафиксируй результат."
+    }
+  ],
+  "checklist": [
+    "Собираю строку через шаблонные кавычки",
+    "Чищу пробелы trim",
+    "Проверяю вхождение includes",
+    "Режу строку split и склеиваю join"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: строки",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/Strings"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "шаблонная строка",
+      "meaning": "Строка в обратных кавычках с ${...}.",
+      "example": "`Привет, ${name}`"
+    },
+    {
+      "term": "trim",
+      "meaning": "Убрать пробелы по краям строки.",
+      "example": "\"  Аня  \".trim()"
+    },
+    {
+      "term": "split",
+      "meaning": "Разрезать строку в массив.",
+      "example": "\"a,b\".split(\",\")"
+    },
+    {
+      "term": "includes",
+      "meaning": "Есть ли подстрока внутри строки.",
+      "example": "text.includes(\"@\")"
+    }
+  ]
+}

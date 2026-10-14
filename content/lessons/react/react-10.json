@@ -1,0 +1,118 @@
+{
+  "id": "react-10",
+  "part": "react",
+  "module": "react-data",
+  "order": 10,
+  "title": "React Query: серверное состояние",
+  "goal": "Загрузишь список через TanStack Query с cache, loading и refetch.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Серверное состояние отличается от UI state: его кэшируют, синхронизируют, инвалидируют. TanStack Query (React Query) даёт useQuery({ queryKey: ['posts'], queryFn: fetchPosts }) — loading, error, data, isFetching из коробки. queryKey идентифицирует кэш; смена key — новый запрос."
+    },
+    {
+      "type": "heading",
+      "content": "QueryClientProvider"
+    },
+    {
+      "type": "paragraph",
+      "content": "Обверни App в QueryClientProvider client={queryClient}. staleTime задаёт, как долго данные считаются свежими. refetchOnWindowFocus обновляет при возврате на вкладку. useMutation для POST/DELETE с onSuccess: queryClient.invalidateQueries({ queryKey: ['posts'] })."
+    },
+    {
+      "type": "heading",
+      "content": "Когда не React Query"
+    },
+    {
+      "type": "paragraph",
+      "content": "Один fetch на mount в учебном todo можно оставить в useEffect. Query окупается при списках, пагинации, оптимистичных обновлениях и дедупликации одинаковых запросов. DevTools @tanstack/react-query-devtools показывают cache entries."
+    }
+  ],
+  "codeExample": "import { QueryClient, QueryClientProvider, useQuery } from \"@tanstack/react-query\";\n\nconst client = new QueryClient();\n\nasync function fetchPosts() {\n  const res = await fetch(\"https://jsonplaceholder.typicode.com/posts?_limit=5\");\n  return res.json() as Promise<{ id: number; title: string }[]>;\n}\n\nfunction Posts() {\n  const { data, isLoading, error } = useQuery({ queryKey: [\"posts\"], queryFn: fetchPosts });\n  if (isLoading) return <p>Загрузка…</p>;\n  if (error) return <p role=\"alert\">Ошибка</p>;\n  return (\n    <ul>\n      {data!.map((p) => (\n        <li key={p.id}>{p.title}</li>\n      ))}\n    </ul>\n  );\n}\n\nexport function AppWithQuery() {\n  return (\n    <QueryClientProvider client={client}>\n      <Posts />\n    </QueryClientProvider>\n  );\n}",
+  "practice": [
+    {
+      "title": "Список постов useQuery",
+      "description": "npm i @tanstack/react-query. Posts как в примере — 5 заголовков. React Query Devtools в углу показывает status success."
+    },
+    {
+      "title": "queryKey по userId",
+      "description": "useQuery queryKey ['user', userId], queryFn fetch user. Смена userId в select — новая запись в cache, старая остаётся."
+    },
+    {
+      "title": "invalidate после mutation",
+      "description": "useMutation fake POST, onSuccess invalidateQueries ['posts'] и refetch списка. Достаточно console.log + invalidate без реального API."
+    }
+  ],
+  "checklist": [
+    "Оборачиваю приложение в QueryClientProvider",
+    "Задаю осмысленный queryKey массив",
+    "Показываю loading и error из useQuery",
+    "Инвалидирую cache после изменения данных"
+  ],
+  "links": [
+    {
+      "title": "TanStack Query: Overview",
+      "url": "https://tanstack.com/query/latest/docs/framework/react/overview"
+    },
+    {
+      "title": "TanStack Query: useQuery",
+      "url": "https://tanstack.com/query/latest/docs/framework/react/reference/useQuery"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "useQuery",
+      "meaning": "Хук чтения и кэширования серверных данных.",
+      "example": "queryKey + queryFn"
+    },
+    {
+      "term": "queryKey",
+      "meaning": "Идентификатор записи в кэше Query.",
+      "example": "['posts', page]"
+    },
+    {
+      "term": "invalidateQueries",
+      "meaning": "Пометить кэш устаревшим и refetch.",
+      "example": "onSuccess mutation"
+    },
+    {
+      "term": "staleTime",
+      "meaning": "Время свежести данных без refetch.",
+      "example": "60_000 ms"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-10-q1",
+      "prompt": "Зачем нужен queryKey в useQuery?",
+      "options": [
+        "Идентифицировать запись в кэше и связать refetch",
+        "Задать CSS-класс списка",
+        "Отключить React Strict Mode",
+        "Заменить ключ в localStorage браузера"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "react-10-q2",
+      "prompt": "Что делает invalidateQueries после mutation?",
+      "options": [
+        "Помечает кэш устаревшим и запускает refetch",
+        "Удаляет компонент из дерева React",
+        "Очищает всю историю браузера",
+        "Отключает QueryClientProvider"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "react-10-q3",
+      "prompt": "Когда React Query обычно окупается?",
+      "options": [
+        "Списки, пагинация, дедупликация и синхронизация серверных данных",
+        "Только для анимаций CSS",
+        "Вместо HTML-семантики",
+        "Только в Internet Explorer"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

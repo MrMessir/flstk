@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-12",
+  "part": "nodejs",
+  "module": "node-arch",
+  "order": 12,
+  "title": "Файлы и email (обзор)",
+  "goal": "Подключишь загрузку файлов через multer и поймёшь схему отправки писем из API.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "multipart/form-data используют для аватаров и вложений: поле file плюс текстовые поля. multer — middleware для Express, кладёт файл в req.file или req.files. Хранить бинарник в PostgreSQL редко нужно: чаще S3-совместимое хранилище или локальная uploads/ с уникальным именем файла."
+    },
+    {
+      "type": "heading",
+      "content": "Безопасность upload"
+    },
+    {
+      "type": "paragraph",
+      "content": "Проверяй mime-type и расширение, лимит размера (limits.fileSize), не доверяй originalname клиента. Отдавай файлы статикой только из безопасной папки или signed URL из облака. Имена — uuid, не user-supplied path."
+    },
+    {
+      "type": "heading",
+      "content": "Email из бэкенда"
+    },
+    {
+      "type": "paragraph",
+      "content": "SMTP или API (Resend, SendGrid): шаблон письма, ссылка с одноразовым токеном. Отправку ставят в очередь, чтобы не блокировать HTTP-ответ. На курсе достаточно dev-режима: Ethereal или лог «письмо отправлено» с URL."
+    }
+  ],
+  "codeExample": "import multer from \"multer\";\nimport path from \"node:path\";\nimport { randomUUID } from \"node:crypto\";\n\nconst storage = multer.diskStorage({\n  destination: \"uploads/\",\n  filename: (_req, file, cb) => {\n    cb(null, `${randomUUID()}${path.extname(file.originalname)}`);\n  },\n});\n\nconst upload = multer({ storage, limits: { fileSize: 2 * 1024 * 1024 } });\n\napp.post(\"/posts/:id/cover\", upload.single(\"cover\"), (req, res) => {\n  res.json({ filename: req.file?.filename });\n});",
+  "practice": [
+    {
+      "title": "multer и uploads/",
+      "description": "npm install multer. Создай uploads/ в .gitignore. POST /posts/:id/cover с form-data: key cover, тип File. В Postman выбери файл PNG < 2MB. Ответ содержит filename, файл лежит в uploads/."
+    },
+    {
+      "title": "Лимит размера",
+      "description": "Попробуй загрузить файл > 2MB — multer должен вернуть ошибку. Обработай её в error middleware и отдай 413 или 400 с текстом «file too large»."
+    },
+    {
+      "title": "Заглушка email",
+      "description": "Создай services/mailService.js с функцией sendPasswordReset(to, link), которая console.log({ to, link }). Вызови из временного route POST /debug/mail — проверь вывод в терминале."
+    }
+  ],
+  "checklist": [
+    "Настроил multer с лимитом и uuid-именами",
+    "uploads/ не коммичу в git",
+    "Понимаю разницу между diskStorage и memoryStorage",
+    "Email отправляю асинхронно, не блокируя ответ"
+  ],
+  "links": [
+    {
+      "title": "multer",
+      "url": "https://github.com/expressjs/multer"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "multipart/form-data",
+      "meaning": "Формат тела запроса с файлами.",
+      "example": "cover=<binary>"
+    },
+    {
+      "term": "multer",
+      "meaning": "Middleware загрузки файлов для Express.",
+      "example": "upload.single('cover')"
+    },
+    {
+      "term": "req.file",
+      "meaning": "Метаданные одного загруженного файла.",
+      "example": "req.file.filename"
+    }
+  ]
+}

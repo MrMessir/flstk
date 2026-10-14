@@ -1,0 +1,95 @@
+{
+  "id": "testing-06",
+  "part": "testing",
+  "module": "test-e2e",
+  "order": 6,
+  "title": "Хуки, async и MSW",
+  "goal": "Замокаешь сеть через MSW в компонентных тестах.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Как не ходить в настоящий API"
+    },
+    {
+      "type": "paragraph",
+      "content": "Компонент, который загружает данные в useEffect, в тесте обращается в сеть. Реальный сервер делает тесты медленными и нестабильными. MSW (Mock Service Worker) перехватывает запросы fetch на уровне сети и отвечает заготовками, поэтому сам код компонента остаётся без изменений, а не заменяется вручную подставленными моками fetch."
+    },
+    {
+      "type": "heading",
+      "content": "Настройка сервера"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Обработчики описывай так: http.get('/api/posts', () => HttpResponse.json([{ id: '1', title: 'Hi' }])).",
+        "const server = setupServer(...handlers) (из msw/node).",
+        "beforeAll(() => server.listen({ onUnhandledRequest: 'error' })): неописанный запрос роняет тест, а не уходит в сеть.",
+        "afterEach(() => server.resetHandlers()), afterAll(() => server.close())."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "resetHandlers() обязателен: иначе обработчик, переопределённый в одном тесте, влияет на следующие."
+    },
+    {
+      "type": "heading",
+      "content": "Ошибки и пограничные случаи"
+    },
+    {
+      "type": "paragraph",
+      "content": "Главная ценность MSW — быстро проверять неприятные сценарии. Внутри теста подмени ответ: server.use(http.get('/api/posts', () => new HttpResponse(null, { status: 500 }))) и убедись, что интерфейс показывает сообщение об ошибке и кнопку «Повторить». Аналогично проверь пустой список и медленный ответ (await delay(500))."
+    },
+    {
+      "type": "heading",
+      "content": "Тест хука"
+    },
+    {
+      "type": "paragraph",
+      "content": "renderHook(() => usePosts(), { wrapper }) рендерит хук без отдельного компонента; wrapper нужен, если хуку требуется провайдер (например, QueryClientProvider с retry: false в тестах). Изменения состояния оборачивай в act или используй waitFor: иначе React предупредит о неоформленных обновлениях. Общие обработчики держи в одном файле и подключай в setupFiles, чтобы не дублировать их по тестам."
+    }
+  ],
+  "codeExample": "import { http, HttpResponse } from \"msw\";\nimport { setupServer } from \"msw/node\";\n\nconst server = setupServer(\n  http.get(\"/api/posts\", () => HttpResponse.json([{ id: \"1\", title: \"Hi\" }])),\n);\nbeforeAll(() => server.listen());",
+  "practice": [
+    {
+      "title": "MSW success",
+      "description": "Список постов рендерит «Hi» из handler без реального сервера."
+    },
+    {
+      "title": "MSW 500",
+      "description": "Handler возвращает 500 — на экране error state из урока fullstack-04."
+    },
+    {
+      "title": "renderHook",
+      "description": "Тест usePosts: loading → data через MSW."
+    }
+  ],
+  "checklist": [
+    "Поднимаю MSW server в setupFiles",
+    "Сбрасываю handlers после каждого теста",
+    "Не мокаю fetch вручную в каждом it",
+    "Оборачиваю hook updates в act"
+  ],
+  "links": [
+    {
+      "title": "MSW",
+      "url": "https://mswjs.io/docs/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "MSW",
+      "meaning": "Mock Service Worker для HTTP.",
+      "example": "setupServer"
+    },
+    {
+      "term": "renderHook",
+      "meaning": "Тест React hook в изоляции.",
+      "example": "usePosts()"
+    },
+    {
+      "term": "act",
+      "meaning": "Flush React updates в тесте.",
+      "example": "act(() => …)"
+    }
+  ]
+}

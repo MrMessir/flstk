@@ -1,0 +1,94 @@
+{
+  "id": "testing-08",
+  "part": "testing",
+  "module": "test-craft",
+  "order": 8,
+  "title": "ESLint, Prettier, husky",
+  "goal": "Настроишь pre-commit линт и формат.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Что делают линтер и форматтер"
+    },
+    {
+      "type": "paragraph",
+      "content": "ESLint находит вероятные ошибки без запуска кода: неиспользуемые переменные, забытый await, опасное сравнение. Prettier только форматирует: отступы, кавычки, переносы, и снимает споры о стиле. Их не нужно путать: у ESLint есть правила про качество, у Prettier про внешний вид, а конфликты между ними разруливает eslint-config-prettier."
+    },
+    {
+      "type": "heading",
+      "content": "Современная конфигурация"
+    },
+    {
+      "type": "paragraph",
+      "content": "ESLint теперь использует «плоский» конфиг: файл eslint.config.js (flat config) экспортирует массив правил. Старый формат .eslintrc считается устаревшим. Команда eslint . проверяет проект; --fix исправляет безопасные нарушения. В CI запускай с --max-warnings 0, чтобы предупреждения не копились бесконечно: договорись в команде заранее, что считается ошибкой."
+    },
+    {
+      "type": "heading",
+      "content": "Проверки перед коммитом"
+    },
+    {
+      "type": "list",
+      "items": [
+        "husky подключает git-хуки: файл .husky/pre-commit выполняется перед каждым коммитом (npx husky init).",
+        "lint-staged запускает команды только для изменённых файлов, поэтому это занимает секунды.",
+        "Пример: \"*.{ts,tsx}\": [\"eslint --fix\", \"prettier --write\"] и \"*.{json,md}\": [\"prettier --write\"]."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Хук можно обойти (git commit --no-verify), поэтому те же проверки обязательно дублируются в CI: там их пропустить нельзя."
+    },
+    {
+      "type": "heading",
+      "content": "Правила, а не вкусы"
+    },
+    {
+      "type": "paragraph",
+      "content": "Добавляй правило, когда оно предотвращает реальные баги, например no-floating-promises для TypeScript или react-hooks/exhaustive-deps. Не включай сотни правил без обсуждения: люди начнут писать eslint-disable. Одни и те же настройки должны работать в редакторе, хуке и CI, иначе у каждого свой результат."
+    }
+  ],
+  "codeExample": "// package.json\n\"lint-staged\": {\n  \"*.{ts,tsx,js,json,md}\": [\"prettier --write\"],\n  \"*.{ts,tsx}\": [\"eslint --fix\"]\n}",
+  "practice": [
+    {
+      "title": "pre-commit hook",
+      "description": "husky pre-commit запускает lint-staged. Сделай commit с кривым форматированием — prettier исправит."
+    },
+    {
+      "title": "eslint rule",
+      "description": "Включи no-unused-vars или @typescript-eslint/no-floating-promises, почини одно нарушение."
+    },
+    {
+      "title": "npm run lint",
+      "description": "Скрипт lint для CI. Запусти в чистом clone — должно быть 0 errors."
+    }
+  ],
+  "checklist": [
+    "Форматирую код Prettier перед review",
+    "Не коммичу с eslint errors",
+    "lint-staged трогает только staged файлы",
+    "CI повторяет lint так же, как локально"
+  ],
+  "links": [
+    {
+      "title": "husky",
+      "url": "https://typicode.github.io/husky/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "lint-staged",
+      "meaning": "Lint только staged файлов.",
+      "example": "pre-commit"
+    },
+    {
+      "term": "husky",
+      "meaning": "Git hooks в npm-проекте.",
+      "example": "pre-commit"
+    },
+    {
+      "term": "flat config",
+      "meaning": "eslint.config.js формат ESLint 9.",
+      "example": "export default []"
+    }
+  ]
+}

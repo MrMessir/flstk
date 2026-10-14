@@ -1,0 +1,83 @@
+{
+  "id": "js-26",
+  "part": "javascript",
+  "module": "js-dom",
+  "order": 26,
+  "title": "requestAnimationFrame и IntersectionObserver",
+  "goal": "Запустишь плавную анимацию в rAF и покажешь блок, когда он попадает в экран.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "requestAnimationFrame(callback) планирует callback перед следующей отрисовкой кадра браузером — обычно 60 раз в секунду на обычном мониторе. Для анимации положения или прозрачности это лучше setInterval: rAF синхронизирован с экраном и паузируется на скрытой вкладке. Внутри callback снова вызывай requestAnimationFrame, пока анимация не закончена, и храни время старта через performance.now()."
+    },
+    {
+      "type": "heading",
+      "content": "IntersectionObserver"
+    },
+    {
+      "type": "paragraph",
+      "content": "new IntersectionObserver((entries) => { ... }, { root: null, threshold: 0.2 }) следит, когда целевой элемент пересекается с viewport (root: null) или с прокручиваемым контейнером. В entries[0].isIntersecting — true, если элемент виден хотя бы на threshold долю площади. Так делают lazy load картинок, бесконечный скролл и анимации «появилось при прокрутке» без scroll-слушателя на каждый пиксель."
+    },
+    {
+      "type": "heading",
+      "content": "Когда что брать"
+    },
+    {
+      "type": "paragraph",
+      "content": "rAF — для плавного изменения стилей или canvas каждый кадр. IntersectionObserver — для реакции «элемент вошёл/вышел из зоны видимости». Нативный loading=\"lazy\" на img закрывает простой lazy load; Observer нужен, когда подгружаешь src из data-src или включаешь CSS-класс с анимацией один раз."
+    }
+  ],
+  "codeExample": "const box = document.querySelector(\"#box\");\nlet start = null;\n\nfunction animate(ts) {\n  if (!start) start = ts;\n  const t = Math.min((ts - start) / 1000, 1);\n  box.style.transform = `translateX(${t * 200}px)`;\n  if (t < 1) requestAnimationFrame(animate);\n}\nrequestAnimationFrame(animate);\n\nconst target = document.querySelector(\"#lazy-section\");\nconst io = new IntersectionObserver(([entry]) => {\n  if (entry.isIntersecting) {\n    target.classList.add(\"visible\");\n    io.unobserve(target);\n  }\n}, { threshold: 0.25 });\nio.observe(target);",
+  "practice": [
+    {
+      "title": "Квадрат едет за 1 секунду",
+      "description": "index.html: div#box 40×40px. В animate.js через requestAnimationFrame сдвинь box на 300px по X за ровно 1 с (используй performance.now()). После окончания анимация не должна перезапускаться сама."
+    },
+    {
+      "title": "Класс visible при скролле",
+      "description": "Длинная страница с section#reveal внизу (opacity:0 в CSS). IntersectionObserver с threshold 0.5 добавляет класс visible (opacity:1) при первом появлении. Вызови unobserve после срабатывания — повторный скролл не должен мигать."
+    },
+    {
+      "title": "Lazy src для картинки",
+      "description": "img с data-src=\"https://picsum.photos/400/200\" без src. Observer при isIntersecting подставляет src из data-src и отключает наблюдение. В Network вкладке запрос уходит только после прокрутки к картинке."
+    }
+  ],
+  "checklist": [
+    "Строю анимацию через цепочку requestAnimationFrame",
+    "Не использую setInterval для плавного движения UI",
+    "Настраиваю IntersectionObserver с threshold осмысленно",
+    "Отключаю observe, когда одноразовый эффект сработал"
+  ],
+  "links": [
+    {
+      "title": "MDN: requestAnimationFrame",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/window/requestAnimationFrame"
+    },
+    {
+      "title": "MDN: IntersectionObserver",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/Intersection_Observer_API"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "requestAnimationFrame",
+      "meaning": "Запрос отрисовки кадра анимации браузером.",
+      "example": "requestAnimationFrame(draw)"
+    },
+    {
+      "term": "IntersectionObserver",
+      "meaning": "API наблюдения пересечения элемента с областью видимости.",
+      "example": "new IntersectionObserver(cb)"
+    },
+    {
+      "term": "threshold",
+      "meaning": "Доля видимой площади элемента для срабатывания.",
+      "example": "threshold: 0.25"
+    },
+    {
+      "term": "lazy load",
+      "meaning": "Загрузка ресурса только когда он почти на экране.",
+      "example": "data-src → src"
+    }
+  ]
+}

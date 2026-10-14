@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-05",
+  "part": "nodejs",
+  "module": "node-express",
+  "order": 5,
+  "title": "HTTP-сервер и Express",
+  "goal": "Поднимешь минимальный HTTP-сервер и перенесёшь его на Express с JSON-body.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "HTTP — текстовый протокол: метод (GET, POST), путь, заголовки, тело. Модуль node:http даёт createServer с колбэком (req, res). Вручную парсить URL и body утомительно — Express добавляет роутинг, middleware и res.json(). Для REST API курса Express остаётся базой, поверх которой ложатся валидация и auth."
+    },
+    {
+      "type": "heading",
+      "content": "Статус-коды и Content-Type"
+    },
+    {
+      "type": "paragraph",
+      "content": "200 — успех с телом, 201 — создан ресурс, 400 — ошибка клиента, 404 — нет маршрута, 500 — ошибка сервера. Для JSON ставь Content-Type: application/json и res.json(obj) — Express сериализует сам. Не отдавай stack trace наружу в production."
+    },
+    {
+      "type": "heading",
+      "content": "express.json()"
+    },
+    {
+      "type": "paragraph",
+      "content": "Middleware express.json() читает тело POST/PATCH и кладёт объект в req.body. Без него req.body undefined. Лимит размера можно уменьшить, чтобы не принимать гигантские payload. Порядок подключения middleware важен: json — до маршрутов, которые читают body."
+    }
+  ],
+  "codeExample": "import express from \"express\";\n\nconst app = express();\napp.use(express.json());\n\napp.get(\"/health\", (_req, res) => {\n  res.json({ ok: true });\n});\n\napp.post(\"/echo\", (req, res) => {\n  res.status(201).json({ received: req.body });\n});\n\napp.listen(3000, () => console.log(\"API :3000\"));",
+  "practice": [
+    {
+      "title": "Сервер на http",
+      "description": "Создай src/raw-server.js на node:http: GET /health возвращает {\"ok\":true}. Запусти, проверь curl. Затем закомментируй и перейди на Express в src/index.js — поведение то же."
+    },
+    {
+      "title": "POST /echo в Postman",
+      "description": "Подключи express.json(). Создай POST /echo. В Postman: Body → raw → JSON {\"title\":\"test\"}. Отправь на http://localhost:3000/echo. В ответе должно быть received с тем же объектом, статус 201."
+    },
+    {
+      "title": "404 handler",
+      "description": "Добавь в конец app.use((_req, res) => res.status(404).json({ error: \"Not found\" })). Запроси GET /unknown — получи JSON 404, не HTML."
+    }
+  ],
+  "checklist": [
+    "Подключил express.json() до маршрутов с body",
+    "Отдаю JSON через res.json и осмысленные status",
+    "Проверил GET и POST через curl или Postman",
+    "Добавил единый ответ для несуществующих путей"
+  ],
+  "links": [
+    {
+      "title": "Express: начало",
+      "url": "https://expressjs.com/en/starter/hello-world.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "middleware",
+      "meaning": "Функция (req, res, next) в цепочке обработки запроса.",
+      "example": "app.use(express.json())"
+    },
+    {
+      "term": "req.body",
+      "meaning": "Распарсенное тело запроса после express.json.",
+      "example": "req.body.title"
+    },
+    {
+      "term": "status code",
+      "meaning": "Число в ответе HTTP о результате операции.",
+      "example": "res.status(201)"
+    }
+  ]
+}

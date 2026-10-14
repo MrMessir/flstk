@@ -1,0 +1,85 @@
+{
+  "id": "css-04",
+  "part": "css",
+  "module": "css-basics",
+  "order": 4,
+  "title": "Цвета и размеры",
+  "goal": "Задашь цвет несколькими способами и размер текста в удобных единицах.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Цвет можно писать по-разному. tomato — готовое имя. #0f8a8a — код из шести символов (hex). rgb(15, 138, 138) — красный, зелёный, синий от 0 до 255. rgba(..., 0.5) — то же с прозрачностью: 0 невидим, 1 непрозрачный."
+    },
+    {
+      "type": "heading",
+      "content": "Размеры"
+    },
+    {
+      "type": "list",
+      "items": [
+        "px — пиксели. Жёсткий размер.",
+        "% — доля от родителя. width: 50% — половина ширины родителя.",
+        "em — относительно размера шрифта текущего элемента.",
+        "rem — относительно размера шрифта всей страницы. Удобно для текста.",
+        "vw и vh — проценты от ширины и высоты окна. 100vh — высота всего экрана."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Переменная CSS — своё имя цвета или размера. Пишут в :root { --main: #0f8a8a; }, а используют так: color: var(--main);. Поменял в одном месте — поменялось везде."
+    }
+  ],
+  "codeExample": ":root {\n  --main: #0f8a8a;\n  --text: #222;\n}\n\nbody {\n  color: var(--text);\n  font-size: 18px;\n}\n\nh1 {\n  color: var(--main);\n  font-size: 2rem;\n}\n\n.box {\n  width: 50%;\n  min-height: 20vh;\n  background: rgba(15, 138, 138, 0.15);\n}",
+  "practice": [
+    {
+      "title": "Hex и rgb фона",
+      "description": "В body задай background: #f4f7fb; и color: rgb(11, 18, 32);. F5 — фон и текст читаемы. В DevTools Styles кликни квадрат цвета — увидишь hex и rgb."
+    },
+    {
+      "title": "rem для отступа",
+      "description": "html { font-size: 16px; } section { padding: 1.5rem; }. Измени html font-size на 20px — padding section вырастет пропорционально. Запиши вычисленный padding в px."
+    },
+    {
+      "title": "Не смешивай px и rem зря",
+      "description": "Задай h1 font-size: 2rem, а margin-bottom: 8px. Осознанно: rem для текста, px для тонкой линии border 1px. Добавь border-bottom: 1px solid #ccc под h1."
+    }
+  ],
+  "checklist": [
+    "Умею задать цвет именем, hex и rgb",
+    "Выбираю px, % или rem под задачу",
+    "Знаю, что rem завязан на размер шрифта страницы",
+    "Храню общий цвет в CSS-переменной"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: значения и единицы",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Styling_basics/Values_and_units"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "hex-цвет",
+      "meaning": "Цвет кодом из # и шести символов.",
+      "example": "color: #0f8a8a;"
+    },
+    {
+      "term": "rem",
+      "meaning": "Размер относительно шрифта всей страницы.",
+      "example": "font-size: 2rem;"
+    },
+    {
+      "term": "CSS-переменная",
+      "meaning": "Своё имя для цвета или размера.",
+      "example": ":root { --main: #0f8a8a; } color: var(--main);"
+    },
+    {
+      "term": "rgba",
+      "meaning": "Цвет с прозрачностью.",
+      "example": "background: rgba(0,0,0,0.1);"
+    }
+  ]
+}

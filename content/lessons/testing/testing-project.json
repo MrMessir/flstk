@@ -1,0 +1,96 @@
+{
+  "id": "testing-project",
+  "part": "testing",
+  "module": "project",
+  "order": 13,
+  "title": "Итог Testing: 70% критичной логики + 3 E2E",
+  "goal": "Доведёшь проект модуля 10 до тестов, хуков и e2e.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Что нужно сдать"
+    },
+    {
+      "type": "paragraph",
+      "content": "Итог модуля — проект, где критичная логика покрыта автоматическими тестами, а три главных пользовательских пути проверяются e2e. Цель 70% покрытия относится к критичной логике: сервисам, авторизации и операциям с деньгами, а не к каждому компоненту. CI запускает линтер, unit, integration и e2e на каждый pull request."
+    },
+    {
+      "type": "heading",
+      "content": "Приоритеты покрытия"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Сначала сервисный слой и правила доступа: самое дорогое при ошибке.",
+        "Затем API-ручки авторизации и главного объекта (integration).",
+        "Затем несколько проверок UI и три e2e: вход, создание главного объекта, ключевое действие (оплата, отправка).",
+        "Coverage-отчёт показывает дыры; не гонись за 100% для компонентов."
+      ],
+      "ordered": true
+    },
+    {
+      "type": "paragraph",
+      "content": "Откройте отчёт покрытия и посмотрите на ветки (branches), а не только на строки: непокрытая ветка else часто содержит ту самую обработку ошибки."
+    },
+    {
+      "type": "heading",
+      "content": "Стабильный CI"
+    },
+    {
+      "type": "paragraph",
+      "content": "Merge запрещён, пока красные тесты или e2e. Playwright запускается headless, трейсы сохраняются как artifacts. Нестабильные e2e обычно связаны с гонкой данных: замени sleep на ожидание expect(...).toBeVisible() и подготавливай данные программно. Добавь защиту от забытого .only (правило lint или проверка в хуке): один test.only в репозитории тихо выключает остальные тесты."
+    },
+    {
+      "type": "heading",
+      "content": "Как показать результат"
+    },
+    {
+      "type": "paragraph",
+      "content": "В README добавь бейдж статуса CI, команду запуска тестов, скриншот отчёта покрытия и список e2e-сценариев. Для портфолио это самое убедительное доказательство инженерной культуры. Заведи также короткий раздел «Известные пробелы»: честный список того, что не покрыто, и почему. Это показывает, что ты понимаешь, где риск."
+    }
+  ],
+  "codeExample": "// vitest.config.ts — порог покрытия только для критичной логики\nimport { defineConfig } from \"vitest/config\";\n\nexport default defineConfig({\n  test: {\n    coverage: {\n      provider: \"v8\",\n      include: [\"src/services/**\", \"src/auth/**\"],\n      thresholds: { lines: 70, branches: 60 },\n    },\n  },\n});\n\n// playwright.config.ts\nimport { defineConfig } from \"@playwright/test\";\n\nexport default defineConfig({\n  testDir: \"e2e\",\n  retries: process.env.CI ? 1 : 0,\n  use: { baseURL: \"http://localhost:3000\", trace: \"on-first-retry\" },\n  webServer: { command: \"npm run start\", url: \"http://localhost:3000\" },\n});",
+  "practice": [
+    {
+      "title": "Coverage report",
+      "description": "vitest --coverage, скрин или текст: какие файлы ниже 50% и почему ok."
+    },
+    {
+      "title": "3 e2e",
+      "description": "login, create, delete/logout. Зелёные локально и в CI."
+    },
+    {
+      "title": "Badge в README",
+      "description": "Добавь shields.io CI status или текст «tests passing» со ссылкой на Actions."
+    }
+  ],
+  "checklist": [
+    "Покрыл сервисный слой и auth API тестами",
+    "Три e2e проходят headless",
+    "lint и test в CI на каждый PR",
+    "Не коммичу .only в playwright/vitest"
+  ],
+  "links": [
+    {
+      "title": "Vitest coverage",
+      "url": "https://vitest.dev/guide/coverage.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "coverage",
+      "meaning": "Процент строк, затронутых тестами.",
+      "example": "v8 report"
+    },
+    {
+      "term": "CI gate",
+      "meaning": "Блок merge при красных checks.",
+      "example": "required check"
+    },
+    {
+      "term": "headless",
+      "meaning": "Браузер без UI в CI.",
+      "example": "playwright ci"
+    }
+  ]
+}

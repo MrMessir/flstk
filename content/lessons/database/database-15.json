@@ -1,0 +1,112 @@
+{
+  "id": "database-15",
+  "part": "database",
+  "module": "db-cache",
+  "order": 15,
+  "title": "Redis: кэш и rate-limit на практике",
+  "goal": "Поднимешь Redis в Docker и сделаешь кэш ответа + счётчик лимита запросов.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Redis — in-memory store с простыми структурами: STRING, HASH, LIST, SET. Для API чаще всего: кэш тяжёлого SELECT (ключ → JSON, TTL) и rate-limit (INCR + EXPIRE на IP или userId). Данные в Redis не заменяют Postgres как source of truth: при промахе кэша читаешь БД и заполняешь ключ. После UPDATE/DELETE инвалидируй ключ (DEL) или короткий TTL."
+    },
+    {
+      "type": "heading",
+      "content": "Rate-limit окном"
+    },
+    {
+      "type": "paragraph",
+      "content": "Ключ rl:login:IP, INCR. Если значение 1 — EXPIRE 60. Если больше N — 429 Too Many Requests. Это грубая, но рабочая защита login от перебора. В проде добавь префикс окружения и не логируй PII в ключах без нужды."
+    },
+    {
+      "type": "list",
+      "items": [
+        "docker run redis или redis в compose.",
+        "GET/SET/SET EX для кэша.",
+        "INCR + EXPIRE для лимита.",
+        "DEL ключа после мутации сущности."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Как проверить, что сделал правильно"
+    },
+    {
+      "type": "paragraph",
+      "content": "Первый запрос к эндпоинту медленнее (miss), второй с тем же ключом — быстрее и без SQL в логах. После 10 быстрых login с одного IP — 429. redis-cli KEYS 'cache:*' показывает ключи (на проде KEYS осторожно — лучше SCAN)."
+    }
+  ],
+  "codeExample": "import Redis from 'ioredis';\nconst redis = new Redis(process.env.REDIS_URL);\n\nexport async function getCachedPosts() {\n  const key = 'cache:posts:list';\n  const hit = await redis.get(key);\n  if (hit) return JSON.parse(hit);\n  const posts = await db.post.findMany({ take: 20 }); // Postgres\n  await redis.set(key, JSON.stringify(posts), 'EX', 60);\n  return posts;\n}\n\nexport async function rateLimit(ip: string, limit = 10) {\n  const key = `rl:login:${ip}`;\n  const n = await redis.incr(key);\n  if (n === 1) await redis.expire(key, 60);\n  return n <= limit;\n}",
+  "practice": [
+    {
+      "title": "Redis в Docker",
+      "description": "Добавь сервис redis:7-alpine в compose (порт 6379). redis-cli PING → PONG."
+    },
+    {
+      "title": "Кэш списка",
+      "description": "GET /posts: если cache:posts:list есть — отдай JSON из Redis; иначе из БД/массива и SET EX 60. Второй запрос без обращения к «БД» (лог)."
+    },
+    {
+      "title": "Rate-limit login",
+      "description": "На POST /auth/login INCR по IP. После превышения лимита — 429. Покажи скрин или лог двух ответов: 200 и 429."
+    }
+  ],
+  "checklist": [
+    "Redis поднимается через Docker",
+    "Кэш отдаёт hit по TTL",
+    "Rate-limit возвращает 429",
+    "Понимаю, что Postgres остаётся источником истины"
+  ],
+  "links": [
+    {
+      "title": "Redis docs: SET",
+      "url": "https://redis.io/docs/latest/commands/set/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "TTL",
+      "meaning": "Время жизни ключа в секундах.",
+      "example": "SET key val EX 60"
+    },
+    {
+      "term": "cache hit",
+      "meaning": "Данные найдены в Redis.",
+      "example": "GET не null"
+    },
+    {
+      "term": "INCR",
+      "meaning": "Атомарно увеличить счётчик.",
+      "example": "rate-limit"
+    },
+    {
+      "term": "invalidation",
+      "meaning": "Сброс кэша после изменения данных.",
+      "example": "DEL cache:posts:list"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "database-15-q1",
+      "prompt": "Redis заменяет PostgreSQL как основное хранилище бизнес-данных?",
+      "options": [
+        "Нет — обычно кэш/очереди/лимиты, source of truth в БД",
+        "Да, всегда удаляем Postgres",
+        "Только для HTML",
+        "Только вместе с Mongo обязателен"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "database-15-q2",
+      "prompt": "Как ограничить попытки login?",
+      "options": [
+        "INCR + EXPIRE по ключу IP/user, при превышении 429",
+        "Удалить индекс в Postgres",
+        "Отключить HTTPS",
+        "Хранить пароли в Redis без хеша"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

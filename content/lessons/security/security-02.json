@@ -1,0 +1,74 @@
+{
+  "id": "security-02",
+  "part": "security",
+  "module": "sec-auth",
+  "order": 2,
+  "title": "Хеширование паролей",
+  "goal": "Сохранишь пароль через bcrypt с солью и никогда не положишь plaintext в БД.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Пароль нельзя хранить как есть или в обратимом шифровании — утёк дамп = все аккаунты. Хеш-функция односторонняя: bcrypt/argon2 добавляет salt и cost (rounds), замедляя brute force. В БД колонка password_hash, не password."
+    },
+    {
+      "type": "heading",
+      "content": "bcrypt rounds"
+    },
+    {
+      "type": "paragraph",
+      "content": "bcrypt.hash(password, 12) — типичный cost сегодня (минимум 10 по рекомендациям OWASP; для новых проектов смотри и argon2id). compare на login сравнивает с хешем без decrypt. Слишком высокий cost блокирует event loop — для mass login используют очередь или argon2 в worker."
+    },
+    {
+      "type": "heading",
+      "content": "Timing и ложные пользователи"
+    },
+    {
+      "type": "paragraph",
+      "content": "На login при неизвестном email всё равно вызови compare с dummy hash — одинаковое время ответа. Сообщение «неверный логин или пароль» — не раскрывай, существует email или нет (баланс с UX)."
+    }
+  ],
+  "codeExample": "import bcrypt from \"bcrypt\";\n\nconst ROUNDS = 12;\n\nexport async function hashPassword(plain) {\n  return bcrypt.hash(plain, ROUNDS);\n}\n\nexport async function verifyPassword(plain, hash) {\n  return bcrypt.compare(plain, hash);\n}",
+  "practice": [
+    {
+      "title": "npm install bcrypt",
+      "description": "Установи bcrypt (или bcryptjs pure JS). scripts/hash-demo.mjs: hash 'Test123!', выведи hash, compare true/false для другого пароля."
+    },
+    {
+      "title": "Колонка password_hash",
+      "description": "В Prisma User добавь passwordHash String. migrate dev. При seed user храни только hash от 'password123'."
+    },
+    {
+      "title": "compare на login stub",
+      "description": "POST /auth/login: find user by email, verifyPassword(body.password, user.passwordHash). Неверный пароль — 401 единое сообщение."
+    }
+  ],
+  "checklist": [
+    "В БД только hash, не plaintext",
+    "Использую bcrypt rounds 10–12",
+    "compare async в login handler",
+    "Не логирую пароль и hash в pino"
+  ],
+  "links": [
+    {
+      "title": "OWASP Password Storage",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "salt",
+      "meaning": "Случайные данные в hash против rainbow tables.",
+      "example": "встроено в bcrypt hash"
+    },
+    {
+      "term": "bcrypt",
+      "meaning": "Adaptive hash для паролей.",
+      "example": "bcrypt.hash(pw, 12)"
+    },
+    {
+      "term": "password_hash",
+      "meaning": "Столбец БД с результатом hash.",
+      "example": "User.passwordHash"
+    }
+  ]
+}

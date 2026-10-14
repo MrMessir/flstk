@@ -1,0 +1,84 @@
+{
+  "id": "css-13",
+  "part": "css",
+  "module": "css-polish",
+  "order": 13,
+  "title": "Наведение, фокус и украшения",
+  "goal": "Сделаешь кнопку с реакцией на мышь и свой вид чекбокса без JavaScript.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Псевдокласс — состояние элемента. Пишется через двоеточие. a:hover — когда мышь над ссылкой. button:focus — когда на кнопку встали клавишей Tab. :first-child — первый ребёнок. :nth-child(2) — второй."
+    },
+    {
+      "type": "paragraph",
+      "content": "Псевдоэлемент — кусок, которого нет в HTML. ::before и ::after добавляют содержимое через content: \"...\";. Два двоеточия — признак псевдоэлемента."
+    },
+    {
+      "type": "list",
+      "items": [
+        ":hover — наведение.",
+        ":focus — фокус с клавиатуры. Не убирай обводку совсем: человек с клавиатуры иначе потеряется.",
+        ":active — момент нажатия.",
+        ":not(.hidden) — все, кроме элементов с классом hidden."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Псевдоклассы :hover и :focus-visible не добавляют разметку — только поведение. Не убирай outline у ссылок без замены: иначе пользователь клавиатуры не видит, где фокус."
+    }
+  ],
+  "codeExample": ".btn {\n  display: inline-block;\n  padding: 10px 16px;\n  background: #0f8a8a;\n  color: white;\n  border: none;\n  border-radius: 8px;\n  text-decoration: none;\n}\n\n.btn:hover { background: #0c6e6e; }\n.btn:focus { outline: 3px solid #b8f000; outline-offset: 2px; }\n\nlabel.check {\n  display: flex;\n  gap: 8px;\n  align-items: center;\n}\n\nlabel.check input {\n  width: 18px;\n  height: 18px;\n  accent-color: #0f8a8a;\n}",
+  "practice": [
+    {
+      "title": ":hover на кнопке",
+      "description": ".button { background: #0f766e; color: #fff; padding: 10px 16px; border: none; cursor: pointer; } .button:hover { background: #115e59; }. Наведи мышь — цвет темнее."
+    },
+    {
+      "title": ":focus-visible ссылка",
+      "description": "a:focus-visible { outline: 2px solid #0f766e; outline-offset: 2px; }. Tab до ссылки в nav — обводка видна без клика мышью."
+    },
+    {
+      "title": "text-decoration underline",
+      "description": "nav a { text-decoration: none; } nav a:hover { text-decoration: underline; }. Подчёркивание только при наведении на пункт меню."
+    }
+  ],
+  "checklist": [
+    "Меняю вид кнопки при :hover",
+    "Оставляю заметный :focus для клавиатуры",
+    "Понимаю разницу между :hover и ::before",
+    "Крашу чекбокс через accent-color"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: псевдоклассы",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Styling_basics/Pseudo_classes_and_elements"
+    }
+  ],
+  "glossary": [
+    {
+      "term": ":hover",
+      "meaning": "Стиль при наведении мыши.",
+      "example": "a:hover { color: teal; }"
+    },
+    {
+      "term": ":focus",
+      "meaning": "Стиль, когда элемент в фокусе (Tab).",
+      "example": "button:focus { outline: 3px solid lime; }"
+    },
+    {
+      "term": "::before / ::after",
+      "meaning": "Декор до/после содержимого через CSS.",
+      "example": "content: \"→\";"
+    },
+    {
+      "term": "accent-color",
+      "meaning": "Цвет системных контролов вроде checkbox.",
+      "example": "accent-color: #0f8a8a;"
+    }
+  ]
+}

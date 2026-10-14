@@ -1,0 +1,85 @@
+{
+  "id": "js-07",
+  "part": "javascript",
+  "module": "js-data",
+  "order": 7,
+  "title": "Функции: свой кусок кода",
+  "goal": "Напишешь несколько маленьких функций и вызовешь их с разными аргументами.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Функция как кусок смысла"
+    },
+    {
+      "type": "paragraph",
+      "content": "Функция называет действие и прячет детали. Вместо копипасты одного кода в трёх местах пишешь function или стрелку и вызываешь с разными аргументами. return отдаёт результат наружу; без return получишь undefined."
+    },
+    {
+      "type": "paragraph",
+      "content": "Параметры по умолчанию и rest (...args) делают API функции гибче. Стрелочные функции удобны в колбэках, но у них своё поведение this — пока просто запомни разницу и не смешивай без нужды."
+    },
+    {
+      "type": "paragraph",
+      "content": "Функция — именованный кусок кода, который можно вызывать много раз. Чтобы не копировать одни и те же строки."
+    },
+    {
+      "type": "list",
+      "items": [
+        "function sum(a, b) { return a + b; } — объявление.",
+        "const sum = function(a, b) { return a + b; }; — выражение.",
+        "const sum = (a, b) => a + b; — стрелочная функция. Короче для простых случаев.",
+        "Параметры — имена внутри скобок. Аргументы — реальные значения при вызове sum(2, 3).",
+        "return отдаёт результат наружу. Без return функция вернёт undefined.",
+        "Значение по умолчанию: function greet(name = \"друг\")."
+      ]
+    }
+  ],
+  "codeExample": "function sum(a, b) {\n  return a + b;\n}\n\nfunction isEven(n) {\n  return n % 2 === 0;\n}\n\nconst max = (a, b) => (a > b ? a : b);\n\nconsole.log(sum(2, 3));\nconsole.log(isEven(4));\nconsole.log(max(10, 3));",
+  "practice": [
+    {
+      "title": "Функция greet",
+      "description": "function greet(name) { return `Привет, ${name}`; }. Вызов greet(\"Мира\") в console.log. Без name функция не должна падать — передай default parameter = \"гость\"."
+    },
+    {
+      "title": "Стрелочная double",
+      "description": "const double = (n) => n * 2; проверь double(4) === 8. Функция square через function declaration — оба стиля в одном файле functions.js."
+    },
+    {
+      "title": "Параметры по умолчанию",
+      "description": "function power(base, exp = 2) возвращает base ** exp. power(3) → 9, power(2,3) → 8."
+    }
+  ],
+  "checklist": [
+    "Объявляю функцию и вызываю её",
+    "Возвращаю результат через return",
+    "Передаю параметры при вызове",
+    "Пишу простую стрелочную функцию"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: функции",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/Functions"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "function",
+      "meaning": "Именованный кусок кода, который можно вызывать.",
+      "example": "function sum(a, b) { return a + b; }"
+    },
+    {
+      "term": "return",
+      "meaning": "Вернуть результат из функции наружу.",
+      "example": "return a + b;"
+    },
+    {
+      "term": "стрелочная функция",
+      "meaning": "Короткая запись функции.",
+      "example": "const max = (a, b) => (a > b ? a : b);"
+    }
+  ]
+}

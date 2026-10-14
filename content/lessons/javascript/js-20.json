@@ -1,0 +1,91 @@
+{
+  "id": "js-20",
+  "part": "javascript",
+  "module": "js-advanced",
+  "order": 20,
+  "title": "Модули и сохранение в браузере",
+  "goal": "Разобьёшь код на файлы и сохранишь список дел в localStorage.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Модули и память браузера"
+    },
+    {
+      "type": "paragraph",
+      "content": "import/export делят код на файлы. В type=\"module\" пути обычно относительные с .js. localStorage хранит строки между визитами: JSON.stringify перед записью объектов и JSON.parse при чтении."
+    },
+    {
+      "type": "paragraph",
+      "content": "sessionStorage живёт до закрытия вкладки. cookies для учебного todo не нужны — хватит localStorage. Не храни пароли в storage."
+    },
+    {
+      "type": "list",
+      "items": [
+        "export function save() {} — отдать наружу.",
+        "import { save } from \"./storage.js\"; — взять.",
+        "export default — один главный экспорт файла.",
+        "Подключение модуля: <script type=\"module\" src=\"main.js\"></script>.",
+        "localStorage.setItem(\"key\", \"value\") — сохранить строку.",
+        "getItem / removeItem — прочитать / удалить.",
+        "Для объектов: JSON.stringify при записи, JSON.parse при чтении.",
+        "sessionStorage — то же, но живёт до закрытия вкладки."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Проверь в Application → Local Storage, что ключ появился после сохранения и исчез после removeItem."
+    }
+  ],
+  "codeExample": "// storage.js\nexport function loadTasks() {\n  const raw = localStorage.getItem(\"tasks\");\n  return raw ? JSON.parse(raw) : [];\n}\n\nexport function saveTasks(tasks) {\n  localStorage.setItem(\"tasks\", JSON.stringify(tasks));\n}\n\n// main.js\nimport { loadTasks, saveTasks } from \"./storage.js\";\n\nconst tasks = loadTasks();\ntasks.push(\"Выучить модули\");\nsaveTasks(tasks);\nconsole.log(loadTasks());",
+  "practice": [
+    {
+      "title": "storage.js module",
+      "description": "export function saveNote(text) { localStorage.setItem('note', text); } export function loadNote() { return localStorage.getItem('note') ?? ''; }. main.js type=module импортирует и выводит в textarea."
+    },
+    {
+      "title": "Сохранение по blur",
+      "description": "textarea input или blur вызывает saveNote(value). F5 восстанавливает текст через loadNote."
+    },
+    {
+      "title": "Разделение main/storage",
+      "description": "В storage нет document.querySelector — только localStorage. main.js не вызывает setItem напрямую."
+    }
+  ],
+  "checklist": [
+    "Подключаю скрипт как type=\"module\"",
+    "Экспортирую и импортирую функции",
+    "Сохраняю данные через localStorage",
+    "Кладу объекты как JSON-строку"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: модули",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Guide/Modules"
+    },
+    {
+      "title": "MDN: localStorage",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/Window/localStorage"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "import / export",
+      "meaning": "Разбить код на файлы-модули.",
+      "example": "import { save } from \"./storage.js\""
+    },
+    {
+      "term": "type=\"module\"",
+      "meaning": "Подключить скрипт как ES-модуль.",
+      "example": "<script type=\"module\" src=\"main.js\"></script>"
+    },
+    {
+      "term": "localStorage",
+      "meaning": "Хранилище строк в браузере между визитами.",
+      "example": "localStorage.setItem(\"key\", \"value\")"
+    }
+  ]
+}

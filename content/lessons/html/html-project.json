@@ -1,0 +1,90 @@
+{
+  "id": "html-project",
+  "part": "html",
+  "module": "project",
+  "order": 13,
+  "title": "Итог HTML: страница-резюме",
+  "goal": "Соберёшь одну страницу-резюме только на HTML: шапка, разделы, таблица навыков, картинка и форма.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Это сборка всего модуля HTML без CSS. Страница может выглядеть просто, но структура должна быть честной: семантика, подписи форм, alt у картинки, один main."
+    },
+    {
+      "type": "heading",
+      "content": "Обязательные блоки"
+    },
+    {
+      "type": "list",
+      "items": [
+        "header с именем и nav из 3–4 якорей (#about, #skills, …).",
+        "main с section: «Обо мне», «Навыки», «Опыт» или «Учёба», «Контакты».",
+        "table: колонки «Навык» и «Уровень», caption по желанию.",
+        "figure с img (alt!) и figcaption.",
+        "form: имя, email, textarea, required, method=\"get\" для проверки без сервера.",
+        "footer с годом."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Как сдавать"
+    },
+    {
+      "type": "paragraph",
+      "content": "Один файл resume.html в репозитории html-resume или в папке курса. Открой двойным щелчком или Live Server. Клик по якорю в nav прокручивает к section. Отправка формы с method=\"get\" покажет поля в query string адреса — так проверяешь name у input."
+    }
+  ],
+  "codeExample": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Резюме — Аня</title>\n</head>\n<body>\n  <header>\n    <h1>Аня Ковалева</h1>\n    <nav>\n      <a href=\"#about\">Обо мне</a>\n      <a href=\"#skills\">Навыки</a>\n      <a href=\"#contact\">Контакты</a>\n    </nav>\n  </header>\n  <main>\n    <section id=\"about\">\n      <h2>Обо мне</h2>\n      <p>Учусь fullstack с нуля.</p>\n      <figure>\n        <img src=\"https://placehold.co/240x240/png\" alt=\"Портрет-заглушка\" width=\"240\" height=\"240\" />\n        <figcaption>Учебное фото.</figcaption>\n      </figure>\n    </section>\n    <section id=\"skills\">\n      <h2>Навыки</h2>\n      <table>\n        <caption>Стек</caption>\n        <thead><tr><th>Навык</th><th>Уровень</th></tr></thead>\n        <tbody>\n          <tr><td>HTML</td><td>уверенно</td></tr>\n        </tbody>\n      </table>\n    </section>\n    <section id=\"contact\">\n      <h2>Написать</h2>\n      <form method=\"get\">\n        <p><label for=\"name\">Имя</label><br /><input id=\"name\" name=\"name\" required /></p>\n        <p><label for=\"email\">Почта</label><br /><input id=\"email\" name=\"email\" type=\"email\" required /></p>\n        <p><label for=\"msg\">Сообщение</label><br /><textarea id=\"msg\" name=\"msg\" required minlength=\"10\"></textarea></p>\n        <button type=\"submit\">Отправить</button>\n      </form>\n    </section>\n  </main>\n  <footer><p>2026</p></footer>\n</body>\n</html>",
+  "practice": [
+    {
+      "title": "Создай resume.html по чек-листу",
+      "description": "В новой папке html-resume создай resume.html. Скопируй каркас из codeExample и замени текст на свой. Добавь минимум три строки в таблицу навыков и четвёртый якорь в nav. Открой через Live Server."
+    },
+    {
+      "title": "Проверь якоря и форму",
+      "description": "Кликни каждую ссылку nav — URL должен получить #id, страница прокрутится. Отправь форму пустой — браузер остановит submit. Заполни поля, Submit — в адресной строке появятся ?name=…&email=…."
+    },
+    {
+      "title": "Залей на GitHub с README",
+      "description": "git init, commit resume.html, push в репозиторий html-resume. README: одна строка «HTML-резюме без CSS», как открыть файл, скрин страницы. Ссылку на repo приложи к сдаче урока."
+    }
+  ],
+  "checklist": [
+    "Собрал resume.html без CSS в отдельном файле",
+    "Есть header, nav, main, section, footer и table",
+    "Картинка с alt и форма с label и required",
+    "Якоря nav работают, форма с get показывает query"
+  ],
+  "links": [
+    {
+      "title": "MDN: структура документа",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Structuring_content/Structuring_documents"
+    },
+    {
+      "title": "MDN: формы",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Extensions/Forms"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "семантика",
+      "meaning": "Теги по смыслу: header, main, section.",
+      "example": "<main><section id=\"skills\">"
+    },
+    {
+      "term": "якорь",
+      "meaning": "Ссылка на id внутри страницы.",
+      "example": "href=\"#contact\""
+    },
+    {
+      "term": "caption",
+      "meaning": "Подпись таблицы для скринридеров.",
+      "example": "<caption>Навыки</caption>"
+    },
+    {
+      "term": "query string",
+      "meaning": "Параметры после ? в URL после GET-формы.",
+      "example": "?name=Аня&email=a@b.ru"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "id": "testing-05",
+  "part": "testing",
+  "module": "test-e2e",
+  "order": 5,
+  "title": "React Testing Library",
+  "goal": "Протестируешь компонент по роли и сценарию пользователя.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Идея React Testing Library"
+    },
+    {
+      "type": "paragraph",
+      "content": "Библиотека проверяет компонент так, как его использует человек: ищет элементы по роли, подписи и тексту, а не по классам CSS и внутреннему состоянию. Тест не должен сломаться, если ты переименовал состояние или поменял разметку, но поведение осталось прежним."
+    },
+    {
+      "type": "heading",
+      "content": "render и поиск элементов"
+    },
+    {
+      "type": "list",
+      "items": [
+        "getByRole('button', { name: /войти/i }) — первый выбор: проверяет и доступность, потому что у элемента должна быть роль и имя.",
+        "getByLabelText находит поле по подписи; getByText — по тексту.",
+        "getBy… падает, если элемента нет; queryBy… возвращает null (для проверки отсутствия); findBy… ждёт появления (для асинхронного UI).",
+        "data-testid — крайний случай, когда у элемента нет роли и подписи."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Действия пользователя"
+    },
+    {
+      "type": "paragraph",
+      "content": "Используй userEvent, а не fireEvent: он имитирует реальную последовательность событий (наведение, фокус, ввод по символам). Современный стиль: const user = userEvent.setup(); await user.type(screen.getByLabelText(/email/i), 'a@b.c'); await user.click(button). Все вызовы user асинхронные, не забывай await."
+    },
+    {
+      "type": "heading",
+      "content": "Асинхронный интерфейс"
+    },
+    {
+      "type": "paragraph",
+      "content": "После отправки формы данные появляются не сразу. Жди появления текста через await screen.findByText('Добро пожаловать'), а не через sleep: тест остановится, как только условие выполнено, или упадёт по таймауту с понятным сообщением. waitFor пригоден для ожидания условия, но внутри него должен быть один expect, без побочных действий."
+    },
+    {
+      "type": "paragraph",
+      "content": "Если тест без доступных имён получается неудобным (кнопка без текста), это сигнал, что интерфейс недоступен и для скринридера: исправляй разметку, а не тест."
+    }
+  ],
+  "codeExample": "import { render, screen } from \"@testing-library/react\";\nimport userEvent from \"@testing-library/user-event\";\n\nawait userEvent.type(screen.getByLabelText(/email/i), \"a@b.c\");\nawait userEvent.click(screen.getByRole(\"button\", { name: /войти/i }));\nexpect(await screen.findByText(/ошибка/i)).toBeInTheDocument();",
+  "practice": [
+    {
+      "title": "Форма login",
+      "description": "Пустой submit показывает validation. Заполни поля — mock fetch 200 — редирект или текст «Привет»."
+    },
+    {
+      "title": "getByRole",
+      "description": "Перепиши один getByTestId на getByRole('link', { name: ... })."
+    },
+    {
+      "title": "accessibility smoke",
+      "description": "У каждого input есть label или aria-label — проверь в тесте getByLabelText."
+    }
+  ],
+  "checklist": [
+    "Ищу элементы по role и accessible name",
+    "Симулирую действия через userEvent",
+    "Жду async через findBy/waitFor",
+    "Не завишу от className и внутреннего state"
+  ],
+  "links": [
+    {
+      "title": "React Testing Library",
+      "url": "https://testing-library.com/docs/react-testing-library/intro/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "getByRole",
+      "meaning": "Поиск по ARIA-роли.",
+      "example": "button"
+    },
+    {
+      "term": "userEvent",
+      "meaning": "Симуляция ввода пользователя.",
+      "example": "click, type"
+    },
+    {
+      "term": "findBy",
+      "meaning": "Async query с ожиданием.",
+      "example": "findByText"
+    }
+  ]
+}

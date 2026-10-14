@@ -1,0 +1,83 @@
+{
+  "id": "js-25",
+  "part": "javascript",
+  "module": "js-dom",
+  "order": 25,
+  "title": "Делегирование событий и preventDefault",
+  "goal": "Повесишь один обработчик на список и отменишь действие браузера там, где нужно.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Событие click сначала срабатывает на элементе, по которому кликнули, затем всплывает к родителям до document. Это всплытие (bubbling). Вместо addEventListener на каждый li можно один раз повесить слушатель на ul: внутри обработчика смотришь event.target — реальный элемент клика. Так работают динамические списки: новые пункты не требуют новых слушателей."
+    },
+    {
+      "type": "heading",
+      "content": "target и currentTarget"
+    },
+    {
+      "type": "paragraph",
+      "content": "event.target — элемент, на котором событие началось (например, кнопка «Удалить» внутри li). event.currentTarget — элемент, на котором висит addEventListener (часто ul или form). При делегировании сравни target с селектором: if (event.target.matches('button[data-action=\"remove\"]')) { ... }. closest('li') поднимается от кнопки к строке списка."
+    },
+    {
+      "type": "heading",
+      "content": "preventDefault и stopPropagation"
+    },
+    {
+      "type": "paragraph",
+      "content": "event.preventDefault() отменяет действие браузера по умолчанию: отправку формы, переход по ссылке с href=\"#\". Для SPA и todo-форм это обязательно на submit. stopPropagation() останавливает всплытие — используй редко, когда родитель не должен узнать о клике. Не путай с preventDefault: можно остановить всплытие, но форма всё равно отправится, если не вызвать preventDefault."
+    }
+  ],
+  "codeExample": "const list = document.querySelector(\"#todo-list\");\n\nlist.addEventListener(\"click\", (event) => {\n  const btn = event.target.closest(\"button[data-remove]\");\n  if (!btn) return;\n  const li = btn.closest(\"li\");\n  li?.remove();\n});\n\nconst form = document.querySelector(\"#todo-form\");\nform.addEventListener(\"submit\", (event) => {\n  event.preventDefault();\n  const input = form.querySelector(\"input\");\n  if (!input.value.trim()) return;\n  // добавить li...\n  input.value = \"\";\n});",
+  "practice": [
+    {
+      "title": "Удаление через делегирование",
+      "description": "В index.html ul#list с тремя li, в каждом кнопка data-remove. В list.js один click на #list: по data-remove удали closest('li'). Добавь четвёртый li через innerHTML и проверь, что удаление работает без новых addEventListener."
+    },
+    {
+      "title": "Форма без перезагрузки",
+      "description": "Форма #signup с input name=\"email\" и submit. На submit вызови preventDefault(), если email не содержит @ — покажи alert и return. Иначе выведи email в #result. Обновление страницы после отправки быть не должно."
+    },
+    {
+      "title": "Ссылка-якорь без прыжка",
+      "description": "Ссылка <a href=\"#\" id=\"more\">Подробнее</a> и блок #details скрыт display:none. По click на #more: preventDefault(), переключи видимость #details. Убедись, что URL не меняется и страница не прокручивается вверх."
+    }
+  ],
+  "checklist": [
+    "Вешаю один слушатель на контейнер для списка кнопок",
+    "Различаю event.target и event.currentTarget",
+    "Вызываю preventDefault на submit формы и «пустых» ссылках",
+    "Использую closest для поиска строки списка от кнопки"
+  ],
+  "links": [
+    {
+      "title": "MDN: всплытие событий",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/Event_bubbling"
+    },
+    {
+      "title": "MDN: preventDefault",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/Event/preventDefault"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "всплытие",
+      "meaning": "Распространение события от цели к предкам.",
+      "example": "click на button → li → ul"
+    },
+    {
+      "term": "делегирование",
+      "meaning": "Один обработчик на родителе вместо многих на детях.",
+      "example": "ul.addEventListener(\"click\", ...)"
+    },
+    {
+      "term": "event.target",
+      "meaning": "Элемент, где событие началось.",
+      "example": "кнопка внутри li"
+    },
+    {
+      "term": "preventDefault",
+      "meaning": "Отмена стандартного действия браузера.",
+      "example": "event.preventDefault() на submit"
+    }
+  ]
+}

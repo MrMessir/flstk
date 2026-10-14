@@ -1,0 +1,83 @@
+{
+  "id": "react-04",
+  "part": "react",
+  "module": "react-hooks",
+  "order": 4,
+  "title": "useState и подъём состояния",
+  "goal": "Заведёшь state в компоненте и поднимешь общее состояние к ближайшему родителю.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "useState(initial) возвращает [value, setValue]. Обновление через setValue(new) или setValue(prev => next) — функциональная форма нужна, когда новое значение зависит от старого или при частых кликах. State локален компоненту: соседний компонент A не видит state B. Общие данные поднимают к общему родителю и передают вниз props + setter."
+    },
+    {
+      "type": "heading",
+      "content": "Иммутабельность"
+    },
+    {
+      "type": "paragraph",
+      "content": "Не мутируй массив tasks.push — создай [...tasks, item]. Для объекта { ...user, name: 'x' }. React сравнивает ссылки: мутация без setState не вызовет перерисовку. Для вложенных структур копируй каждый уровень, который меняешь."
+    },
+    {
+      "type": "heading",
+      "content": "Начальное состояние"
+    },
+    {
+      "type": "paragraph",
+      "content": "useState(() => expensive()) — lazy init, функция один раз. useState<number | null>(null) для загрузки. Несколько useState vs один объект — для независимых полей формы проще отдельные хуки; для связанной формы — один state object."
+    }
+  ],
+  "codeExample": "import { useState } from \"react\";\n\nexport function CounterPair() {\n  const [left, setLeft] = useState(0);\n  const [right, setRight] = useState(0);\n  return (\n    <>\n      <button type=\"button\" onClick={() => setLeft((n) => n + 1)}>L: {left}</button>\n      <button type=\"button\" onClick={() => setRight((n) => n + 1)}>R: {right}</button>\n      <p>Сумма: {left + right}</p>\n    </>\n  );\n}",
+  "practice": [
+    {
+      "title": "Todo state в App",
+      "description": "useState<Todo[]>([]) в App, функции addTodo(title) и removeTodo(id) с иммутабельными обновлениями. TodoList только props items и onRemove."
+    },
+    {
+      "title": "Функциональный setState",
+      "description": "Кнопка «+1» три раза подряд в одном синхетическом событии должна добавить 3 — используй setN(n => n+1), не setN(n+1) из замыкания."
+    },
+    {
+      "title": "Подъём: два счётчика сумма",
+      "description": "CounterPair из примера: сумма left+right в том же компоненте. Перенеси left/right в родителя Lifted — дочерние получают value и onIncrement props."
+    }
+  ],
+  "checklist": [
+    "Обновляю state иммутабельно для массивов и объектов",
+    "Использую функциональный setState при зависимости от prev",
+    "Поднимаю state, когда им нужны два ребёнка",
+    "Типизирую useState generic в TS"
+  ],
+  "links": [
+    {
+      "title": "React: State",
+      "url": "https://react.dev/learn/state-a-components-memory"
+    },
+    {
+      "title": "React: Sharing State",
+      "url": "https://react.dev/learn/sharing-state-between-components"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "useState",
+      "meaning": "Хук локального состояния компонента.",
+      "example": "const [x, setX] = useState(0)"
+    },
+    {
+      "term": "lifting state up",
+      "meaning": "Перенос state к общему родителю.",
+      "example": "App хранит todos"
+    },
+    {
+      "term": "immutable update",
+      "meaning": "Новый массив/объект вместо мутации.",
+      "example": "[...items, newItem]"
+    },
+    {
+      "term": "functional update",
+      "meaning": "setState(prev => next).",
+      "example": "setN(n => n + 1)"
+    }
+  ]
+}

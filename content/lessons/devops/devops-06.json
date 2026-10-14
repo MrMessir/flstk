@@ -1,0 +1,130 @@
+{
+  "id": "devops-06",
+  "part": "devops",
+  "module": "ops-ci",
+  "order": 6,
+  "title": "GitHub Actions CI",
+  "goal": "Сделаешь пайплайн lint + test + build на PR.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Что делает CI"
+    },
+    {
+      "type": "paragraph",
+      "content": "Непрерывная интеграция (CI) — автоматическая проверка каждого изменения: код забрали, поставили зависимости, прогнали линтер, тесты и сборку. Если что-то красное, изменение нельзя вливать. Так ошибки ловятся за минуты, а не после релиза, а вся команда проверяет код одинаково, а не «у меня работает»."
+    },
+    {
+      "type": "heading",
+      "content": "Workflow в GitHub Actions"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Файл лежит в .github/workflows/ci.yml и запускается событиями (on: pull_request, push).",
+        "job — набор шагов на одной машине (runs-on: ubuntu-latest).",
+        "Шаги: actions/checkout, actions/setup-node с cache: npm, npm ci, npm run lint, npm test, npm run build.",
+        "Используй npm ci, не npm install: он ставит строго по lock-файлу и ломается, если lock устарел."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Команды в CI должны совпадать с тем, что разработчик запускает локально. Тогда красный CI можно воспроизвести у себя."
+    },
+    {
+      "type": "heading",
+      "content": "Защита ветки"
+    },
+    {
+      "type": "paragraph",
+      "content": "Сам по себе CI только сообщает результат. Чтобы красный пайплайн блокировал слияние, включи branch protection для main: обязательные проверки и ревью. Для PR удобно concurrency: новый запуск отменяет старый для той же ветки и экономит минуты."
+    },
+    {
+      "type": "heading",
+      "content": "Секреты и версии"
+    },
+    {
+      "type": "paragraph",
+      "content": "Токены и пароли храни в GitHub Secrets и подставляй как ${{ secrets.NAME }}, никогда не пиши в yaml открытым текстом. Версию Node указывай актуальную и поддерживаемую (например, 22), а не из старых примеров. Нужна проверка на нескольких версиях — используй matrix. Закрепляй версии действий (actions/checkout@v4) и периодически обновляй: старые версии со временем перестают работать. Не запускай на пулл-реквестах из чужих форков шаги с секретами: такие запуски специально лишены доступа к ним."
+    }
+  ],
+  "codeExample": "name: CI\non: [pull_request, push]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with: { node-version: 22, cache: npm }\n      - run: npm ci\n      - run: npm run lint\n      - run: npm test",
+  "practice": [
+    {
+      "title": "Workflow файл",
+      "description": ".github/workflows/ci.yml с lint+test. Открой PR — check зелёный."
+    },
+    {
+      "title": "Сломай тест",
+      "description": "Временно fail expect, убедись CI красный, откати."
+    },
+    {
+      "title": "Artifact build",
+      "description": "upload dist folder как artifact на main для ручной проверки."
+    }
+  ],
+  "checklist": [
+    "CI повторяет команды локального npm test/lint",
+    "Использую npm ci, не install в CI",
+    "Секреты только через GitHub Secrets",
+    "Workflow триггерится на pull_request"
+  ],
+  "links": [
+    {
+      "title": "GitHub Actions",
+      "url": "https://docs.github.com/en/actions"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "workflow",
+      "meaning": "YAML сценарий CI.",
+      "example": "ci.yml"
+    },
+    {
+      "term": "job",
+      "meaning": "Набор steps на runner.",
+      "example": "test:"
+    },
+    {
+      "term": "branch protection",
+      "meaning": "Правила merge в main.",
+      "example": "required checks"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "devops-06-q1",
+      "prompt": "Какую команду ставят в CI вместо npm install?",
+      "options": [
+        "npm ci — воспроизводимая установка по lockfile",
+        "npm install -g без lock",
+        "rm -rf /",
+        "npx create-react-app"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "devops-06-q2",
+      "prompt": "Где хранить DATABASE_URL для CI?",
+      "options": [
+        "В GitHub Secrets / переменных окружения",
+        "Прямо в yaml репозитория plaintext",
+        "В README.md",
+        "В клиентском bundle React"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "devops-06-q3",
+      "prompt": "Зачем workflow на pull_request?",
+      "options": [
+        "Ловить поломки до merge в main",
+        "Ускорить CSS анимации",
+        "Заменить code review людьми",
+        "Отключить HTTPS"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

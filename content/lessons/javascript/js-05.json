@@ -1,0 +1,80 @@
+{
+  "id": "js-05",
+  "part": "javascript",
+  "module": "js-basics",
+  "order": 5,
+  "title": "Условия: if и выбор ветки",
+  "goal": "Напишешь проверку с if/else и простой выбор через switch.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Ветвление — основа интерфейсов: показать кнопку входа или профиль, принять заказ или вернуть ошибку. Пиши условие так, чтобы его можно было прочитать вслух: «если час меньше 12 — утро»."
+    },
+    {
+      "type": "paragraph",
+      "content": "switch удобен, когда одна переменная сравнивается с несколькими точными значениями. Не забывай break, иначе выполнение «провалится» в следующий case. Для диапазонов чаще лучше if/else if."
+    },
+    {
+      "type": "paragraph",
+      "content": "Условие выбирает ветку кода. Если правда — делай одно, иначе — другое."
+    },
+    {
+      "type": "list",
+      "items": [
+        "if (условие) { ... }",
+        "else if (другое) { ... }",
+        "else { ... } — если ничего выше не подошло.",
+        "switch (значение) { case \"a\": ... break; default: ... }",
+        "break нужен, иначе выполнение провалится в следующий case."
+      ]
+    }
+  ],
+  "codeExample": "const hour = 21;\n\nif (hour < 12) {\n  console.log(\"утро\");\n} else if (hour < 18) {\n  console.log(\"день\");\n} else {\n  console.log(\"вечер\");\n}\n\nconst mood = \"ok\";\nswitch (mood) {\n  case \"ok\":\n    console.log(\"нормально\");\n    break;\n  case \"tired\":\n    console.log(\"нужен отдых\");\n    break;\n  default:\n    console.log(\"неизвестно\");\n}",
+  "practice": [
+    {
+      "title": "if по возрасту",
+      "description": "age = 17. if/else: «можно в кино» при age >= 18, иначе «рано». Поменяй age на 20 — текст меняется."
+    },
+    {
+      "title": "switch по дню",
+      "description": "const day = 3; switch(day) { case 1: ... case 7: ... default: }. Выведи название дня недели для 3 и для 9 (default)."
+    },
+    {
+      "title": "Тернарный оператор",
+      "description": "const role = \"guest\"; const label = role === \"admin\" ? \"Панель\" : \"Сайт\"; выведи label. Замени role на admin — «Панель»."
+    }
+  ],
+  "checklist": [
+    "Пишу ветку if/else",
+    "Добавляю else if для нескольких порогов",
+    "Использую switch для нескольких точных значений",
+    "Не забываю break в case"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: условия",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/Conditionals"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "if / else",
+      "meaning": "Ветвление: если условие правда — один код, иначе другой.",
+      "example": "if (score >= 60) { ... } else { ... }"
+    },
+    {
+      "term": "else if",
+      "meaning": "Дополнительная проверка, если предыдущие не подошли.",
+      "example": "else if (hour < 18)"
+    },
+    {
+      "term": "switch",
+      "meaning": "Выбор по точному значению.",
+      "example": "switch (lang) { case \"js\": ... }"
+    }
+  ]
+}

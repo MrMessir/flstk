@@ -1,0 +1,83 @@
+{
+  "id": "css-01",
+  "part": "css",
+  "module": "css-basics",
+  "order": 1,
+  "title": "Как подключить цвета и стили",
+  "goal": "Подключишь CSS тремя способами и увидишь, какой из них побеждает.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "CSS — правила внешнего вида. HTML говорит «это заголовок». CSS говорит «заголовок зелёный и крупный». Без CSS страница работает, но выглядит как обычный текст."
+    },
+    {
+      "type": "heading",
+      "content": "Три способа"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Прямо на теге: style=\"color: red;\". Быстро проверить, плохо хранить так всю страницу.",
+        "В head: тег <style>…</style>. Удобно для одной маленькой страницы.",
+        "Отдельный файл styles.css и строка <link rel=\"stylesheet\" href=\"styles.css\" /> в head. Так делают на настоящих сайтах."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Правило выглядит так: селектор { свойство: значение; }. Точка с запятой в конце строки нужна. Если одно и то же свойство задано несколько раз, побеждает то, что ближе к элементу или написано позже. style на теге обычно сильнее всего."
+    }
+  ],
+  "codeExample": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Стили</title>\n  <link rel=\"stylesheet\" href=\"styles.css\" />\n  <style>\n    p { color: blue; }\n  </style>\n</head>\n<body>\n  <h1 style=\"color: green;\">Зелёный из style</h1>\n  <p>Синий из тега style</p>\n  <p class=\"file\">Цвет из файла styles.css</p>\n</body>\n</html>\n\n/* styles.css */\n.file { color: purple; }",
+  "practice": [
+    {
+      "title": "Три способа цвета на одной странице",
+      "description": "Создай папку css-demo с index.html и styles.css из codeExample урока. Открой Live Server. h1 зелёный (inline), p синий (<style>), .file фиолетовый (файл). Если цвет не тот — проверь href=\"styles.css\"."
+    },
+    {
+      "title": "Победа inline над файлом",
+      "description": "Добавь h1 style=\"color: red;\" поверх правил из CSS. F5 — заголовок красный. Убери inline — снова зелёный из style или файла. Запиши в notes, какой способ сильнее."
+    },
+    {
+      "title": "Подключи link в head",
+      "description": "Временно закомментируй <link rel=\"stylesheet\" href=\"styles.css\" /> (или переименуй файл). Обнови страницу — .file перестанет быть фиолетовым. Верни link, убедись в Network статус 200 для styles.css."
+    }
+  ],
+  "checklist": [
+    "Знаю три способа подключить CSS",
+    "Пишу правило как селектор { свойство: значение; }",
+    "Подключаю файл через link rel=\"stylesheet\"",
+    "Вижу, что style на теге легко перебивает общий стиль"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: как начать с CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Styling_basics/What_is_CSS"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "CSS",
+      "meaning": "Правила внешнего вида: цвет, размер, отступы.",
+      "example": "p { color: blue; }"
+    },
+    {
+      "term": "<style>",
+      "meaning": "CSS прямо в HTML внутри head.",
+      "example": "<style>p { color: navy; }</style>"
+    },
+    {
+      "term": "<link rel=\"stylesheet\">",
+      "meaning": "Подключение внешнего файла стилей.",
+      "example": "<link rel=\"stylesheet\" href=\"styles.css\" />"
+    },
+    {
+      "term": "style=\"...\"",
+      "meaning": "Стиль прямо на одном теге.",
+      "example": "<h1 style=\"color: tomato;\">"
+    }
+  ]
+}

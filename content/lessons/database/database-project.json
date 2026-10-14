@@ -1,0 +1,74 @@
+{
+  "id": "database-project",
+  "part": "database",
+  "module": "project",
+  "order": 16,
+  "title": "Итог БД: блог API на PostgreSQL + Prisma",
+  "goal": "Подключишь Postgres к API блога: users, posts, comments, tags с миграциями и пагинацией.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Замени in-memory repository на Prisma: те же routes и services, новый postsRepo. Docker Postgres + DATABASE_URL. Миграции в git. Seed: prisma db seed с demo user и постами."
+    },
+    {
+      "type": "heading",
+      "content": "Согласованность с Node-модулем"
+    },
+    {
+      "type": "paragraph",
+      "content": "OpenAPI и Postman-коллекция остаются; меняется только слой данных. Транзакция при create post + tags. Индекс на author_id и published если фильтруешь черновики."
+    },
+    {
+      "type": "heading",
+      "content": "Критерии сдачи"
+    },
+    {
+      "type": "paragraph",
+      "content": "compose up + migrate deploy + npm run dev — три команды в README. CRUD через БД, поиск q, page/limit. Нет сырого пароля в git."
+    }
+  ],
+  "codeExample": "model Post {\n  id        String   @id @default(uuid())\n  title     String\n  body      String\n  published Boolean  @default(false)\n  authorId  String\n  author    User     @relation(fields: [authorId], references: [id])\n  comments  Comment[]\n  tags      Tag[]    @relation(\"PostTags\")\n}",
+  "practice": [
+    {
+      "title": "Полная schema",
+      "description": "User, Post, Comment, Tag, many-to-many Post-Tags. migrate dev. seed минимум 3 users, 10 posts."
+    },
+    {
+      "title": "Wire repositories",
+      "description": "Все endpoints Node-проекта читают Prisma. Postman CRUD прогон без in-memory."
+    },
+    {
+      "title": "Документация",
+      "description": "README: DATABASE_URL, docker compose, prisma migrate deploy, db seed. Скрин DBeaver с таблицами."
+    }
+  ],
+  "checklist": [
+    "Postgres в Docker, Prisma migrations в репо",
+    "CRUD posts/comments/tags через API",
+    "Пагинация и поиск по title работают",
+    "Seed и backup policy описаны в README"
+  ],
+  "links": [
+    {
+      "title": "Prisma: seeding",
+      "url": "https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "db seed",
+      "meaning": "Начальные данные для dev/test.",
+      "example": "prisma db seed"
+    },
+    {
+      "term": "DATABASE_URL",
+      "meaning": "Connection string приложения к Postgres.",
+      "example": "postgresql://blog:blog@localhost:5432/blog"
+    },
+    {
+      "term": "repository",
+      "meaning": "Слой доступа к данным поверх Prisma.",
+      "example": "postsRepo.list({ page, q })"
+    }
+  ]
+}

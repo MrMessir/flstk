@@ -1,0 +1,83 @@
+{
+  "id": "react-07",
+  "part": "react",
+  "module": "react-hooks",
+  "order": 7,
+  "title": "useRef, useReducer и мемоизация",
+  "goal": "Сфокусируешь input через ref, упростишь state reducer-ом и не перерисуешь лишнее memo.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "useRef(initial) даёт { current } mutable box, смена current не вызывает re-render. inputRef.current?.focus() после submit. Храни id таймера или предыдущее value. useRef для DOM: ref={inputRef} на input. Не читай ref.current во время render для UI — только в handlers и effects."
+    },
+    {
+      "type": "heading",
+      "content": "useReducer"
+    },
+    {
+      "type": "paragraph",
+      "content": "const [state, dispatch] = useReducer(reducer, initial). reducer(state, action) возвращает новый state иммутабельно. Удобно для форм с многими полями и конечных автоматов: dispatch({ type: 'increment' }). action типизируют union в TS."
+    },
+    {
+      "type": "heading",
+      "content": "useMemo и useCallback"
+    },
+    {
+      "type": "paragraph",
+      "content": "useMemo(() => heavy(list), [list]) кэширует вычисление. useCallback(fn, deps) стабилизирует ссылку на функцию для memo-детей. React.memo(Component) пропускает render если props shallow equal. Не оборачивай всё подряд — профилируй, когда списки тормозят."
+    }
+  ],
+  "codeExample": "import { useRef, useReducer, memo } from \"react\";\n\ntype CountState = { n: number };\ntype Action = { type: \"inc\" } | { type: \"dec\" };\n\nfunction reducer(state: CountState, action: Action): CountState {\n  switch (action.type) {\n    case \"inc\":\n      return { n: state.n + 1 };\n    case \"dec\":\n      return { n: state.n - 1 };\n  }\n}\n\nexport function CounterReducer() {\n  const [state, dispatch] = useReducer(reducer, { n: 0 });\n  const inputRef = useRef<HTMLInputElement>(null);\n  return (\n    <>\n      <p>{state.n}</p>\n      <button type=\"button\" onClick={() => dispatch({ type: \"inc\" })}>+</button>\n      <input ref={inputRef} />\n      <button type=\"button\" onClick={() => inputRef.current?.focus()}>Focus</button>\n    </>\n  );\n}",
+  "practice": [
+    {
+      "title": "Focus после добавления todo",
+      "description": "TodoForm с inputRef: после успешного onAdd вызови inputRef.current?.focus(). Поле пустое и с фокусом."
+    },
+    {
+      "title": "reducer для todos",
+      "description": "Замени useState todos на useReducer с actions add/remove/toggle. Логика в reducer.ts, компонент только dispatch."
+    },
+    {
+      "title": "memo списка",
+      "description": "TodoRow = memo(function TodoRow...) с title, done. Без memo при вводе в форме перерисовываются все rows — с memo только изменённый (React DevTools Highlight updates)."
+    }
+  ],
+  "checklist": [
+    "Использую ref для focus и imperativ DOM",
+    "Выношу сложные переходы state в reducer",
+    "Применяю memo/useMemo только при измеренной проблеме",
+    "Типизирую action union в TypeScript"
+  ],
+  "links": [
+    {
+      "title": "React: useRef",
+      "url": "https://react.dev/reference/react/useRef"
+    },
+    {
+      "title": "React: useReducer",
+      "url": "https://react.dev/reference/react/useReducer"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "useRef",
+      "meaning": "Mutable ячейка без re-render.",
+      "example": "ref={inputRef}"
+    },
+    {
+      "term": "useReducer",
+      "meaning": "State через функцию reducer и dispatch.",
+      "example": "dispatch({ type: 'inc' })"
+    },
+    {
+      "term": "React.memo",
+      "meaning": "Пропуск render при тех же props.",
+      "example": "memo(TodoRow)"
+    },
+    {
+      "term": "useCallback",
+      "meaning": "Кэширование функции между render.",
+      "example": "useCallback(fn, [deps])"
+    }
+  ]
+}

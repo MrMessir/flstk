@@ -1,0 +1,87 @@
+{
+  "id": "nodejs-01",
+  "part": "nodejs",
+  "module": "node-basics",
+  "order": 1,
+  "title": "Что такое Node.js",
+  "goal": "Отличишь Node от браузера и настроишь первый серверный скрипт на ESM.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Node.js — это среда, где JavaScript выполняется вне браузера: на твоём ноутбуке, на сервере или в контейнере. Движок V8 тот же, что в Chrome, но окружение другое: нет window и document, зато есть доступ к файловой системе, процессам и сетевым сокетам через встроенные модули."
+    },
+    {
+      "type": "heading",
+      "content": "Чем сервер отличается от вкладки браузера"
+    },
+    {
+      "type": "paragraph",
+      "content": "В браузере код живёт в песочнице: он не читает диск и не слушает порты сам по себе. На сервере ты пишешь долгоживущий процесс: он принимает HTTP-запросы, ходит в базу, отдаёт JSON. Ошибка в серверном коде может положить API для всех пользователей — поэтому логирование и обработка ошибок важнее, чем в маленьком скрипте на странице."
+    },
+    {
+      "type": "heading",
+      "content": "ESM и package.json"
+    },
+    {
+      "type": "paragraph",
+      "content": "Современный Node понимает ESM: import и export. Чтобы файл считался модулем, в package.json укажи \"type\": \"module\" или используй расширение .mjs. Старый формат CommonJS (require, module.exports) ещё встречается в легаси-пакетах, но новый код курса пишем на ESM — так же, как во фронтенде на Vite."
+    },
+    {
+      "type": "list",
+      "items": [
+        "Проверка версии: node -v (LTS, например 22.x).",
+        "Запуск файла: node server.js из папки проекта.",
+        "package.json с \"type\": \"module\" — import работает без .mjs."
+      ]
+    }
+  ],
+  "codeExample": "import http from \"node:http\";\n\nconst server = http.createServer((_req, res) => {\n  res.writeHead(200, { \"Content-Type\": \"application/json\" });\n  res.end(JSON.stringify({ ok: true, service: \"blog-api\" }));\n});\n\nserver.listen(3000, () => console.log(\"http://localhost:3000\"));",
+  "practice": [
+    {
+      "title": "Проверь Node и создай папку",
+      "description": "В терминале выполни node -v и npm -v. Создай папку blog-api-node, внутри npm init -y. Открой package.json и добавь \"type\": \"module\". Сохрани файл."
+    },
+    {
+      "title": "Файл health.js",
+      "description": "Создай health.js с кодом из примера урока (или Express-вариант из codeExample ниже в соседних уроках). Запусти node health.js. В другом терминале выполни curl http://localhost:3000 — должен прийти JSON с ok: true."
+    },
+    {
+      "title": "Сравни с браузером",
+      "description": "В DevTools консоли набери typeof process и typeof window. Запиши в README проекта две строки: что есть только в Node и чего нет (DOM). Это поможет на собеседовании."
+    }
+  ],
+  "checklist": [
+    "Объясняю, зачем JS на сервере, без слова «асинхронность» в качестве единственного аргумента",
+    "Включил type module и запускаю скрипт через node файл.js",
+    "Отличаю import от require и знаю, где смотреть версию Node",
+    "Поднял локальный HTTP-ответ и проверил его curl или браузером"
+  ],
+  "links": [
+    {
+      "title": "Node.js: введение",
+      "url": "https://nodejs.org/en/learn/getting-started/introduction-to-nodejs"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Node.js",
+      "meaning": "Среда выполнения JavaScript вне браузера на движке V8.",
+      "example": "node server.js"
+    },
+    {
+      "term": "ESM",
+      "meaning": "Стандарт модулей с import/export.",
+      "example": "import fs from \"node:fs/promises\""
+    },
+    {
+      "term": "CommonJS",
+      "meaning": "Старый формат модулей Node через require.",
+      "example": "const fs = require(\"fs\")"
+    },
+    {
+      "term": "LTS",
+      "meaning": "Долгосрочная поддерживаемая версия Node для продакшена.",
+      "example": "Node 22 LTS"
+    }
+  ]
+}

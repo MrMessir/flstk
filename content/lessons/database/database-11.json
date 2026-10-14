@@ -1,0 +1,74 @@
+{
+  "id": "database-11",
+  "part": "database",
+  "module": "db-ops",
+  "order": 11,
+  "title": "Миграции",
+  "goal": "Введёшь историю схемы через SQL-файлы или Prisma migrate и не будешь править prod руками.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Миграция — версионированный файл up/down или SQL, который переводит схему из состояния A в B. Команда apply на dev и CI, тот же порядок на staging/prod. Ручной ALTER на проде без записи в git — источник «works on my machine»."
+    },
+    {
+      "type": "heading",
+      "content": "Prisma migrate"
+    },
+    {
+      "type": "paragraph",
+      "content": "prisma migrate dev --name add_comments создаёт папку migrations/ с SQL и обновляет dev БД. migrate deploy применяет на prod без интерактива. schema.prisma — декларация моделей, SQL генерируется."
+    },
+    {
+      "type": "heading",
+      "content": "Откат и данные"
+    },
+    {
+      "type": "paragraph",
+      "content": "DROP COLUMN с prod-данными болезненен. Сначала nullable column + backfill + NOT NULL. Миграции тестируй на копии данных."
+    }
+  ],
+  "codeExample": "-- migrations/20250301_add_published/migration.sql\nALTER TABLE posts ADD COLUMN published boolean NOT NULL DEFAULT false;\nCREATE INDEX posts_published_idx ON posts (published) WHERE published = true;",
+  "practice": [
+    {
+      "title": "Prisma init",
+      "description": "npm install prisma @prisma/client -D. npx prisma init. DATABASE_URL в .env на Docker Postgres. schema.prisma: model User, Post минимум."
+    },
+    {
+      "title": "migrate dev",
+      "description": "npx prisma migrate dev --name init. Проверь папку prisma/migrations и таблицы в psql. Закоммить migrations в git."
+    },
+    {
+      "title": "Вторая миграция",
+      "description": "Добавь поле published Boolean @default(false) в Post. migrate dev --name add_published. Убедись, что старые строки получили false."
+    }
+  ],
+  "checklist": [
+    "Миграции в git, не только локальный ALTER",
+    "Использую prisma migrate dev на разработке",
+    "migrate deploy знаю для prod",
+    "Добавление столбца с DEFAULT протестировал"
+  ],
+  "links": [
+    {
+      "title": "Prisma Migrate",
+      "url": "https://www.prisma.io/docs/orm/prisma-migrate"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "migration",
+      "meaning": "Версионированное изменение схемы БД.",
+      "example": "prisma/migrations/..."
+    },
+    {
+      "term": "schema.prisma",
+      "meaning": "Декларативное описание моделей Prisma.",
+      "example": "model Post { id String @id }"
+    },
+    {
+      "term": "migrate deploy",
+      "meaning": "Применить миграции без генерации новых.",
+      "example": "CI / production"
+    }
+  ]
+}

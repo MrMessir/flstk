@@ -1,0 +1,104 @@
+{
+  "id": "fullstack-project",
+  "part": "fullstack",
+  "module": "project",
+  "order": 14,
+  "title": "Итог Full-stack: блог или таск-менеджер",
+  "goal": "Свяжешь React с API: auth, контент, файлы, realtime, админка.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Выбери продукт и зафиксируй рамки"
+    },
+    {
+      "type": "paragraph",
+      "content": "Итоговый проект модуля — блог или таск-менеджер, где работает весь путь: регистрация, контент, файлы, realtime или админка. Прежде чем писать код, зафиксируй MVP: список из 5–7 функций, без которых продукта нет. Всё остальное складывай в issues с пометкой v2. Без этого проект растёт бесконечно и не завершается."
+    },
+    {
+      "type": "heading",
+      "content": "Сквозной сценарий"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Гость заходит на сайт и видит публичные страницы.",
+        "Регистрируется и входит.",
+        "Создаёт сущность (пост или задачу), добавляет файл.",
+        "Редактирует и удаляет свою сущность, чужую удалить не может (проверка на сервере).",
+        "Выходит и входит снова: данные на месте.",
+        "Администратор видит чужой контент и может заблокировать пользователя."
+      ],
+      "ordered": true
+    },
+    {
+      "type": "paragraph",
+      "content": "Проверь сценарий руками на чистой базе, без ручных правок: так проект выглядит для проверяющего. Запиши его на видео или гиф."
+    },
+    {
+      "type": "heading",
+      "content": "Definition of Done"
+    },
+    {
+      "type": "list",
+      "items": [
+        "README со стеком, схемой, командами запуска и переменными окружения (.env.example).",
+        "Обработаны состояния загрузки, пустоты и ошибки на всех списках.",
+        "Права проверяются на API, а валидация одной схемой на клиенте и сервере.",
+        "Скриншот или гиф главного сценария.",
+        "Отложенное лежит в issues, а не в половине готового кода."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Что показать"
+    },
+    {
+      "type": "paragraph",
+      "content": "В портфолио пойдёт не список технологий, а работающий сценарий и несколько осознанных решений: почему такая схема базы, как устроена авторизация, что сделано для скорости. Подготовь это заранее: деплой появится в модуле DevOps, но адрес и переменные окружения продумай сейчас. Попроси знакомого пройти сценарий без подсказок и запиши, где он запнулся: это лучший список доработок перед показом."
+    }
+  ],
+  "codeExample": "// package.json (корень монорепо)\n{\n  \"private\": true,\n  \"workspaces\": [\"apps/*\", \"packages/*\"],\n  \"scripts\": {\n    \"dev\": \"npm run dev --workspace apps/api & npm run dev --workspace apps/web\",\n    \"test\": \"npm test --workspaces --if-present\"\n  }\n}\n\n# apps/api/.env.example — без реальных значений\nDATABASE_URL=postgres://user:password@localhost:5432/app\nJWT_SECRET=REPLACE_ME_with_32_plus_random_characters\nCLIENT_ORIGIN=http://localhost:5173\n\n# apps/web/.env.example — всё здесь видно в браузере, секретов нет\nVITE_API_URL=http://localhost:3000",
+  "practice": [
+    {
+      "title": "Сквозной сценарий на видео",
+      "description": "Запиши 2–3 мин screen capture: signup, create, realtime/comment или upload. Положи ссылку в README."
+    },
+    {
+      "title": "Чеклист MVP в README",
+      "description": "Таблица: auth, CRUD, files или WS, admin — галочки что готово."
+    },
+    {
+      "title": "Issue «v2»",
+      "description": "Создай 5 issues с осознанно отложенными фичами (OAuth, push, analytics)."
+    }
+  ],
+  "checklist": [
+    "Прохожу signup → create → edit без ручных правок в БД",
+    "Админ-действия защищены на сервере",
+    "Есть README со стеком и командой запуска",
+    "Отложенные фичи вынесены в issues, не в половину кода"
+  ],
+  "links": [
+    {
+      "title": "MDN: Fetch API",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/Fetch_API"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "MVP",
+      "meaning": "Минимум функций с ценностью.",
+      "example": "CRUD + auth"
+    },
+    {
+      "term": "user journey",
+      "meaning": "Путь пользователя end-to-end.",
+      "example": "signup → post"
+    },
+    {
+      "term": "Definition of Done",
+      "meaning": "Критерии готовности фичи.",
+      "example": "тест + README"
+    }
+  ]
+}

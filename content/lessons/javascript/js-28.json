@@ -1,0 +1,89 @@
+{
+  "id": "js-28",
+  "part": "javascript",
+  "module": "js-practice",
+  "order": 28,
+  "title": "Тренажёр: массивы и строки",
+  "goal": "Решишь задачи на map, filter и reduce без подсказок из интернета.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Большинство задач на массивы сводятся к трём приёмам: transform (map), отбор (filter) и свёртка к одному значению (reduce). Строки ведут себя как массивы символов: [...str], str.split(''), но строку мутировать нельзя — собирай новую через + или массив.join(''). Два указателя (start/end) помогают с палиндромами и поиском пары в отсортированном массиве."
+    },
+    {
+      "type": "heading",
+      "content": "Проверяй себя assert-ами"
+    },
+    {
+      "type": "paragraph",
+      "content": "Файл exercises.js с функциями и блоком проверок внизу быстрее, чем Codewars, когда учишься: function assertEqual(a, b, label) { if (a !== b) throw new Error(label + `: ${a} !== ${b}`); }. Запуск node exercises.js сразу показывает, какая задача упала. Сначала напиши грубое решение, потом подумай о краевых случаях: пустая строка, один элемент, все одинаковые."
+    },
+    {
+      "type": "heading",
+      "content": "Типовые паттерны"
+    },
+    {
+      "type": "list",
+      "items": [
+        "reverseString: split → reverse → join или цикл с конца.",
+        "unique: [...new Set(arr)] или filter с indexOf.",
+        "charFrequency: reduce по символам объекта-счётчика.",
+        "sumPositive: filter(x > 0) затем reduce.",
+        "isPalindrome: нормализуй регистр, сравни с reverse."
+      ]
+    }
+  ],
+  "codeExample": "function reverseString(s) {\n  return [...s].reverse().join(\"\");\n}\n\nfunction sumPositive(nums) {\n  return nums.filter((n) => n > 0).reduce((acc, n) => acc + n, 0);\n}\n\nfunction assertEqual(a, b, msg) {\n  if (a !== b) throw new Error(`${msg}: ${a} !== ${b}`);\n}\n\nassertEqual(reverseString(\"abc\"), \"cba\", \"reverse\");\nassertEqual(sumPositive([-1, 2, 3]), 5, \"sum\");",
+  "practice": [
+    {
+      "title": "Файл exercises.js с пятью функциями",
+      "description": "Реализуй reverseString, uniqueArray, charCount(str), sumPositive(nums), isPalindrome(str). Внизу файла минимум 10 assertEqual. Запуск node exercises.js завершается без ошибок."
+    },
+    {
+      "title": "Задача «два числа дают sum»",
+      "description": "Функция twoSum(nums, target) возвращает индексы двух элементов с суммой target (ровно одна пара). Проверь twoSum([2,7,11,15], 9) → [0,1]. Добавь assert в exercises.js."
+    },
+    {
+      "title": "Codewars или LeetCode Easy",
+      "description": "Реши одну внешнюю задачу уровня 8 kyu / Easy на строки или массивы (например «Remove duplicates»). В комментарии в exercises.js укажи URL задачи и своё финальное решение одной функцией."
+    }
+  ],
+  "checklist": [
+    "Пишу map/filter/reduce, не копирую готовый ответ",
+    "Добавляю assert-проверки на краевые случаи",
+    "Могу вслух объяснить сложность своего решения",
+    "Храню решения в репозитории или файле exercises.js"
+  ],
+  "links": [
+    {
+      "title": "MDN: методы массива",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Array"
+    },
+    {
+      "title": "MDN: reduce",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "reduce",
+      "meaning": "Свёртка массива к одному значению через аккумулятор.",
+      "example": "nums.reduce((a, n) => a + n, 0)"
+    },
+    {
+      "term": "палиндром",
+      "meaning": "Строка, одинаковая слева направо и справа налево.",
+      "example": "\"level\""
+    },
+    {
+      "term": "assert",
+      "meaning": "Проверка равенства ожидаемого и фактического.",
+      "example": "assertEqual(fn(2), 4)"
+    },
+    {
+      "term": "два указателя",
+      "meaning": "Два индекса по массиву или строке для O(n) обхода.",
+      "example": "left/right к центру"
+    }
+  ]
+}

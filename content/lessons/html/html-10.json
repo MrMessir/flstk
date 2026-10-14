@@ -1,0 +1,94 @@
+{
+  "id": "html-10",
+  "part": "html",
+  "module": "structure",
+  "order": 10,
+  "title": "Обязательные поля и подсказки",
+  "goal": "Сделаешь анкету, которую браузер не отправит, пока поля пустые или слишком короткие.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Браузер умеет останавливать отправку, если поле заполнено плохо. Это подсказка человеку. Позже те же проверки делают на сервере, потому что браузерную можно обойти. Сейчас нам хватает проверки в HTML."
+    },
+    {
+      "type": "heading",
+      "content": "Самые нужные правила"
+    },
+    {
+      "type": "list",
+      "items": [
+        "required — поле нельзя оставить пустым.",
+        "minlength=\"2\" — в тексте не меньше 2 символов. maxlength=\"40\" — не больше 40.",
+        "type=\"number\" вместе с min=\"10\" и max=\"100\" — число от 10 до 100.",
+        "type=\"email\" уже проверяет, что в адресе есть @.",
+        "placeholder=\"Аня\" — серая подсказка внутри поля. Когда начинаешь печатать, она исчезает. Это не замена label."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Список, большое поле и рамка"
+    },
+    {
+      "type": "paragraph",
+      "content": "<select> — выпадающий список. Каждый пункт — <option>. Первым пунктом поставь пустой «Выбери», чтобы человек выбрал сам. <textarea> — большое поле для сообщения, rows=\"4\" задаёт высоту в строках."
+    },
+    {
+      "type": "paragraph",
+      "content": "<fieldset> рисует рамку вокруг нескольких полей. <legend> — подпись на рамке, например «Куда ответить». pattern=\"[0-9]{6}\" значит «ровно 6 цифр». Такую строку можно скопировать для индекса, придумывать свои пока не нужно. Слово novalidate на form выключает все эти проверки. В этом уроке его не пиши."
+    }
+  ],
+  "codeExample": "<form method=\"get\">\n  <p>\n    <label for=\"name\">Имя</label><br />\n    <input id=\"name\" name=\"name\" type=\"text\" required minlength=\"2\" placeholder=\"Аня\" />\n  </p>\n  <p>\n    <label for=\"age\">Возраст</label><br />\n    <input id=\"age\" name=\"age\" type=\"number\" min=\"10\" max=\"100\" />\n  </p>\n  <p>\n    <label for=\"topic\">Тема</label><br />\n    <select id=\"topic\" name=\"topic\" required>\n      <option value=\"\">Выбери</option>\n      <option value=\"html\">Вопрос по HTML</option>\n      <option value=\"other\">Другое</option>\n    </select>\n  </p>\n  <p>\n    <label for=\"message\">Сообщение</label><br />\n    <textarea id=\"message\" name=\"message\" rows=\"4\" required minlength=\"10\"></textarea>\n  </p>\n  <button type=\"submit\">Отправить</button>\n</form>",
+  "practice": [
+    {
+      "title": "Скопируй анкету",
+      "description": "Вставь форму из примера на страницу. У имени должны быть required и minlength=\"2\". У сообщения — required и minlength=\"10\". Подпись label остаётся снаружи, placeholder — только серая подсказка внутри поля имени."
+    },
+    {
+      "title": "Поймай три отказа",
+      "description": "Нажми «Отправить» с пустыми полями. Браузер должен показать сообщение у первого пустого поля и не дописать ответы в адрес. Потом впиши имя из одной буквы. Потом впиши имя нормально, а в сообщении — три буквы. Каждый раз отправка должна останавливаться."
+    },
+    {
+      "title": "Успешная отправка",
+      "description": "Заполни имя из двух букв или длиннее, выбери тему не «Выбери», напиши сообщение длиннее 10 символов. Нажми кнопку. В адресе страницы должны появиться name, topic и message. Если адрес не изменился — какое-то поле всё ещё не проходит проверку."
+    }
+  ],
+  "checklist": [
+    "Ставлю required на поля, без которых форму нельзя отправить",
+    "Ограничиваю короткий текст через minlength",
+    "Не путаю placeholder и подпись label",
+    "Проверяю форму пустой отправкой и смотрю сообщение браузера"
+  ],
+  "links": [
+    {
+      "title": "MDN: проверка формы",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Extensions/Forms/Form_validation"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "required",
+      "meaning": "Поле нельзя оставить пустым.",
+      "example": "<input required />"
+    },
+    {
+      "term": "minlength / maxlength",
+      "meaning": "Минимальная и максимальная длина текста.",
+      "example": "minlength=\"2\" maxlength=\"40\""
+    },
+    {
+      "term": "placeholder",
+      "meaning": "Серая подсказка внутри поля. Не заменяет label.",
+      "example": "placeholder=\"Аня\""
+    },
+    {
+      "term": "<select> / <option>",
+      "meaning": "Выпадающий список и его пункты.",
+      "example": "<select><option>Тема</option></select>"
+    },
+    {
+      "term": "<textarea>",
+      "meaning": "Большое многострочное поле.",
+      "example": "<textarea rows=\"4\"></textarea>"
+    }
+  ]
+}

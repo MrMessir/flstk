@@ -1,0 +1,102 @@
+{
+  "id": "css-02",
+  "part": "css",
+  "module": "css-basics",
+  "order": 2,
+  "title": "Как выбрать нужный элемент",
+  "goal": "Научишься красить теги, классы и id разными селекторами.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Селектор — ответ на вопрос «кого красим?». Без правильного селектора стиль не попадёт на нужный кусок страницы."
+    },
+    {
+      "type": "heading",
+      "content": "Основные селекторы"
+    },
+    {
+      "type": "list",
+      "items": [
+        "p — все абзацы.",
+        ".card — все элементы с class=\"card\". Точка в начале значит «класс».",
+        "#main — элемент с id=\"main\". Решётка значит «id». Такой на странице один.",
+        "* — вообще все элементы. Используй редко.",
+        "h1, p — и заголовки, и абзацы сразу."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Кто внутри кого"
+    },
+    {
+      "type": "list",
+      "items": [
+        "nav a — ссылка, которая лежит где угодно внутри nav.",
+        "nav > a — ссылка только прямым ребёнком nav, не глубже.",
+        "h1 + p — абзац сразу после заголовка.",
+        "a[target] — ссылка, у которой есть атрибут target."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Класс удобен для повторов: карточек, кнопок. id — для одного важного места. Не крась всё через id: потом трудно менять."
+    },
+    {
+      "type": "paragraph",
+      "content": "Селектор читается слева направо: сначала элемент, потом класс или id. Если правило не срабатывает, в DevTools во вкладке Styles видно, какие селекторы перечёркнуты и какое победило."
+    }
+  ],
+  "codeExample": "<style>\nh1 { color: #222; }\n.note { background: #fff7cc; padding: 8px; }\n#top { border-bottom: 2px solid #0f8a8a; }\nnav a { color: #0f8a8a; }\nbutton[type=\"submit\"] { font-weight: bold; }\n</style>\n\n<h1 id=\"top\">Селекторы</h1>\n<p class=\"note\">Это заметка с классом.</p>\n<nav>\n  <a href=\"#\">Ссылка в меню</a>\n</nav>",
+  "practice": [
+    {
+      "title": "Селектор по тегу и классу",
+      "description": "В index.html добавь <p class=\"lead\"> и обычный <p>. В styles.css: p { color: #333; } и .lead { font-size: 1.25rem; }. Только lead должен стать крупнее."
+    },
+    {
+      "title": "Селектор #id для одного блока",
+      "description": "Дай hero id=\"hero\" и правило #hero { background: #eef; padding: 16px; }. Другие section без фона. Проверь в DevTools → Elements, что правило применяется только к #hero."
+    },
+    {
+      "title": "Составной селектор nav a",
+      "description": "Добавь nav a { text-decoration: none; color: #0f766e; }. Ссылка вне nav остаётся подчёркнутой по умолчанию. Hover необязателен — главное различие nav / не nav."
+    }
+  ],
+  "checklist": [
+    "Выбираю тег, .класс и #id",
+    "Понимаю, что точка — класс, решётка — id",
+    "Умею писать nav a для ссылок внутри меню",
+    "Группирую селекторы через запятую"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: селекторы",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Styling_basics/Basic_selectors"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "селектор",
+      "meaning": "Указывает, кого красим.",
+      "example": "p { ... } или .card { ... }"
+    },
+    {
+      "term": ".class",
+      "meaning": "Селектор по классу. Точка в начале.",
+      "example": ".note { color: brown; }"
+    },
+    {
+      "term": "#id",
+      "meaning": "Селектор по id. Решётка в начале.",
+      "example": "#top { color: teal; }"
+    },
+    {
+      "term": "nav a",
+      "meaning": "Ссылка внутри nav — селектор потомка.",
+      "example": "nav a { color: black; }"
+    }
+  ]
+}

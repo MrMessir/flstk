@@ -1,0 +1,705 @@
+[
+  {
+    "id": "js-sum",
+    "type": "js-function",
+    "title": "Сумма двух чисел",
+    "prompt": "Допиши функцию sum(a, b), которая возвращает сумму двух чисел.",
+    "difficulty": "easy",
+    "timeLimitSec": 300,
+    "starter": "function sum(a, b) {\n  // напиши решение\n}\n",
+    "functionName": "sum",
+    "tests": [
+      {
+        "name": "2 + 3",
+        "args": [
+          2,
+          3
+        ],
+        "expected": 5
+      },
+      {
+        "name": "0 + 0",
+        "args": [
+          0,
+          0
+        ],
+        "expected": 0
+      },
+      {
+        "name": "отрицательные",
+        "args": [
+          -1,
+          4
+        ],
+        "expected": 3
+      }
+    ]
+  },
+  {
+    "id": "js-palindrome",
+    "type": "js-function",
+    "title": "Палиндром",
+    "prompt": "Функция isPalindrome(s) возвращает true, если строка читается одинаково слева направо и справа налево. Регистр и пробелы не важны: «А роза упала на лапу Азора» — true.",
+    "difficulty": "easy",
+    "timeLimitSec": 480,
+    "starter": "function isPalindrome(s) {\n  // напиши решение\n}\n",
+    "functionName": "isPalindrome",
+    "tests": [
+      {
+        "name": "короткое",
+        "args": [
+          "abba"
+        ],
+        "expected": true
+      },
+      {
+        "name": "не палиндром",
+        "args": [
+          "hello"
+        ],
+        "expected": false
+      },
+      {
+        "name": "с пробелами и регистром",
+        "args": [
+          "А роза упала на лапу Азора"
+        ],
+        "expected": true
+      },
+      {
+        "name": "пусто",
+        "args": [
+          ""
+        ],
+        "expected": true
+      }
+    ]
+  },
+  {
+    "id": "js-fizzbuzz",
+    "type": "js-function",
+    "title": "FizzBuzz значение",
+    "prompt": "Функция fizzBuzz(n) возвращает строку: «Fizz» если n делится на 3, «Buzz» если на 5, «FizzBuzz» если на 15, иначе строку с числом.",
+    "difficulty": "easy",
+    "timeLimitSec": 360,
+    "starter": "function fizzBuzz(n) {\n  // напиши решение\n}\n",
+    "functionName": "fizzBuzz",
+    "tests": [
+      {
+        "name": "3",
+        "args": [
+          3
+        ],
+        "expected": "Fizz"
+      },
+      {
+        "name": "5",
+        "args": [
+          5
+        ],
+        "expected": "Buzz"
+      },
+      {
+        "name": "15",
+        "args": [
+          15
+        ],
+        "expected": "FizzBuzz"
+      },
+      {
+        "name": "7",
+        "args": [
+          7
+        ],
+        "expected": "7"
+      }
+    ]
+  },
+  {
+    "id": "js-unique",
+    "type": "js-function",
+    "title": "Уникальные значения",
+    "prompt": "Функция unique(arr) возвращает новый массив без повторов, порядок первого появления сохраняется.",
+    "difficulty": "easy",
+    "timeLimitSec": 420,
+    "starter": "function unique(arr) {\n  // напиши решение\n}\n",
+    "functionName": "unique",
+    "tests": [
+      {
+        "name": "числа",
+        "args": [
+          [
+            1,
+            2,
+            2,
+            3,
+            1
+          ]
+        ],
+        "expected": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "name": "строки",
+        "args": [
+          [
+            "a",
+            "b",
+            "a"
+          ]
+        ],
+        "expected": [
+          "a",
+          "b"
+        ]
+      },
+      {
+        "name": "пусто",
+        "args": [
+          []
+        ],
+        "expected": []
+      }
+    ]
+  },
+  {
+    "id": "bug-reverse",
+    "type": "js-bug",
+    "title": "Баг: переворот строки",
+    "prompt": "Функция reverseString должна переворачивать строку, но в ней ошибка. Найди и исправь. Сигнатуру не меняй.",
+    "difficulty": "easy",
+    "timeLimitSec": 360,
+    "starter": "function reverseString(s) {\n  let out = \"\";\n  for (let i = 0; i < s.length; i++) {\n    out = out + s[i];\n  }\n  return out;\n}\n",
+    "functionName": "reverseString",
+    "tests": [
+      {
+        "name": "abc",
+        "args": [
+          "abc"
+        ],
+        "expected": "cba"
+      },
+      {
+        "name": "пусто",
+        "args": [
+          ""
+        ],
+        "expected": ""
+      },
+      {
+        "name": "один символ",
+        "args": [
+          "x"
+        ],
+        "expected": "x"
+      }
+    ]
+  },
+  {
+    "id": "bug-max",
+    "type": "js-bug",
+    "title": "Баг: максимум в массиве",
+    "prompt": "findMax должен вернуть наибольшее число. Сейчас логика сломана — почини.",
+    "difficulty": "easy",
+    "timeLimitSec": 360,
+    "starter": "function findMax(nums) {\n  let max = 0;\n  for (const n of nums) {\n    if (n > max) max = n;\n  }\n  return max;\n}\n",
+    "functionName": "findMax",
+    "tests": [
+      {
+        "name": "обычный",
+        "args": [
+          [
+            1,
+            5,
+            3
+          ]
+        ],
+        "expected": 5
+      },
+      {
+        "name": "отрицательные",
+        "args": [
+          [
+            -10,
+            -3,
+            -7
+          ]
+        ],
+        "expected": -3
+      },
+      {
+        "name": "один",
+        "args": [
+          [
+            42
+          ]
+        ],
+        "expected": 42
+      }
+    ]
+  },
+  {
+    "id": "bug-even",
+    "type": "js-bug",
+    "title": "Баг: чётные числа",
+    "prompt": "onlyEven должен вернуть массив только чётных чисел из входного. Исправь условие.",
+    "difficulty": "easy",
+    "timeLimitSec": 300,
+    "starter": "function onlyEven(nums) {\n  return nums.filter((n) => n % 2 === 1);\n}\n",
+    "functionName": "onlyEven",
+    "tests": [
+      {
+        "name": "микс",
+        "args": [
+          [
+            1,
+            2,
+            3,
+            4
+          ]
+        ],
+        "expected": [
+          2,
+          4
+        ]
+      },
+      {
+        "name": "все нечётные",
+        "args": [
+          [
+            1,
+            3
+          ]
+        ],
+        "expected": []
+      },
+      {
+        "name": "ноль",
+        "args": [
+          [
+            0,
+            2
+          ]
+        ],
+        "expected": [
+          0,
+          2
+        ]
+      }
+    ]
+  },
+  {
+    "id": "html-card",
+    "type": "html-checklist",
+    "title": "Карточка товара",
+    "prompt": "Сверстай минимальную карточку: article с классом card, внутри h2 с названием, p с ценой, button «Купить».",
+    "difficulty": "easy",
+    "timeLimitSec": 480,
+    "starter": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Карточка</title>\n</head>\n<body>\n  <!-- твоя вёрстка -->\n</body>\n</html>\n",
+    "checks": [
+      {
+        "id": "article-card",
+        "description": "есть <article class=\"card\">",
+        "pattern": "<article[^>]*class=\"[^\"]*\\bcard\\b"
+      },
+      {
+        "id": "h2",
+        "description": "внутри страницы есть h2",
+        "pattern": "<h2[\\s>]"
+      },
+      {
+        "id": "price-p",
+        "description": "есть абзац p",
+        "pattern": "<p[\\s>]"
+      },
+      {
+        "id": "buy-btn",
+        "description": "кнопка содержит текст Купить",
+        "pattern": "<button[^>]*>\\s*Купить\\s*</button>"
+      }
+    ]
+  },
+  {
+    "id": "html-form",
+    "type": "html-checklist",
+    "title": "Форма обратной связи",
+    "prompt": "Собери форму: form с input type=email, textarea и button type=submit. У email должен быть required.",
+    "difficulty": "easy",
+    "timeLimitSec": 480,
+    "starter": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Форма</title>\n</head>\n<body>\n  <!-- твоя форма -->\n</body>\n</html>\n",
+    "checks": [
+      {
+        "id": "form",
+        "description": "есть form",
+        "pattern": "<form[\\s>]"
+      },
+      {
+        "id": "email",
+        "description": "есть input type=email",
+        "pattern": "<input[^>]*type=\"email\""
+      },
+      {
+        "id": "required",
+        "description": "у email есть required",
+        "pattern": "<input[^>]*type=\"email\"[^>]*required|<input[^>]*required[^>]*type=\"email\""
+      },
+      {
+        "id": "textarea",
+        "description": "есть textarea",
+        "pattern": "<textarea[\\s>]"
+      },
+      {
+        "id": "submit",
+        "description": "есть button type=submit или input type=submit",
+        "pattern": "<button[^>]*type=\"submit\"|<input[^>]*type=\"submit\""
+      }
+    ]
+  },
+  {
+    "id": "html-landing",
+    "type": "html-checklist",
+    "title": "Мини-лендинг",
+    "prompt": "Сверстай каркас: header с nav из двух ссылок, main с секцией id=\"hero\" и h1, footer с годом 2026.",
+    "difficulty": "medium",
+    "timeLimitSec": 600,
+    "starter": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Лендинг</title>\n</head>\n<body>\n  <!-- header / main / footer -->\n</body>\n</html>\n",
+    "checks": [
+      {
+        "id": "header-nav",
+        "description": "header содержит nav",
+        "pattern": "<header[\\s\\S]*<nav[\\s\\S]*</nav>[\\s\\S]*</header>"
+      },
+      {
+        "id": "two-links",
+        "description": "не меньше двух ссылок <a ",
+        "pattern": "(?:<a\\s[^>]*>.*){2}"
+      },
+      {
+        "id": "hero",
+        "description": "есть section id=hero",
+        "pattern": "<section[^>]*id=\"hero\""
+      },
+      {
+        "id": "h1",
+        "description": "есть h1",
+        "pattern": "<h1[\\s>]"
+      },
+      {
+        "id": "footer-year",
+        "description": "footer содержит 2026",
+        "pattern": "<footer[\\s\\S]*2026[\\s\\S]*</footer>"
+      }
+    ]
+  },
+  {
+    "id": "ts-pick",
+    "type": "js-function",
+    "title": "TS-мышление: pick полей",
+    "prompt": "Функция pick(obj, keys) возвращает новый объект только с указанными ключами. Ключей может не быть в obj — пропускай.",
+    "difficulty": "medium",
+    "timeLimitSec": 480,
+    "starter": "function pick(obj, keys) {\n  // напиши решение\n}\n",
+    "functionName": "pick",
+    "tests": [
+      {
+        "name": "базовый",
+        "args": [
+          {
+            "a": 1,
+            "b": 2,
+            "c": 3
+          },
+          [
+            "a",
+            "c"
+          ]
+        ],
+        "expected": {
+          "a": 1,
+          "c": 3
+        }
+      },
+      {
+        "name": "нет ключа",
+        "args": [
+          {
+            "x": 1
+          },
+          [
+            "x",
+            "y"
+          ]
+        ],
+        "expected": {
+          "x": 1
+        }
+      },
+      {
+        "name": "пусто",
+        "args": [
+          {
+            "a": 1
+          },
+          []
+        ],
+        "expected": {}
+      }
+    ]
+  },
+  {
+    "id": "react-filter",
+    "type": "js-function",
+    "title": "Фильтр каталога",
+    "prompt": "Функция filterProducts(products, query) фильтрует товары по подстроке в title без учёта регистра. products: [{id,title,price}].",
+    "difficulty": "medium",
+    "timeLimitSec": 420,
+    "starter": "function filterProducts(products, query) {\n  // напиши решение\n}\n",
+    "functionName": "filterProducts",
+    "tests": [
+      {
+        "name": "подстрока",
+        "args": [
+          [
+            {
+              "id": "1",
+              "title": "iPhone",
+              "price": 10
+            },
+            {
+              "id": "2",
+              "title": "Case",
+              "price": 2
+            }
+          ],
+          "pho"
+        ],
+        "expected": [
+          {
+            "id": "1",
+            "title": "iPhone",
+            "price": 10
+          }
+        ]
+      },
+      {
+        "name": "регистр",
+        "args": [
+          [
+            {
+              "id": "1",
+              "title": "Mouse",
+              "price": 1
+            }
+          ],
+          "MOUSE"
+        ],
+        "expected": [
+          {
+            "id": "1",
+            "title": "Mouse",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "name": "пусто",
+        "args": [
+          [
+            {
+              "id": "1",
+              "title": "A",
+              "price": 1
+            }
+          ],
+          "zzz"
+        ],
+        "expected": []
+      }
+    ]
+  },
+  {
+    "id": "sql-where",
+    "type": "js-function",
+    "title": "SQL-мышление: фильтр строк",
+    "prompt": "Функция selectWhere(rows, column, value) имитирует SELECT * FROM t WHERE column = value. Верни массив подходящих объектов.",
+    "difficulty": "medium",
+    "timeLimitSec": 400,
+    "starter": "function selectWhere(rows, column, value) {\n  // напиши решение\n}\n",
+    "functionName": "selectWhere",
+    "tests": [
+      {
+        "name": "status",
+        "args": [
+          [
+            {
+              "id": 1,
+              "status": "open"
+            },
+            {
+              "id": 2,
+              "status": "done"
+            },
+            {
+              "id": 3,
+              "status": "open"
+            }
+          ],
+          "status",
+          "open"
+        ],
+        "expected": [
+          {
+            "id": 1,
+            "status": "open"
+          },
+          {
+            "id": 3,
+            "status": "open"
+          }
+        ]
+      },
+      {
+        "name": "пусто",
+        "args": [
+          [
+            {
+              "id": 1,
+              "status": "a"
+            }
+          ],
+          "status",
+          "b"
+        ],
+        "expected": []
+      }
+    ]
+  },
+  {
+    "id": "api-status",
+    "type": "js-function",
+    "title": "API: код ответа",
+    "prompt": "Функция httpStatus({authorized, found, method}) возвращает число: 401 если !authorized; 404 если authorized и !found; 200 если GET и found; 201 если POST и found-создание (found=true означает успех создания); иначе 405.",
+    "difficulty": "medium",
+    "timeLimitSec": 540,
+    "starter": "function httpStatus({ authorized, found, method }) {\n  // напиши решение\n}\n",
+    "functionName": "httpStatus",
+    "tests": [
+      {
+        "name": "unauthorized",
+        "args": [
+          {
+            "authorized": false,
+            "found": true,
+            "method": "GET"
+          }
+        ],
+        "expected": 401
+      },
+      {
+        "name": "not found",
+        "args": [
+          {
+            "authorized": true,
+            "found": false,
+            "method": "GET"
+          }
+        ],
+        "expected": 404
+      },
+      {
+        "name": "get ok",
+        "args": [
+          {
+            "authorized": true,
+            "found": true,
+            "method": "GET"
+          }
+        ],
+        "expected": 200
+      },
+      {
+        "name": "post create",
+        "args": [
+          {
+            "authorized": true,
+            "found": true,
+            "method": "POST"
+          }
+        ],
+        "expected": 201
+      },
+      {
+        "name": "method",
+        "args": [
+          {
+            "authorized": true,
+            "found": true,
+            "method": "PUT"
+          }
+        ],
+        "expected": 405
+      }
+    ]
+  },
+  {
+    "id": "js-debounce-count",
+    "type": "js-function",
+    "title": "Группировка по ключу",
+    "prompt": "Функция groupBy(arr, key) группирует объекты: возвращает объект { [value]: items[] }.",
+    "difficulty": "medium",
+    "timeLimitSec": 480,
+    "starter": "function groupBy(arr, key) {\n  // напиши решение\n}\n",
+    "functionName": "groupBy",
+    "tests": [
+      {
+        "name": "роли",
+        "args": [
+          [
+            {
+              "name": "a",
+              "role": "admin"
+            },
+            {
+              "name": "b",
+              "role": "user"
+            },
+            {
+              "name": "c",
+              "role": "admin"
+            }
+          ],
+          "role"
+        ],
+        "expected": {
+          "admin": [
+            {
+              "name": "a",
+              "role": "admin"
+            },
+            {
+              "name": "c",
+              "role": "admin"
+            }
+          ],
+          "user": [
+            {
+              "name": "b",
+              "role": "user"
+            }
+          ]
+        }
+      },
+      {
+        "name": "пусто",
+        "args": [
+          [],
+          "role"
+        ],
+        "expected": {}
+      }
+    ]
+  }
+]

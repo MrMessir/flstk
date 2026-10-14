@@ -1,0 +1,90 @@
+{
+  "id": "devops-05",
+  "part": "devops",
+  "module": "ops-docker",
+  "order": 5,
+  "title": "Мультистадийная сборка",
+  "goal": "Уменьшишь образ: build stage → runtime stage.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Проблема большого образа"
+    },
+    {
+      "type": "paragraph",
+      "content": "Для сборки TypeScript или фронтенда нужны devDependencies, компиляторы, исходники. Для запуска нужен только готовый dist и production-зависимости. Если оставить всё в одном образе, он занимает 800 МБ и больше: долго скачивается, дороже хранится и содержит лишнее для атаки (чем больше пакетов, тем больше возможных уязвимостей)."
+    },
+    {
+      "type": "heading",
+      "content": "Многостадийная сборка"
+    },
+    {
+      "type": "paragraph",
+      "content": "В одном Dockerfile несколько блоков FROM. Первая стадия (AS build) ставит все зависимости и собирает проект. Вторая стадия (финальная) начинается с чистого образа и копирует только результат: COPY --from=build /app/dist ./dist. Всё, что осталось в первой стадии, в итоговый образ не попадает. Типичный выигрыш: с сотен мегабайт до 100–150 МБ."
+    },
+    {
+      "type": "list",
+      "items": [
+        "В финальной стадии ставь зависимости с флагом npm ci --omit=dev.",
+        "Копируй только нужное: dist, package.json, lock-файл.",
+        "Сравни размеры: docker images до и после."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Безопасность внутри контейнера"
+    },
+    {
+      "type": "paragraph",
+      "content": "По умолчанию процесс в контейнере работает от root. Если злоумышленник найдёт уязвимость в приложении, у него будут права root внутри контейнера. Добавь в финальную стадию USER node (в образах Node такой пользователь уже есть) и убедись, что файлы читаются этим пользователем (COPY --chown=node:node)."
+    },
+    {
+      "type": "paragraph",
+      "content": "Какой базовый образ выбрать: alpine маленький, но использует musl, и некоторые нативные модули ведут себя иначе; slim на Debian чуть больше, зато совместимее. Distroless-образы ещё меньше и безопаснее, но в них нет shell, и отладка сложнее; выбирай по зрелости команды. Закрепляй версию базового образа (например, node:22-alpine, а лучше с дайджестом), чтобы сборка завтра не дала другой результат."
+    }
+  ],
+  "codeExample": "FROM node:22-alpine AS build\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:22-alpine\nWORKDIR /app\nCOPY --from=build /app/dist ./dist\nCOPY package*.json ./\nRUN npm ci --omit=dev\nUSER node\nCMD [\"node\", \"dist/index.js\"]",
+  "practice": [
+    {
+      "title": "Сравни размер",
+      "description": "docker images до и после multistage — запиши MB."
+    },
+    {
+      "title": "Убери devDeps",
+      "description": "Убедись, что typescript не в финальном слое (docker history или dive)."
+    },
+    {
+      "title": "USER node",
+      "description": "docker exec whoami внутри контейнера — node, не root."
+    }
+  ],
+  "checklist": [
+    "Разделяю build и runtime stages",
+    "Копирую в финал только нужные артефакты",
+    "Ставлю --omit=dev в runtime",
+    "Запускаю процесс не от root"
+  ],
+  "links": [
+    {
+      "title": "Docker multistage builds",
+      "url": "https://docs.docker.com/build/building/multi-stage/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "multistage",
+      "meaning": "Несколько FROM в одном Dockerfile.",
+      "example": "AS build"
+    },
+    {
+      "term": "runtime",
+      "meaning": "Финальный образ для запуска.",
+      "example": "только dist"
+    },
+    {
+      "term": "attack surface",
+      "meaning": "Меньше пакетов — меньше дыр.",
+      "example": "без gcc"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "id": "testing-04",
+  "part": "testing",
+  "module": "test-unit",
+  "order": 4,
+  "title": "Интеграционные тесты API",
+  "goal": "Прогонишь supertest на тестовой БД.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Что такое интеграционный тест API"
+    },
+    {
+      "type": "paragraph",
+      "content": "Он проверяет, что роутинг, middleware, валидация, сервис и база работают вместе. Приложение запускается без server.listen: из app.js экспортируется app, а supertest сам вызывает его в памяти: request(app).get('/health'). Проверяй статус, форму JSON и заголовки, например Set-Cookie с флагами httpOnly и secure."
+    },
+    {
+      "type": "heading",
+      "content": "Тестовая база"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Отдельная база или схема (fullstacker_test), указанная через DATABASE_URL в окружении тестов; боевые данные трогать нельзя.",
+        "beforeAll: применить миграции.",
+        "beforeEach: очистить таблицы (TRUNCATE ... RESTART IDENTITY CASCADE) или откатывать транзакцию.",
+        "Каждый тест сам создаёт нужные данные: вспомогательная функция createUser() не зависит от результатов соседних тестов."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Тесты должны проходить в любом порядке и по одному. Если тест зелёный только после предыдущего, между ними есть скрытая связь."
+    },
+    {
+      "type": "heading",
+      "content": "Что проверять в ответах"
+    },
+    {
+      "type": "paragraph",
+      "content": "Сценарии на каждую ручку: успех (201 и тело), валидация (400 с понятной ошибкой), нет прав (401 без cookie, 403 чужой объект), не найдено (404). Не проверяй вызовы внутренних функций: это уровень unit-тестов, а интеграционные должны выдержать рефакторинг внутри."
+    },
+    {
+      "type": "heading",
+      "content": "Скорость и надёжность"
+    },
+    {
+      "type": "paragraph",
+      "content": "Тесты базы дороже, поэтому их количество ограничено главными ручками. В CI подними Postgres как сервис (services: postgres в GitHub Actions) и дождись готовности. Закрывай соединения в afterAll, иначе процесс тестов не завершается. Не используй общую базу с другими разработчиками: тесты начнут падать из-за чужих данных. Для проверки, что тесты действительно изолированы, запусти один файл отдельно и весь набор в случайном порядке: результат не должен отличаться."
+    }
+  ],
+  "codeExample": "import request from \"supertest\";\nimport { app } from \"../app\";\n\nit(\"GET /health\", async () => {\n  const res = await request(app).get(\"/health\");\n  expect(res.status).toBe(200);\n  expect(res.body.ok).toBe(true);\n});",
+  "practice": [
+    {
+      "title": "CRUD posts",
+      "description": "POST создаёт, GET по id возвращает 200, DELETE даёт 204. Используй test DB."
+    },
+    {
+      "title": "401 без cookie",
+      "description": "GET /me без сессии → 401. С login helper → 200."
+    },
+    {
+      "title": "Изоляция",
+      "description": "Два теста создают post — id разные, данные не текут между it."
+    }
+  ],
+  "checklist": [
+    "Импортирую app, не поднимаю порт вручную",
+    "Использую отдельную test database",
+    "Чищу данные между тестами",
+    "Проверяю status и shape JSON"
+  ],
+  "links": [
+    {
+      "title": "supertest",
+      "url": "https://github.com/ladjs/supertest"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "supertest",
+      "meaning": "HTTP к Express без реального порта.",
+      "example": "request(app).get"
+    },
+    {
+      "term": "test database",
+      "meaning": "Изолированная БД для CI.",
+      "example": "postgres_test"
+    },
+    {
+      "term": "truncate",
+      "meaning": "Очистка таблиц между тестами.",
+      "example": "TRUNCATE posts"
+    }
+  ]
+}

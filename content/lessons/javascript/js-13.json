@@ -1,0 +1,86 @@
+{
+  "id": "js-13",
+  "part": "javascript",
+  "module": "js-dom",
+  "order": 13,
+  "title": "DOM: поменять страницу из скрипта",
+  "goal": "Добавишь элементы на страницу и переключишь класс без перезагрузки.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Меняем страницу из скрипта"
+    },
+    {
+      "type": "paragraph",
+      "content": "textContent безопаснее innerHTML для обычного текста: он не исполняет HTML. classList.add/remove/toggle управляет классами без ручной склейки строк. createElement + append добавляет новые узлы."
+    },
+    {
+      "type": "paragraph",
+      "content": "Сначала подумай, что должно измениться в данных, потом отрисуй. Если смешивать «немного в DOM, немного в переменных» без правила — состояние разъедется."
+    },
+    {
+      "type": "list",
+      "items": [
+        "textContent — безопасный текст узла.",
+        "innerHTML — HTML внутри. С чужими данными опасно, для учёбы можно осторожно.",
+        "element.style.color = \"red\" — стиль напрямую. Лучше переключать классы.",
+        "classList.add / remove / toggle — классы.",
+        "createElement(\"li\") — создать узел.",
+        "append / prepend — вставить в конец / в начало.",
+        "remove() — удалить узел."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Если элемент не найден — не вызывай методы вслепую: сначала if (el) { ... }."
+    }
+  ],
+  "codeExample": "<ul id=\"tasks\"></ul>\n<button id=\"add\">Добавить</button>\n\n<script>\nconst list = document.querySelector(\"#tasks\");\nconst button = document.querySelector(\"#add\");\n\nbutton.addEventListener(\"click\", () => {\n  const item = document.createElement(\"li\");\n  item.textContent = \"Новое дело\";\n  list.append(item);\n});\n</script>",
+  "practice": [
+    {
+      "title": "textContent и classList",
+      "description": "По кнопке #btn меняй #msg textContent на «Нажато» и добавляй classList.add(\"active\")."
+    },
+    {
+      "title": "createElement список",
+      "description": "Кнопка «Добавить» создаёт li через createElement, append в ul#list. Без innerHTML для одного li."
+    },
+    {
+      "title": "dataset и атрибут",
+      "description": "Кнопке data-id=\"42\". В handler прочитай event.currentTarget.dataset.id — строка \"42\"."
+    }
+  ],
+  "checklist": [
+    "Меняю текст через textContent",
+    "Переключаю класс через classList",
+    "Создаю элемент createElement",
+    "Вставляю через append"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: изменение DOM",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/DOM_scripting"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "createElement",
+      "meaning": "Создать новый HTML-элемент в памяти.",
+      "example": "document.createElement(\"li\")"
+    },
+    {
+      "term": "append",
+      "meaning": "Вставить элемент внутрь родителя в конец.",
+      "example": "list.append(item)"
+    },
+    {
+      "term": "classList",
+      "meaning": "Добавить/убрать/переключить CSS-класс.",
+      "example": "box.classList.toggle(\"active\")"
+    }
+  ]
+}

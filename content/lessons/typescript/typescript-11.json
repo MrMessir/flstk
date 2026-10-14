@@ -1,0 +1,83 @@
+{
+  "id": "typescript-11",
+  "part": "typescript",
+  "module": "ts-app",
+  "order": 11,
+  "title": "Строгий режим и типичные ошибки",
+  "goal": "Исправишь strictNullChecks, optional chaining и типовые TS-ошибки в чужом коде.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "strictNullChecks запрещает присваивать null и undefined туда, где ожидается string или number. Поле email?: string на практике string | undefined — перед вызовом email.toLowerCase() нужна проверка или optional chaining email?.toLowerCase(). Оператор ?? подставляет значение только для null/undefined, не для 0 или ''."
+    },
+    {
+      "type": "heading",
+      "content": "Частые ошибки TS"
+    },
+    {
+      "type": "paragraph",
+      "content": "Object is possibly 'undefined' — сузь тип if (user) или optional chain. Type 'string | number' is not assignable — union не сузили. Property does not exist — опечатка или нужен type guard для вложенного JSON. noImplicitAny ругается на параметры без типа — добавь аннотацию или включи вывод из контекста."
+    },
+    {
+      "type": "heading",
+      "content": "Non-null assertion и when not to"
+    },
+    {
+      "type": "paragraph",
+      "content": "user!.name говорит компилятору «здесь точно не null» — используй только после явной проверки выше или когда DOM-элемент гарантирован разметкой. Лучше if (!el) return; дальше el без !. satisfies operator проверяет, что объект соответствует типу, сохраняя literal types. as const делает объект неизменяемым на уровне типов."
+    }
+  ],
+  "codeExample": "type Profile = { name: string; bio?: string };\n\nfunction headline(p: Profile): string {\n  const bio = p.bio?.trim();\n  return bio ?? `Привет, ${p.name}`;\n}\n\nfunction getInput(): HTMLInputElement | null {\n  return document.querySelector(\"#email\");\n}\n\nfunction readEmail(): string {\n  const el = getInput();\n  if (!el) return \"\";\n  return el.value;\n}",
+  "practice": [
+    {
+      "title": "Почини strictNull",
+      "description": "Дан файл broken.ts с let title: string = maybeTitle() где maybeTitle(): string | undefined. Исправь через if или ?? без отключения strict. typecheck проходит."
+    },
+    {
+      "title": "headline с bio?",
+      "description": "Реализуй headline из примера. Тест: { name: 'A' } → «Привет, A»; { name: 'A', bio: '  dev  ' } → «dev» после trim."
+    },
+    {
+      "title": "Убери лишние !",
+      "description": "Найди в своём TS-проекте три использования ! и замени на явные if/return. Запиши в комментарии, какой был риск runtime undefined."
+    }
+  ],
+  "checklist": [
+    "Обрабатываю undefined при strictNullChecks",
+    "Использую ?. и ?? вместо глубоких if",
+    "Избегаю ! без предшествующей проверки",
+    "Читаю код ошибки TS и сужаю тип, не any"
+  ],
+  "links": [
+    {
+      "title": "Handbook: Strict Mode",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/basic-types.html#strictness"
+    },
+    {
+      "title": "TSConfig strict",
+      "url": "https://www.typescriptlang.org/tsconfig#strict"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "strictNullChecks",
+      "meaning": "null/undefined отделены от других типов.",
+      "example": "string не принимает null"
+    },
+    {
+      "term": "optional chaining",
+      "meaning": "Безопасный доступ через ?.",
+      "example": "user?.address?.city"
+    },
+    {
+      "term": "nullish coalescing",
+      "meaning": "?? подставляет значение для null/undefined.",
+      "example": "x ?? 'default'"
+    },
+    {
+      "term": "non-null assertion",
+      "meaning": "Постфикс !: обещание компилятору.",
+      "example": "el!.focus()"
+    }
+  ]
+}

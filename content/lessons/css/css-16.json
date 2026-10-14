@@ -1,0 +1,87 @@
+{
+  "id": "css-16",
+  "part": "css",
+  "module": "css-modern",
+  "order": 16,
+  "title": "Современный CSS, Tailwind и Figma",
+  "goal": "Поймёшь container queries, :has(), nesting и как снять размеры из макета.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "CSS, которому место в 2026"
+    },
+    {
+      "type": "paragraph",
+      "content": "Container queries (@container) меняют стили от ширины родителя, а не всего окна — карточка в узкой колонке и в широкой ведёт себя по-разному. :has() стилизует родителя по потомку: .card:has(img) { padding-top: 0; }."
+    },
+    {
+      "type": "paragraph",
+      "content": "Nesting в чистом CSS позволяет писать .card { & h2 { … } } — меньше повторений имён. SCSS делал это раньше; браузеры догнали. Проверяй поддержку на caniuse для старых аудиторий."
+    },
+    {
+      "type": "heading",
+      "content": "Tailwind и Figma"
+    },
+    {
+      "type": "paragraph",
+      "content": "Tailwind — утилитарные классы в HTML: flex, gap-4, text-lg. Быстрый прототип, но разметка шумная; на курсе достаточно понимать идею, основа — обычный CSS."
+    },
+    {
+      "type": "paragraph",
+      "content": "В Figma включи Inspect/Dev Mode: снимай font-size, line-height, padding, hex цвета. Экспортируй SVG иконки. Записывай значения в tokens.css как --space-4: 16px — мост между дизайном и кодом."
+    }
+  ],
+  "codeExample": ".cards {\n  container-type: inline-size;\n}\n@container (min-width: 400px) {\n  .card { display: grid; grid-template-columns: 120px 1fr; }\n}\n\n.article:has(.highlight) {\n  border-left: 4px solid var(--accent, #0f766e);\n}",
+  "practice": [
+    {
+      "title": "Попробуй :has() на карточке",
+      "description": "В styles.css добавь правило .project-card:has(a) { outline: 2px dashed #ccc; }. На одной карточке оставь ссылку, на другой убери. F5 — обводка только у карточки со ссылкой. Убери правило после проверки."
+    },
+    {
+      "title": "Сними размеры с макета",
+      "description": "Открой бесплатный UI-kit в Figma Community или свой макет. Выдели кнопку, в Inspect выпиши padding, font-size и цвет фона в notes.md. Перенеси три значения в CSS одной кнопки на своей странице."
+    },
+    {
+      "title": "Один блок Tailwind через CDN",
+      "description": "Создай playground/tailwind.html, подключи <script src=\"https://cdn.tailwindcss.com\"></script>. Сверстай div с class=\"flex gap-4 p-4 bg-slate-100\" и двумя дочерними блоками. Открой файл — flex в один ряд. Сравни с тем же на чистом CSS."
+    }
+  ],
+  "checklist": [
+    "Знаю, чем container query отличается от @media",
+    "Могу написать простой селектор с :has()",
+    "Снимаю отступы и шрифт из Inspect Figma",
+    "Понимаю, зачем Tailwind и когда пишут обычный CSS"
+  ],
+  "links": [
+    {
+      "title": "MDN: :has()",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS/:has"
+    },
+    {
+      "title": "MDN: CSS container queries",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS/CSS_containment/Container_queries"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "container query",
+      "meaning": "Стили от размера контейнера, не viewport.",
+      "example": "@container (min-width: 400px)"
+    },
+    {
+      "term": ":has()",
+      "meaning": "Родительский селектор «если внутри есть…».",
+      "example": "form:has(:invalid)"
+    },
+    {
+      "term": "Tailwind",
+      "meaning": "Утилитарные классы в разметке.",
+      "example": "class=\"flex gap-4\""
+    },
+    {
+      "term": "design token",
+      "meaning": "Именованное значение из макета.",
+      "example": "--space-4: 16px"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "react-02",
+  "part": "react",
+  "module": "react-basics",
+  "order": 2,
+  "title": "JSX: условия и списки",
+  "goal": "Отрисуешь ветку if в JSX и список элементов с key без ошибок консоли.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "JSX — это выражения в фигурных скобках. Условие: {isLoggedIn ? <Dashboard /> : <Login />} или {error && <p role=\"alert\">{error}</p>}. Нельзя if как statement внутри return без обёртки — используй тернарный оператор, && или вынеси логику в переменную перед return."
+    },
+    {
+      "type": "heading",
+      "content": "Списки и key"
+    },
+    {
+      "type": "paragraph",
+      "content": "items.map(item => <li key={item.id}>{item.title}</li>) — key помогает React сопоставить строки при изменении порядка. key должен быть стабильным id, не index массива, если список редактируется. Fragment <>...</> группирует узлы без лишнего div в DOM."
+    },
+    {
+      "type": "heading",
+      "content": "className и стили"
+    },
+    {
+      "type": "paragraph",
+      "content": "Атрибут class в JSX пишется className. style принимает объект: style={{ color: 'red', marginTop: 8 }} — camelCase и числа в px автоматически. htmlFor вместо for у label. Все теги должны быть закрыты, один корневой элемент или Fragment."
+    }
+  ],
+  "codeExample": "type Todo = { id: string; title: string; done: boolean };\n\nexport function TodoList({ items }: { items: Todo[] }) {\n  if (items.length === 0) return <p>Пока пусто</p>;\n  return (\n    <ul>\n      {items.map((t) => (\n        <li key={t.id} className={t.done ? \"done\" : undefined}>\n          {t.title}\n        </li>\n      ))}\n    </ul>\n  );\n}",
+  "practice": [
+    {
+      "title": "Пустой и полный список",
+      "description": "TodoList с props items: Todo[]. В App передай [] — текст «Пока пусто». Передай три todo с разными id — три li. Консоль без warning про key."
+    },
+    {
+      "title": "Условный баннер",
+      "description": "const error = 'Не удалось загрузить'. В JSX покажи <p role=\"alert\"> только если error truthy. Сбрось error в null — баннер исчезает."
+    },
+    {
+      "title": "className done",
+      "description": "В CSS .done { text-decoration: line-through; }. Пометь done: true одним пунктом — только он зачёркнут."
+    }
+  ],
+  "checklist": [
+    "Использую map с уникальным key",
+    "Не ставлю key={index} на изменяемый список",
+    "Пишу className вместо class",
+    "Группирую соседние элементы через Fragment при необходимости"
+  ],
+  "links": [
+    {
+      "title": "React: Conditional Rendering",
+      "url": "https://react.dev/learn/conditional-rendering"
+    },
+    {
+      "title": "React: Lists and Keys",
+      "url": "https://react.dev/learn/rendering-lists"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "key",
+      "meaning": "Стабильный идентификатор элемента списка для React.",
+      "example": "key={item.id}"
+    },
+    {
+      "term": "Fragment",
+      "meaning": "Обёртка без DOM-узла.",
+      "example": "<>...</>"
+    },
+    {
+      "term": "className",
+      "meaning": "JSX-аналог HTML class.",
+      "example": "className=\"active\""
+    },
+    {
+      "term": "тернарный оператор",
+      "meaning": "Условие ? ветка A : ветка B в JSX.",
+      "example": "ok ? <Ok/> : <Fail/>"
+    }
+  ]
+}

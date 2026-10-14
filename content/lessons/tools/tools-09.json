@@ -1,0 +1,87 @@
+{
+  "id": "tools-09",
+  "part": "tools",
+  "module": "git",
+  "order": 9,
+  "title": "GitHub: remote, push, pull request",
+  "goal": "Зальёшь репозиторий на GitHub и откроешь pull request.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Локально и на GitHub"
+    },
+    {
+      "type": "paragraph",
+      "content": "Git на твоём компьютере — локальный репозиторий. GitHub хранит удалённую копию и даёт веб-интерфейс. remote origin — имя связи с URL на GitHub. git push origin main отправляет коммиты, git pull забирает чужие изменения."
+    },
+    {
+      "type": "paragraph",
+      "content": "Первый push: git remote add origin https://github.com/USER/REPO.git, затем git push -u origin main. Флаг -u запоминает upstream — дальше достаточно git push."
+    },
+    {
+      "type": "heading",
+      "content": "Pull request"
+    },
+    {
+      "type": "paragraph",
+      "content": "PR — предложение влить ветку в main через интерфейс GitHub. Там виден diff, комментарии ревью, проверки CI. Даже в solo-проекте PR учит привычке: ветка → review → merge."
+    },
+    {
+      "type": "paragraph",
+      "content": "README на главной репозитория — визитка: кто ты, что в проекте, как открыть. Работодатель часто смотрит GitHub раньше, чем PDF-резюме."
+    }
+  ],
+  "codeExample": "git remote add origin git@github.com:USER/about-me.git\ngit branch -M main\ngit push -u origin main",
+  "practice": [
+    {
+      "title": "Создай пустой репозиторий на GitHub",
+      "description": "На github.com нажми New repository, имя about-me, Public, без README (он уже есть локально). Скопируй HTTPS URL со страницы репозитория."
+    },
+    {
+      "title": "Привяжи origin и сделай push",
+      "description": "В terminal-demo: git remote add origin ВСТАВЬ_URL. git push -u origin main. Обнови страницу GitHub — файлы README и .gitignore должны появиться."
+    },
+    {
+      "title": "PR из ветки в main",
+      "description": "git switch -c docs/github-link, добавь в README строку с URL репозитория, commit, git push -u origin docs/github-link. На GitHub нажми Compare & pull request → Create. Merge pull request на сайте, локально git switch main && git pull."
+    }
+  ],
+  "checklist": [
+    "Привязываю remote origin к GitHub",
+    "Делаю git push -u origin main",
+    "Открываю и мержу pull request на GitHub",
+    "Обновляю main через git pull после merge"
+  ],
+  "links": [
+    {
+      "title": "GitHub Docs: push",
+      "url": "https://docs.github.com/ru/get-started/using-git/pushing-commits-to-a-remote-repository"
+    },
+    {
+      "title": "GitHub Docs: pull request",
+      "url": "https://docs.github.com/ru/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "remote",
+      "meaning": "Удалённый репозиторий, обычно origin.",
+      "example": "git remote -v"
+    },
+    {
+      "term": "push",
+      "meaning": "Отправка коммитов на remote.",
+      "example": "git push origin main"
+    },
+    {
+      "term": "pull request",
+      "meaning": "Запрос слить ветку через GitHub UI.",
+      "example": "Compare & pull request"
+    },
+    {
+      "term": "upstream",
+      "meaning": "Ветка по умолчанию для push/pull.",
+      "example": "git push -u origin main"
+    }
+  ]
+}

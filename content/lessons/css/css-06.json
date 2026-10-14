@@ -1,0 +1,102 @@
+{
+  "id": "css-06",
+  "part": "css",
+  "module": "css-box",
+  "order": 6,
+  "title": "Блок, строка и прилипающая шапка",
+  "goal": "Управишь, как элементы встают в ряд или столбик, и сделаешь шапку, которая остаётся сверху.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "display"
+    },
+    {
+      "type": "list",
+      "items": [
+        "block — занимает всю ширину, следующий элемент идёт снизу. Так ведут себя div, p, h1.",
+        "inline — идёт в строке текста, width и height почти не слушаются. Так ведут себя a, strong.",
+        "inline-block — в строке, но width и height работают.",
+        "none — элемент скрыт."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "position"
+    },
+    {
+      "type": "list",
+      "items": [
+        "static — обычное место. Значение по умолчанию.",
+        "relative — сдвиг от своего места. Соседи помнят старое место.",
+        "absolute — позиция относительно ближайшего родителя с position не static.",
+        "fixed — приклеен к окну браузера. Не уезжает при прокрутке.",
+        "sticky — ведёт себя как обычный, пока не доскроллишь, потом «прилипает»."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "top, right, bottom, left — насколько сдвинуть. z-index — кто выше, если блоки накладываются. Большее число ближе к тебе."
+    },
+    {
+      "type": "paragraph",
+      "content": "display меняет модель коробки: block тянется на всю строку, inline-flow ведёт себя как слово в предложении. position sticky удобен для шапки: не нужен JavaScript, достаточно top: 0 и фона, чтобы контент не просвечивал под меню."
+    },
+    {
+      "type": "paragraph",
+      "content": "Для sticky родитель не должен обрезать overflow: hidden — иначе шапка не прилипнет. Проверяй шапку прокруткой длинной страницы в Live Server."
+    }
+  ],
+  "codeExample": ".header {\n  position: sticky;\n  top: 0;\n  background: white;\n  border-bottom: 1px solid #ddd;\n  padding: 12px;\n  z-index: 10;\n}\n\n.badge {\n  display: inline-block;\n  padding: 4px 8px;\n  background: #e8fff8;\n}\n\n.modal {\n  position: fixed;\n  top: 20%;\n  left: 50%;\n  transform: translateX(-50%);\n  background: white;\n  border: 1px solid #ccc;\n  padding: 20px;\n}",
+  "practice": [
+    {
+      "title": "block vs inline",
+      "description": "span с длинным текстом и div с тем же. span не переносит блок на новую строку целиком, div занимает строку. Добавь div { background: #eee; } и span { background: #ffc; } — увидишь разницу."
+    },
+    {
+      "title": "display flex в header",
+      "description": ".header { display: flex; justify-content: space-between; align-items: center; } — логотип слева, nav справа. Сожми окно — элементы в одной строке, пока помещаются."
+    },
+    {
+      "title": "position sticky шапка",
+      "description": "header { position: sticky; top: 0; background: #fff; z-index: 1; }. Добавь контент высотой несколько экранов. Прокрути — шапка липнет к верху."
+    }
+  ],
+  "checklist": [
+    "Отличаю block, inline и inline-block",
+    "Делаю прилипающую шапку через sticky",
+    "Понимаю, что fixed держится за окно",
+    "Знаю, зачем z-index при наложении"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: position",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/CSS_layout/Positioning"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "display: flex/block/inline",
+      "meaning": "Как элемент встаёт в поток: блок, строка, flex-ряд.",
+      "example": "display: flex;"
+    },
+    {
+      "term": "position: sticky",
+      "meaning": "Прилипает при прокрутке (шапка).",
+      "example": "position: sticky; top: 0;"
+    },
+    {
+      "term": "position: fixed",
+      "meaning": "Приклеен к окну браузера.",
+      "example": "position: fixed; top: 20%;"
+    },
+    {
+      "term": "z-index",
+      "meaning": "Кто выше при наложении блоков.",
+      "example": "z-index: 10;"
+    }
+  ]
+}

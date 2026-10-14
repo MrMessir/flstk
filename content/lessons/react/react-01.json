@@ -1,0 +1,83 @@
+{
+  "id": "react-01",
+  "part": "react",
+  "module": "react-basics",
+  "order": 1,
+  "title": "Зачем React и создание проекта",
+  "goal": "Создашь Vite React+TS проект и поймёшь, зачем UI собирают из компонентов.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "React — библиотека для UI: ты описываешь, как экран выглядит при текущих данных, а React сравнивает с прошлым состоянием и точечно обновляет DOM. Компонент — функция (или class), которая возвращает JSX. Дерево компонентов повторяет структуру интерфейса: App → Header → Button."
+    },
+    {
+      "type": "heading",
+      "content": "Vite + React + TypeScript"
+    },
+    {
+      "type": "paragraph",
+      "content": "npm create vite@latest my-app -- --template react-ts создаёт src/main.tsx, App.tsx и index.html. npm install && npm run dev поднимает localhost с HMR: правка App.tsx сразу видна без потери state в простых случаях. Сборка npm run build кладёт статику в dist/."
+    },
+    {
+      "type": "heading",
+      "content": "Virtual DOM в двух словах"
+    },
+    {
+      "type": "paragraph",
+      "content": "JSX компилируется в вызовы createElement или jsx runtime. React строит дерево элементов в памяти и при изменении props/state делает reconcile — минимальный набор правок реального DOM. Тебе не нужно вручную искать node и менять innerHTML: достаточно setState, и разметка пересчитается."
+    }
+  ],
+  "codeExample": "import { useState } from \"react\";\n\nexport function Counter() {\n  const [n, setN] = useState(0);\n  return (\n    <button type=\"button\" onClick={() => setN((x) => x + 1)}>\n      Клики: {n}\n    </button>\n  );\n}",
+  "practice": [
+    {
+      "title": "Создай react-ts проект",
+      "description": "npm create vite@latest fullstacker-react -- --template react-ts. npm run dev, открой URL. Замени заголовок в App.tsx на своё имя — страница обновится без полной перезагрузки."
+    },
+    {
+      "title": "Counter в App",
+      "description": "Скопируй Counter из примера в src/Counter.tsx, импортируй в App.tsx. Клики увеличивают число. В React DevTools найди компонент Counter и state n."
+    },
+    {
+      "title": "production build",
+      "description": "npm run build && npm run preview. Открой preview URL — Counter работает так же. Запиши в README проекта размер dist/ (du -sh dist)."
+    }
+  ],
+  "checklist": [
+    "Запускаю dev-сервер Vite для React",
+    "Понимаю, что компонент возвращает JSX",
+    "Различаю исходники src/ и сборку dist/",
+    "Установил React DevTools в браузере"
+  ],
+  "links": [
+    {
+      "title": "React: Quick Start",
+      "url": "https://react.dev/learn"
+    },
+    {
+      "title": "Vite: React",
+      "url": "https://vitejs.dev/guide/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "React",
+      "meaning": "Библиотека UI на компонентах и JSX.",
+      "example": "export function App() { return <h1/>; }"
+    },
+    {
+      "term": "JSX",
+      "meaning": "Синтаксис разметки внутри JavaScript.",
+      "example": "<button>OK</button>"
+    },
+    {
+      "term": "Vite",
+      "meaning": "Dev-сервер и сборщик для React.",
+      "example": "npm run dev"
+    },
+    {
+      "term": "reconcile",
+      "meaning": "Сравнение нового и старого дерева UI.",
+      "example": "после setState"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "id": "html-09",
+  "part": "html",
+  "module": "structure",
+  "order": 9,
+  "title": "Анкета на странице",
+  "goal": "Соберёшь анкету с подписями к полям и увидишь свои ответы в адресной строке.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Форма — анкета на странице. Её оборачивают в <form>. Поле для ввода — <input>. Текст рядом с полем — <label>. Кнопка — <button>."
+    },
+    {
+      "type": "heading",
+      "content": "Подпись должна быть связана с полем"
+    },
+    {
+      "type": "paragraph",
+      "content": "У поля есть id=\"email\". У подписи — for=\"email\". Слово одно и то же. Тогда клик по слову «Почта» ставит курсор в поле. name=\"email\" — имя ответа. Без name ответ никуда не запишется."
+    },
+    {
+      "type": "heading",
+      "content": "Какие бывают поля"
+    },
+    {
+      "type": "list",
+      "items": [
+        "type=\"text\" — обычная строка, имя.",
+        "type=\"email\" — почта.",
+        "type=\"password\" — пароль, символы скрыты точками.",
+        "type=\"checkbox\" — галочка «да или нет». Можно отметить несколько.",
+        "type=\"radio\" — выбор одного варианта. У таких полей одинаковый name и разный value."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "method=\"get\" дописывает ответы в адрес страницы. Так ты сразу видишь, что форма сработала, даже без сервера. method=\"post\" прячет ответы. Его ставят для паролей, когда ответы принимает настоящий сервер. В этом уроке используй get, чтобы проверить себя глазами. action можно не писать: ответы останутся на этом же файле."
+    }
+  ],
+  "codeExample": "<form method=\"get\">\n  <p>\n    <label for=\"name\">Имя</label><br />\n    <input id=\"name\" name=\"name\" type=\"text\" />\n  </p>\n  <p>\n    <label for=\"email\">Почта</label><br />\n    <input id=\"email\" name=\"email\" type=\"email\" />\n  </p>\n  <p>\n    <label>\n      <input type=\"checkbox\" name=\"letters\" value=\"yes\" />\n      Хочу письма\n    </label>\n  </p>\n  <p>Как удобнее заниматься?</p>\n  <label><input type=\"radio\" name=\"format\" value=\"evening\" /> вечером</label>\n  <label><input type=\"radio\" name=\"format\" value=\"morning\" /> утром</label>\n  <p>\n    <button type=\"submit\">Отправить</button>\n  </p>\n</form>",
+  "practice": [
+    {
+      "title": "Два поля и кнопка",
+      "description": "В конец body вставь form из примера, но пока оставь только имя, почту и кнопку. Проверь, что у каждого input есть id и name, а у label — for с тем же словом. Клик по слову «Имя» должен ставить курсор в поле."
+    },
+    {
+      "title": "Отправь и посмотри адрес",
+      "description": "Впиши имя и почту, нажми «Отправить». Страница обновится. В адресной строке вверху появится знак ? и твои ответы, примерно так: ?name=Аня&email=anya@example.com. Если знака ? нет — у полей нет name или кнопка не внутри form."
+    },
+    {
+      "title": "Галочка и один выбор",
+      "description": "Добавь checkbox «Хочу письма» и два radio «вечером» и «утром» с одинаковым name=\"format\". Отправь форму ещё раз. В адресе должны появиться новые кусочки. У radio в адресе будет только один вариант, не оба."
+    }
+  ],
+  "checklist": [
+    "Оборачиваю поля в form",
+    "Связываю подпись и поле одинаковым словом в for и id",
+    "Даю каждому полю name",
+    "Проверяю форму по адресной строке после кнопки «Отправить»"
+  ],
+  "links": [
+    {
+      "title": "MDN: первая форма",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Extensions/Forms/Your_first_form"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "<form>",
+      "meaning": "Анкета на странице: собирает ответы полей.",
+      "example": "<form method=\"get\">...</form>"
+    },
+    {
+      "term": "<input>",
+      "meaning": "Поле ввода.",
+      "example": "<input type=\"text\" name=\"name\" />"
+    },
+    {
+      "term": "<label>",
+      "meaning": "Подпись поля. Связка через for и id.",
+      "example": "<label for=\"email\">Почта</label>"
+    },
+    {
+      "term": "name",
+      "meaning": "Имя ответа: без него поле не попадёт в отправку.",
+      "example": "name=\"email\""
+    },
+    {
+      "term": "type=\"radio\" / checkbox",
+      "meaning": "Один выбор из группы / галочка да-нет.",
+      "example": "<input type=\"checkbox\" name=\"agree\" />"
+    }
+  ]
+}

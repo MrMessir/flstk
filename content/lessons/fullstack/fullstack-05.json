@@ -1,0 +1,87 @@
+{
+  "id": "fullstack-05",
+  "part": "fullstack",
+  "module": "fs-features",
+  "order": 5,
+  "title": "Единая валидация zod",
+  "goal": "Разделишь одну схему на клиенте и сервере.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Проблема двух правил"
+    },
+    {
+      "type": "paragraph",
+      "content": "Если правила формы на клиенте и проверка на сервере написаны отдельно, они расходятся: поле принимается в браузере, а сервер отвечает 400. Либо наоборот, клиент слишком строг. Решение: описать форму один раз схемой zod и использовать её с обеих сторон."
+    },
+    {
+      "type": "heading",
+      "content": "Одна схема в shared"
+    },
+    {
+      "type": "paragraph",
+      "content": "Файл packages/shared/post.ts экспортирует createPostSchema = z.object({ title: z.string().min(3).max(120), body: z.string().min(1) }) и тип z.infer<typeof createPostSchema>. На клиенте React Hook Form с zodResolver показывает ошибки до отправки. На сервере middleware вызывает schema.safeParse(req.body) и при ошибке отвечает 400 со списком полей (error.flatten().fieldErrors)."
+    },
+    {
+      "type": "list",
+      "items": [
+        "Клиентской проверке нельзя доверять: запрос можно отправить в обход интерфейса, поэтому сервер проверяет всегда.",
+        "safeParse не бросает исключение и возвращает success и data или error: удобно для ответов API.",
+        "Параметры query приходят строками: используй z.coerce.number() для чисел.",
+        "Пользовательские сообщения задавай в схеме (.min(3, 'Минимум 3 символа'))."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Поля только для сервера"
+    },
+    {
+      "type": "paragraph",
+      "content": "Иногда клиент присылает captchaToken, а сервер сам добавляет authorId из сессии. Не принимай authorId из тела запроса: клиент подставит чужой. Строй схемы через .omit(), .extend() или .pick() от базовой, чтобы правила min и max лежали в одном месте. Так при смене лимита заголовка с 120 на 200 символов правится одна строка. Неизвестные поля удаляет z.object по умолчанию, а .strict() возвращает ошибку, если пришло лишнее. Проверь на практике: отправь на сервер тело с лишним полем role и убедись, что оно не попадает в базу."
+    }
+  ],
+  "codeExample": "import { z } from \"zod\";\n\nexport const createPostSchema = z.object({\n  title: z.string().min(3).max(120),\n  body: z.string().min(1),\n});\n\nexport type CreatePostInput = z.infer<typeof createPostSchema>;",
+  "practice": [
+    {
+      "title": "Вынеси схему в shared",
+      "description": "Опиши createPostSchema в shared. Подключи zodResolver на форме и parse в POST /posts."
+    },
+    {
+      "title": "Согласуй сообщения",
+      "description": "Отправь title из одного символа: клиент должен подсветить поле, а прямой curl без клиента — получить 400 с тем же смыслом."
+    },
+    {
+      "title": "Добавь omit для сервера",
+      "description": "Сделай serverCreatePostSchema = createPostSchema.extend({ authorId: z.string().uuid() }) и используй только на API."
+    }
+  ],
+  "checklist": [
+    "Держу zod-схему в одном пакете для клиента и API",
+    "Показываю ошибки формы до сетевого запроса",
+    "На сервере снова parse — не доверяю только фронту",
+    "Разделяю поля «только сервер» через extend/omit"
+  ],
+  "links": [
+    {
+      "title": "Zod documentation",
+      "url": "https://zod.dev/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "zod",
+      "meaning": "Библиотека схем и runtime-валидации.",
+      "example": "z.string().email()"
+    },
+    {
+      "term": "zodResolver",
+      "meaning": "Мост zod → React Hook Form.",
+      "example": "useForm({ resolver })"
+    },
+    {
+      "term": "parse",
+      "meaning": "Проверка и преобразование данных по схеме.",
+      "example": "schema.parse(body)"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "js-23",
+  "part": "javascript",
+  "module": "js-advanced",
+  "order": 23,
+  "title": "Ошибки: try/catch и свои классы",
+  "goal": "Научишься бросать понятные ошибки и ловить их, не роняя весь скрипт.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Когда функция не может продолжить работу с текущими данными, она бросает исключение через throw. Без try/catch необработанная ошибка останавливает дальнейший JavaScript на странице. Блок try { ... } catch (e) { ... } перехватывает ошибку внутри try: в e попадает объект Error с полями message и stack. Код после catch может показать пользователю текст и залогировать детали."
+    },
+    {
+      "type": "heading",
+      "content": "finally и цепочка async"
+    },
+    {
+      "type": "paragraph",
+      "content": "Блок finally выполняется всегда — и после успеха, и после catch. Туда кладут снятие флага «идёт загрузка» или закрытие соединения. В async-функциях throw внутри await fetch(...) превращается в отклонённый промис; его ловят try/catch вокруг await или .catch на промисе. Не глотай ошибки пустым catch — хотя бы console.error(e)."
+    },
+    {
+      "type": "heading",
+      "content": "Свои классы ошибок"
+    },
+    {
+      "type": "paragraph",
+      "content": "class ValidationError extends Error { constructor(field) { super(`Поле ${field} неверно`); this.name = \"ValidationError\"; this.field = field; } } позволяет в catch отличать тип сбоя: if (e instanceof ValidationError) подсветить конкретное поле формы. Стандартные TypeError и RangeError тоже наследуют Error. Сообщение в super должно быть человекочитаемым — его часто показывают в UI."
+    }
+  ],
+  "codeExample": "class ValidationError extends Error {\n  constructor(field, message) {\n    super(message);\n    this.name = \"ValidationError\";\n    this.field = field;\n  }\n}\n\nfunction parseAge(raw) {\n  const n = Number(raw);\n  if (raw.trim() === \"\") throw new ValidationError(\"age\", \"Введите возраст\");\n  if (Number.isNaN(n)) throw new ValidationError(\"age\", \"Нужно число\");\n  if (n < 0 || n > 120) throw new ValidationError(\"age\", \"Вне диапазона\");\n  return n;\n}\n\nfunction run(value) {\n  try {\n    console.log(\"Возраст:\", parseAge(value));\n  } catch (e) {\n    if (e instanceof ValidationError) {\n      console.log(`Ошибка в ${e.field}: ${e.message}`);\n    } else {\n      throw e;\n    }\n  } finally {\n    console.log(\"Проверка завершена\");\n  }\n}\n\nrun(\"\");\nrun(\"abc\");",
+  "practice": [
+    {
+      "title": "parseEmail с ValidationError",
+      "description": "В validate.js добавь parseEmail(raw): если нет @, throw new ValidationError(\"email\", \"Нужен @\"). В main.js оберни вызов в try/catch и выведи e.field и e.message для строк \"test\" и \"a@b.ru\". Для валидной строки в консоли должно быть OK без ошибки."
+    },
+    {
+      "title": "finally сбрасывает loading",
+      "description": "В index.html заведи <p id=\"status\">idle</p>. В script.js функция loadData() ставит status в \"loading\", в try делает await fetch к несуществующему URL, в catch пишет \"error\", в finally — \"done\". После вызова loadData() текст должен пройти loading → error → done, не застревая на loading."
+    },
+    {
+      "title": "Различай TypeError и свою ошибку",
+      "description": "Напиши divide(a, b): при b === 0 throw new Error(\"Деление на ноль\"). В catch выведи e.name. Отдельно вызови null.foo в try и сравни e instanceof TypeError с ошибкой деления. Зафиксируй в комментарии, зачем instanceof полезен в UI."
+    }
+  ],
+  "checklist": [
+    "Оборачиваю рискованный код в try/catch осознанно",
+    "Бросаю Error с понятным message, не строку",
+    "Использую finally для общей очистки UI",
+    "Могу создать свой класс ошибки через extends Error"
+  ],
+  "links": [
+    {
+      "title": "MDN: try...catch",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Statements/try...catch"
+    },
+    {
+      "title": "MDN: Error",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Error"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "throw",
+      "meaning": "Прервать выполнение и передать объект ошибки.",
+      "example": "throw new Error(\"bad input\")"
+    },
+    {
+      "term": "try/catch",
+      "meaning": "Перехват исключения в синхронном коде.",
+      "example": "try { f(); } catch (e) {}"
+    },
+    {
+      "term": "finally",
+      "meaning": "Блок, который выполняется после try/catch в любом случае.",
+      "example": "finally { hideSpinner(); }"
+    },
+    {
+      "term": "instanceof",
+      "meaning": "Проверка, что объект создан данным классом.",
+      "example": "e instanceof ValidationError"
+    }
+  ]
+}

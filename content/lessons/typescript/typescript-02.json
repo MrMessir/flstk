@@ -1,0 +1,83 @@
+{
+  "id": "typescript-02",
+  "part": "typescript",
+  "module": "ts-basics",
+  "order": 2,
+  "title": "Базовые типы",
+  "goal": "Подберёшь string, number, boolean и unknown вместо any для новых переменных.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Примитивы в TS совпадают с JS: string для текста, number для любых чисел, boolean для true/false. null и undefined — отдельные значения; при strictNullChecks тип string не принимает null без явного string | null. Массив пишут number[] или Array<number>, объект — { name: string; age: number }."
+    },
+    {
+      "type": "heading",
+      "content": "any и unknown"
+    },
+    {
+      "type": "paragraph",
+      "content": "any отключает проверку — типы «отпускают» любую операцию, это ломает смысл TS. unknown безопаснее: значение можно присвоить, но перед использованием нужно сузить тип через typeof, проверку in или пользовательский type guard. Для JSON с API сначала unknown, потом валидация, а не сразу any."
+    },
+    {
+      "type": "heading",
+      "content": "Вывод типов"
+    },
+    {
+      "type": "paragraph",
+      "content": "Если написать const title = \"Курс\", TS выведет тип string без аннотации. let counter = 0 выведет number. Явные аннотации нужны на границах: параметры функций, пустые массивы const items: string[] = [], поля API. as string — type assertion; используй редко, когда ты увереннее компилятора (например, после проверки)."
+    }
+  ],
+  "codeExample": "let input: unknown = JSON.parse('{\"id\":1}');\n\nif (typeof input === \"object\" && input !== null && \"id\" in input) {\n  const obj = input as { id: number };\n  console.log(obj.id);\n}\n\nconst tags: string[] = [];\ntags.push(\"ts\");\n\n// const bad: any = 1; bad.foo(); // any не ругается — избегай",
+  "practice": [
+    {
+      "title": "Типы для профиля",
+      "description": "В src/types.ts опиши type UserProfile = { name: string; age: number; isStudent: boolean }. В main.ts создай объект profile, удовлетворяющий типу, и выведи name. Попробуй age: \"20\" — исправь по подсказке TS."
+    },
+    {
+      "title": "unknown вместо any",
+      "description": "Функция parseJson(raw: string): unknown возвращает JSON.parse(raw). Напиши narrowJson(value: unknown): string | null, которая возвращает строку только если typeof value === \"string\". Покрой вызовами parseJson('\"hi\"') и parseJson('123')."
+    },
+    {
+      "title": "Массив scores",
+      "description": "const scores: number[] = []. Добавь функцию average(nums: number[]): number. Вызов average(scores) должен вернуть 0 или NaN — обработай пустой массив и верни 0 явно. typecheck без ошибок."
+    }
+  ],
+  "checklist": [
+    "Не использую any в новом коде без крайней нужды",
+    "Сужаю unknown перед обращением к полям",
+    "Аннотирую параметры функций и пустые коллекции",
+    "Различаю null и undefined в типах при strict"
+  ],
+  "links": [
+    {
+      "title": "Handbook: Everyday Types",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html"
+    },
+    {
+      "title": "Handbook: Narrowing",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "unknown",
+      "meaning": "Тип «что угодно», но требует сужения перед use.",
+      "example": "if (typeof x === \"string\")"
+    },
+    {
+      "term": "any",
+      "meaning": "Отключение проверки типов для значения.",
+      "example": "избегай в новом коде"
+    },
+    {
+      "term": "type annotation",
+      "meaning": "Явная запись типа после двоеточия.",
+      "example": "const n: number = 1"
+    },
+    {
+      "term": "inference",
+      "meaning": "Автовывод типа компилятором.",
+      "example": "const s = \"a\" // string"
+    }
+  ]
+}

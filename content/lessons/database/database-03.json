@@ -1,0 +1,74 @@
+{
+  "id": "database-03",
+  "part": "database",
+  "module": "db-sql",
+  "order": 3,
+  "title": "Таблицы и ограничения",
+  "goal": "Создашь таблицы users и posts с PK, UNIQUE, NOT NULL и CHECK.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "CREATE TABLE задаёт имя столбцов и типы: uuid, text, timestamptz, boolean. PRIMARY KEY уникально идентифицирует строку. NOT NULL запрещает пустое значение. UNIQUE на email не даст двум пользователям один адрес. CHECK (char_length(title) > 0) — простое правило на уровне БД."
+    },
+    {
+      "type": "heading",
+      "content": "Типы и время"
+    },
+    {
+      "type": "paragraph",
+      "content": "Для id курса используй uuid с gen_random_uuid(). Даты — timestamptz (с часовым поясом), не «голый» timestamp без zone. text подходит для заголовков; varchar(n) имеет смысл, если лимит — часть контракта."
+    },
+    {
+      "type": "heading",
+      "content": "DEFAULT и updated_at"
+    },
+    {
+      "type": "paragraph",
+      "content": "created_at timestamptz DEFAULT now() заполняется при INSERT. updated_at обновляй триггером или из приложения при PATCH. Ограничения в БД — последняя линия обороны, если zod обошли."
+    }
+  ],
+  "codeExample": "CREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  email text UNIQUE NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE posts (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  author_id uuid NOT NULL REFERENCES users(id),\n  title text NOT NULL CHECK (char_length(title) BETWEEN 1 AND 200),\n  body text NOT NULL\n);",
+  "practice": [
+    {
+      "title": "Файл schema.sql",
+      "description": "Создай db/schema.sql с CREATE TABLE users и posts из примера. Примени: docker compose exec -T db psql -U blog -d blog < db/schema.sql. \\dt в psql показывает обе таблицы."
+    },
+    {
+      "title": "UNIQUE на email",
+      "description": "INSERT двух users с email test@example.com — второй INSERT должен упасть с duplicate key. Зафиксируй текст ошибки в заметке."
+    },
+    {
+      "title": "CHECK title",
+      "description": "Попробуй INSERT post с пустым title ''. Убедись, что CHECK срабатывает. Исправь title и успешно вставь строку."
+    }
+  ],
+  "checklist": [
+    "Использую uuid PK и REFERENCES users(id)",
+    "Понимаю NOT NULL vs UNIQUE vs CHECK",
+    "Применил schema.sql к Docker Postgres",
+    "Проверил ошибку duplicate email руками"
+  ],
+  "links": [
+    {
+      "title": "PostgreSQL: CREATE TABLE",
+      "url": "https://www.postgresql.org/docs/current/sql-createtable.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "PRIMARY KEY",
+      "meaning": "Уникальный идентификатор строки таблицы.",
+      "example": "id uuid PRIMARY KEY"
+    },
+    {
+      "term": "FOREIGN KEY",
+      "meaning": "Ссылка на строку другой таблицы.",
+      "example": "REFERENCES users(id)"
+    },
+    {
+      "term": "CHECK",
+      "meaning": "Булево ограничение на значение столбца.",
+      "example": "CHECK (char_length(title) > 0)"
+    }
+  ]
+}

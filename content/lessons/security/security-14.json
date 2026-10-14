@@ -1,0 +1,74 @@
+{
+  "id": "security-14",
+  "part": "security",
+  "module": "sec-hardening",
+  "order": 14,
+  "title": "Практика: дырявое приложение",
+  "goal": "Найдёшь и исправишь уязвимости в учебном broken-app по чек-листу OWASP.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Учебные vulnerable apps намеренно содержат IDOR, SQLi, XSS, weak auth. Метод: threat model → reproduce → fix → regression test. Исправление — минимальный diff: parameterized query, owner check, helmet, не переписывай всё."
+    },
+    {
+      "type": "heading",
+      "content": "Reproduce safely"
+    },
+    {
+      "type": "paragraph",
+      "content": "Только localhost или isolated docker. Не сканируй чужие сайты. Документируй шаги: request, expected bad behavior, fix commit message."
+    },
+    {
+      "type": "heading",
+      "content": "Regression"
+    },
+    {
+      "type": "paragraph",
+      "content": "После fix Postman test или supertest: attack request returns 403/400, legit request 200. Добавь test в CI optional."
+    }
+  ],
+  "codeExample": "// before (IDOR)\nrouter.delete(\"/posts/:id\", authBearer, async (req, res) => {\n  await prisma.post.delete({ where: { id: req.params.id } });\n  res.status(204).end();\n});\n\n// after\nrouter.delete(\"/posts/:id\", authBearer, requireOwner(...), async (req, res) => {\n  await prisma.post.delete({ where: { id: req.params.id } });\n  res.status(204).end();\n});",
+  "practice": [
+    {
+      "title": "Clone broken-app",
+      "description": "Открой репозиторий/ветку broken-app из задания курса (или локальную папку labs/broken-app). npm install && npm run dev. Прочитай VULNS.md если есть."
+    },
+    {
+      "title": "Fix три бага",
+      "description": "Найди минимум: (1) IDOR delete post, (2) missing rate limit login, (3) SQL/raw или mass assignment role. Исправь, опиши в SECURITY-FIXES.md по одному абзацу на баг."
+    },
+    {
+      "title": "Postman regression",
+      "description": "Коллекция attacks: после fix IDOR возвращает 403. Экспорт в docs/postman/security-regression.json."
+    }
+  ],
+  "checklist": [
+    "Reproduce три уязвимости до fix",
+    "SECURITY-FIXES.md с шагами",
+    "Regression запросы в Postman",
+    "Не коммичу exploit scripts против prod"
+  ],
+  "links": [
+    {
+      "title": "OWASP WebGoat",
+      "url": "https://owasp.org/www-project-webgoat/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "regression test",
+      "meaning": "Проверка, что баг не вернулся.",
+      "example": "Postman IDOR 403"
+    },
+    {
+      "term": "threat model",
+      "meaning": "Список активов и способов атаки.",
+      "example": "posts owned by user"
+    },
+    {
+      "term": "vulnerable app",
+      "meaning": "Учебный проект с намеренными дырами.",
+      "example": "broken-app lab"
+    }
+  ]
+}

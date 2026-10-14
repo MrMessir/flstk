@@ -1,0 +1,91 @@
+{
+  "id": "testing-07",
+  "part": "testing",
+  "module": "test-e2e",
+  "order": 7,
+  "title": "E2E: Playwright или Cypress",
+  "goal": "Напишешь 3 ключевых пользовательских сценария.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Когда нужен e2e"
+    },
+    {
+      "type": "paragraph",
+      "content": "E2E-тест запускает настоящий браузер и проходит сценарий пользователя на работающем приложении: вход, создание объекта, оплата. Он ловит то, что не видят unit-тесты: склейку фронтенда, API и базы. Но он медленный и хрупкий, поэтому оставь 3–5 сценариев, на которых бизнес зарабатывает или теряет деньги."
+    },
+    {
+      "type": "heading",
+      "content": "Playwright"
+    },
+    {
+      "type": "paragraph",
+      "content": "Playwright управляет Chromium, Firefox и WebKit. Установка: npm init playwright@latest. Тест: await page.goto('/login'); await page.getByLabel('Email').fill('user@test.local'); await page.getByRole('button', { name: 'Войти' }).click(); await expect(page).toHaveURL('/dashboard'). Проверки expect встроенно ждут нужного состояния (авто-ожидание), поэтому sleep не нужен."
+    },
+    {
+      "type": "list",
+      "items": [
+        "Селекторы: getByRole, getByLabel, getByText; data-testid, только если без него нельзя.",
+        "Никаких sleep(3000): ожидай событие (toBeVisible, toHaveURL).",
+        "Каждый тест независим: создаёт своего пользователя, например test+timestamp@example.com, или готовит данные через API перед тестом.",
+        "Вход вынеси в storageState: логин выполняется один раз, остальные тесты стартуют уже авторизованными."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Разбор падений"
+    },
+    {
+      "type": "paragraph",
+      "content": "При падении Playwright делает трейс: пошаговую запись с DOM, сетью и скриншотами (trace: 'on-first-retry' в конфиге; открывается командой npx playwright show-trace). В CI сохраняй отчёт и трейс как artifacts, иначе красный тест придётся воспроизводить вслепую. Нестабильные тесты (flaky) нельзя просто перезапускать до зелёного: ищи причину, чаще всего это гонка данных или ожидание не того события."
+    },
+    {
+      "type": "paragraph",
+      "content": "Cypress решает ту же задачу с другим подходом (работает внутри браузера); принципы те же."
+    }
+  ],
+  "codeExample": "import { test, expect } from \"@playwright/test\";\n\ntest(\"login\", async ({ page }) => {\n  await page.goto(\"/login\");\n  await page.getByLabel(\"Email\").fill(\"user@test.local\");\n  await page.getByRole(\"button\", { name: \"Войти\" }).click();\n  await expect(page).toHaveURL(/\\/app/);\n});",
+  "practice": [
+    {
+      "title": "Login e2e",
+      "description": "Сценарий login → виден dashboard. Запусти npx playwright test."
+    },
+    {
+      "title": "Create entity",
+      "description": "Создай пост/задачу через UI, найди заголовок на странице списка."
+    },
+    {
+      "title": "Скрин при падении",
+      "description": "Убедись, что trace/screenshot включены в конфиге и открываются при fail."
+    }
+  ],
+  "checklist": [
+    "Пишу e2e только для критичных путей",
+    "Использую role/label селекторы",
+    "Создаю тестовые данные программно",
+    "Не hardcode sleep — жду expect/toBeVisible"
+  ],
+  "links": [
+    {
+      "title": "Playwright",
+      "url": "https://playwright.dev/docs/intro"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "e2e",
+      "meaning": "Тест в реальном браузере.",
+      "example": "Playwright"
+    },
+    {
+      "term": "trace",
+      "meaning": "Запись шагов при падении.",
+      "example": "playwright show-trace"
+    },
+    {
+      "term": "fixture",
+      "meaning": "Подготовка данных для e2e.",
+      "example": "seed user"
+    }
+  ]
+}

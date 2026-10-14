@@ -1,0 +1,83 @@
+{
+  "id": "typescript-01",
+  "part": "typescript",
+  "module": "ts-basics",
+  "order": 1,
+  "title": "Зачем TypeScript",
+  "goal": "Поймёшь, как типы ловят ошибки до запуска, и создашь проект с tsconfig.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "TypeScript — это JavaScript плюс проверка типов на этапе компиляции. Редактор подсказывает поля объекта, а опечатка в имени свойства становится красной линией ещё до npm run dev. В браузер всё равно попадает обычный JS: компилятор tsc или Vite/esbuild снимает типы и оставляет рабочий код."
+    },
+    {
+      "type": "heading",
+      "content": "tsconfig и strict"
+    },
+    {
+      "type": "paragraph",
+      "content": "Файл tsconfig.json в корне говорит, какие файлы компилировать и насколько строго проверять. \"strict\": true включает набор правил: noImplicitAny, strictNullChecks и другие. Для курса и реальной работы держи strict включённым — так меньше сюрпризов в production. \"include\": [\"src\"] ограничивает проверку папкой исходников."
+    },
+    {
+      "type": "heading",
+      "content": "Где TS в стеке"
+    },
+    {
+      "type": "paragraph",
+      "content": "Vite с шаблоном vanilla-ts или react-ts уже знает про .ts и .tsx: импорты и HMR работают без ручной настройки. Ошибки типов видишь в терминале при сборке и в IDE. TypeScript не заменяет тесты и не ловит все логические баги, но отсекает целый класс ошибок «undefined is not a function» и неверных аргументов."
+    }
+  ],
+  "codeExample": "// src/main.ts\nconst userName: string = \"Аня\";\nconst age: number = 25;\n\nfunction greet(name: string): string {\n  return `Привет, ${name}`;\n}\n\nconsole.log(greet(userName));\n// greet(123); // ошибка TS: number не подходит под string",
+  "practice": [
+    {
+      "title": "Проект vanilla-ts",
+      "description": "npm create vite@latest ts-intro -- --template vanilla-ts. cd ts-intro && npm install && npm run dev. В src/main.ts добавь const city: string и выведи в #app. Сборка npm run build должна пройти без ошибок."
+    },
+    {
+      "title": "Включи strict и сломай тип",
+      "description": "В tsconfig.json убедись, что \"strict\": true. Намеренно передай number в greet из примера урока. Зафиксируй текст ошибки TS в комментарии и исправь код."
+    },
+    {
+      "title": "tsc --noEmit",
+      "description": "Добавь скрипт \"typecheck\": \"tsc --noEmit\" в package.json. Запусти npm run typecheck после правок. Удали ошибку — команда завершается с кодом 0."
+    }
+  ],
+  "checklist": [
+    "Понимаю, что типы исчезают при сборке, но помогают в разработке",
+    "Держу strict: true в tsconfig",
+    "Запускаю Vite-проект с шаблоном ts",
+    "Читаю сообщения TS в IDE и терминале"
+  ],
+  "links": [
+    {
+      "title": "TypeScript Handbook",
+      "url": "https://www.typescriptlang.org/docs/handbook/intro.html"
+    },
+    {
+      "title": "TSConfig Reference",
+      "url": "https://www.typescriptlang.org/tsconfig"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "TypeScript",
+      "meaning": "JavaScript с статической типизацией.",
+      "example": "const n: number = 1"
+    },
+    {
+      "term": "tsconfig.json",
+      "meaning": "Настройки компилятора и области проверки.",
+      "example": "\"strict\": true"
+    },
+    {
+      "term": "компиляция",
+      "meaning": "Преобразование TS в JS для выполнения.",
+      "example": "tsc или vite build"
+    },
+    {
+      "term": "strict",
+      "meaning": "Строгий набор правил проверки типов.",
+      "example": "strictNullChecks"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "id": "security-13",
+  "part": "security",
+  "module": "sec-hardening",
+  "order": 13,
+  "title": "Двухфакторная аутентификация (обзор)",
+  "goal": "Поймёшь TOTP 2FA и спроектируешь поля User и flow enable/verify без полной реализации UI.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "TOTP (RFC 6238): shared secret + time step 30s, код 6 цифр в Google Authenticator / Authy. После успешного пароля login не выдаёт сразу JWT: отвечает { mfaRequired: true }, клиент шлёт POST /auth/2fa { code }. Secret шифруй at rest; otpauth URL и QR показывай один раз при enable."
+    },
+    {
+      "type": "heading",
+      "content": "Backup codes"
+    },
+    {
+      "type": "paragraph",
+      "content": "Выдай около 10 одноразовых backup codes, храни только хеши в БД — recovery при потере телефона. При regenerate старые коды инвалидируй. Не логируй коды и secret в pino/console."
+    },
+    {
+      "type": "heading",
+      "content": "WebAuthn preview"
+    },
+    {
+      "type": "paragraph",
+      "content": "Passkeys (WebAuthn) — асимметричная криптография, устойчивее к фишингу, чем TOTP. Для курса достаточно спроектировать TOTP-flow и поля схемы; passkeys — следующий шаг после JWT-модуля на работе."
+    },
+    {
+      "type": "list",
+      "items": [
+        "Password OK → если 2FA включена → запрос кода.",
+        "Неверный код: 401, без утечки деталей.",
+        "Rate-limit на /auth/2fa как на login.",
+        "Admin reset 2FA — только с аудитом."
+      ]
+    }
+  ],
+  "codeExample": "import { authenticator } from \"otplib\";\n\nconst secret = authenticator.generateSecret();\nconst otpauth = authenticator.keyuri(user.email, \"BlogApp\", secret);\n// show QR once\n\nconst valid = authenticator.check(body.code, user.twoFactorSecret);",
+  "practice": [
+    {
+      "title": "Schema fields",
+      "description": "User: twoFactorEnabled Boolean @default(false), twoFactorSecret String? nullable. README flow: enable → scan QR → verify code → flag true."
+    },
+    {
+      "title": "otplib demo",
+      "description": "scripts/totp-demo.mjs: secret, generate token, check valid. Запусти два раза — второй token другой через 30s."
+    },
+    {
+      "title": "Login flow diagram",
+      "description": "docs/2fa-flow.md: password ok → if 2FA required return { mfaRequired: true } → POST code → tokens. Без реализации QR достаточно."
+    }
+  ],
+  "checklist": [
+    "Объясняю TOTP time-based codes",
+    "Secret не логирую и не отдаю в API list users",
+    "Знаю зачем backup codes",
+    "twoFactor поля в schema или design doc"
+  ],
+  "links": [
+    {
+      "title": "RFC 6238 TOTP",
+      "url": "https://datatracker.ietf.org/doc/html/rfc6238"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "TOTP",
+      "meaning": "Time-based One-Time Password.",
+      "example": "6-digit Authenticator code"
+    },
+    {
+      "term": "2FA",
+      "meaning": "Второй фактор после пароля.",
+      "example": "password + TOTP"
+    },
+    {
+      "term": "otpauth URI",
+      "meaning": "Строка для QR enrollment в приложении.",
+      "example": "otpauth://totp/BlogApp:..."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "security-13-q1",
+      "prompt": "Когда показывать otpauth/QR пользователю?",
+      "options": [
+        "Один раз при включении 2FA, не в каждом API list users",
+        "В каждом ответе GET /users",
+        "В JWT payload access-токена",
+        "В публичном README репозитория"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "security-13-q2",
+      "prompt": "Зачем backup codes?",
+      "options": [
+        "Восстановление входа, если потерян телефон с Authenticator",
+        "Заменить bcrypt для паролей",
+        "Ускорить Postgres JOIN",
+        "Отключить HTTPS на логине"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

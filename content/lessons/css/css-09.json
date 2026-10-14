@@ -1,0 +1,81 @@
+{
+  "id": "css-09",
+  "part": "css",
+  "module": "css-layout",
+  "order": 9,
+  "title": "Flexbox: кто растягивается",
+  "goal": "Сделаешь три колонки, где средняя забирает свободное место.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "У детей flex тоже есть настройки. Они решают, кто растёт, кто сжимается, какая ширина «по умолчанию»."
+    },
+    {
+      "type": "list",
+      "items": [
+        "flex-grow: 1; — забирай свободное место. 0 — не растягивайся.",
+        "flex-shrink: 1; — можно сжаться, если места мало. 0 — не сжимай.",
+        "flex-basis: 200px; — стартовая ширина до роста и сжатия.",
+        "flex: 1; — короткая запись «расти и займи место поровну».",
+        "order: 2; — порядок показа, не меняя HTML. Лучше не злоупотреблять: экран и код разъедутся.",
+        "align-self: center; — выравнивание одного ребёнка, а не всех."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Запись flex: 1 раскрывается в flex-grow: 1, flex-shrink: 1, flex-basis: 0% — элемент охотно забирает свободное место. flex: 0 0 200px наоборот фиксирует базу и запрещает рост."
+    },
+    {
+      "type": "paragraph",
+      "content": "Когда колонок три и нужна равная ширина, flex: 1 на каждой средней секции проще, чем проценты. min-width: 0 на flex-детях помогает тексту сжиматься без вылезания."
+    }
+  ],
+  "codeExample": ".row {\n  display: flex;\n  gap: 12px;\n}\n\n.side {\n  flex: 0 0 180px;\n  background: #eef2f7;\n  padding: 12px;\n}\n\n.main {\n  flex: 1;\n  background: white;\n  border: 1px solid #ddd;\n  padding: 12px;\n}",
+  "practice": [
+    {
+      "title": "flex: 1 для сайдбара",
+      "description": ".layout { display: flex; } .main { flex: 1; } .aside { width: 200px; }. main растягивается, aside фиксирован. Сожми окно — пропорции сохраняются."
+    },
+    {
+      "title": "flex-wrap карточки",
+      "description": ".row { display: flex; flex-wrap: wrap; gap: 12px; } .row > * { flex: 1 1 180px; }. Карточки переносятся на новую строку при нехватке места."
+    },
+    {
+      "title": "align-items stretch",
+      "description": "Три .card разной высоты текста в flex-контейнере с align-items: stretch (default). Добавь align-items: flex-start — высоты станут разными. Верни stretch."
+    }
+  ],
+  "checklist": [
+    "Растягиваю блок через flex-grow или flex: 1",
+    "Фиксирую боковую колонку через flex-basis",
+    "Понимаю, что flex-shrink отвечает за сжатие",
+    "Не путаю визуальный order с порядком в HTML"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: управление flex-элементами",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS/CSS_flexible_box_layout/Controlling_ratios_of_flex_items_along_the_main_axis"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "flex: 1",
+      "meaning": "Элемент забирает свободное место.",
+      "example": ".main { flex: 1; }"
+    },
+    {
+      "term": "flex-basis",
+      "meaning": "Стартовая ширина до роста/сжатия.",
+      "example": "flex: 0 0 180px;"
+    },
+    {
+      "term": "flex-grow / flex-shrink",
+      "meaning": "Можно ли расти / сжиматься.",
+      "example": "flex-grow: 1;"
+    }
+  ]
+}

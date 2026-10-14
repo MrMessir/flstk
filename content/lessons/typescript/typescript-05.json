@@ -1,0 +1,83 @@
+{
+  "id": "typescript-05",
+  "part": "typescript",
+  "module": "ts-types",
+  "order": 5,
+  "title": "Union, intersection и type guards",
+  "goal": "Сузишь union до конкретного типа через typeof, in и пользовательские guard-функции.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Union type A | B значит «или одно, или другое». Пока TS не знает, какая ветка активна, доступны только общие поля. Сужение (narrowing) — проверки в if и switch, после которых внутри блока тип конкретнее: if (typeof x === \"string\") внутри x — string."
+    },
+    {
+      "type": "heading",
+      "content": "Discriminated union"
+    },
+    {
+      "type": "paragraph",
+      "content": "Общее поле-дискриминатор вроде kind: 'circle' | 'square' позволяет switch (shape.kind) и в каждой ветке видеть свои поля. Так моделируют результаты API: { ok: true, data: T } | { ok: false, error: string }. Intersection A & B требует одновременно поля обоих типов — удобно добавить метаданные к сущности."
+    },
+    {
+      "type": "heading",
+      "content": "Type predicate"
+    },
+    {
+      "type": "paragraph",
+      "content": "function isFish(pet: Fish | Bird): pet is Fish { return (pet as Fish).swim !== undefined; } — пользовательский guard. После if (isFish(pet)) TS считает pet рыбой. in проверяет наличие ключа: 'swim' in pet. Избегай лишних as без проверки — guard надёжнее assertion."
+    }
+  ],
+  "codeExample": "type Result =\n  | { ok: true; value: number }\n  | { ok: false; message: string };\n\nfunction unwrap(r: Result): number {\n  if (!r.ok) throw new Error(r.message);\n  return r.value;\n}\n\ntype Shape =\n  | { kind: \"circle\"; radius: number }\n  | { kind: \"rect\"; w: number; h: number };\n\nfunction area(s: Shape): number {\n  switch (s.kind) {\n    case \"circle\":\n      return Math.PI * s.radius ** 2;\n    case \"rect\":\n      return s.w * s.h;\n  }\n}",
+  "practice": [
+    {
+      "title": "Result для деления",
+      "description": "type DivResult = { ok: true; value: number } | { ok: false; error: string }. Функция safeDiv(a: number, b: number): DivResult. safeDiv(10,0) → ok false. unwrap только на ok true."
+    },
+    {
+      "title": "Shape area",
+      "description": "Скопируй Shape из примера в shapes.ts. area(circle radius 1) ≈ 3.14, area(rect 2×3) === 6. switch должен быть исчерпывающим — без default с any."
+    },
+    {
+      "title": "isString guard",
+      "description": "function isString(v: unknown): v is string { ... }. Функция printId(id: string | number) печатает id; если передали unknown через переменную, сначала isString/isNumber проверки."
+    }
+  ],
+  "checklist": [
+    "Моделирую успех/ошибку через discriminated union",
+    "Сужаю union в if/switch, не через as без причины",
+    "Пишу type predicate для сложных проверок",
+    "Intersection использую для добавления полей к типу"
+  ],
+  "links": [
+    {
+      "title": "Handbook: Unions",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types"
+    },
+    {
+      "title": "Handbook: Narrowing",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "union",
+      "meaning": "Значение одного из нескольких типов.",
+      "example": "string | number"
+    },
+    {
+      "term": "discriminated union",
+      "meaning": "Union с общим полем-тегом для switch.",
+      "example": "kind: 'circle'"
+    },
+    {
+      "term": "type guard",
+      "meaning": "Проверка, сужающая тип в ветке.",
+      "example": "x is string"
+    },
+    {
+      "term": "intersection",
+      "meaning": "Тип, совмещающий поля A и B.",
+      "example": "A & B"
+    }
+  ]
+}

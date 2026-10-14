@@ -1,0 +1,102 @@
+{
+  "id": "capstone-05",
+  "part": "capstone",
+  "module": "cap-build",
+  "order": 5,
+  "title": "Фронтенд итогового проекта",
+  "goal": "Соберёшь пользовательские экраны и админку.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Данные сервера и состояние интерфейса"
+    },
+    {
+      "type": "paragraph",
+      "content": "Во фронтенде есть два разных вида состояния. Данные с сервера (список постов, профиль) живут где-то ещё, их нужно загружать, кэшировать и обновлять — для этого подходят React Query или SWR. Состояние интерфейса (открыто ли модальное окно, какая вкладка выбрана) локально и живёт в useState. Смешивать их — частый источник багов и дублирования."
+    },
+    {
+      "type": "paragraph",
+      "content": "Пример выгоды: React Query сам кэширует ответ, не дёргает сервер повторно в течение staleTime и перезапрашивает при возвращении на вкладку. Раньше это приходилось писать вручную."
+    },
+    {
+      "type": "heading",
+      "content": "Три состояния любого списка"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Загрузка: скелетон или спиннер, а не пустота.",
+        "Ошибка: понятное сообщение и кнопка «Повторить».",
+        "Пусто: подсказка, что делать дальше («Создай первую задачу»), а не белый экран."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Это не мелочь: на защите проверяющий почти наверняка отключит сеть или откроет аккаунт без данных."
+    },
+    {
+      "type": "heading",
+      "content": "Навигация и защита экранов"
+    },
+    {
+      "type": "paragraph",
+      "content": "Приватные страницы закрываются защищённым роутом: если нет сессии, перенаправляем на вход и после входа возвращаем назад. Но помни: это удобство, а не безопасность, настоящая проверка прав на API (урок про бэкенд). Админ-экран прячется для обычных пользователей, но сервер отклоняет его запросы независимо от интерфейса."
+    },
+    {
+      "type": "paragraph",
+      "content": "Error boundary на уровне маршрута не даёт одной упавшей странице уронить всё приложение. Адрес API бери из переменной окружения, а не из строки в коде: иначе для разных окружений придётся править исходники."
+    },
+    {
+      "type": "heading",
+      "content": "Доступность без лишних усилий"
+    },
+    {
+      "type": "paragraph",
+      "content": "Каждому полю ввода нужен label, фокус должен быть виден, форма должна отправляться по Enter, кнопки — настоящими кнопками, а не div. Это 15 минут работы, а Lighthouse и живые пользователи скажут спасибо."
+    }
+  ],
+  "codeExample": "const { data, isLoading, error } = useQuery({ queryKey: ['posts'], queryFn: () => api('/posts') });\nif (isLoading) return <Skeleton />;\nif (error) return <ErrorPanel />;",
+  "practice": [
+    {
+      "title": "Экраны Must",
+      "description": "Все wireframes из capstone-02 реализованы и ходят в API."
+    },
+    {
+      "title": "Form validation",
+      "description": "zod + сообщения под полями, submit disabled while pending."
+    },
+    {
+      "title": "Admin UI",
+      "description": "Таблица users/posts с action ban/delete и confirm modal."
+    }
+  ],
+  "checklist": [
+    "Подключил API base URL из env",
+    "Обработал loading/error/empty на списках",
+    "Protected routes для личного кабинета",
+    "Админ UI скрыт без role admin на API"
+  ],
+  "links": [
+    {
+      "title": "React Router",
+      "url": "https://reactrouter.com/en/main"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "server state",
+      "meaning": "Данные с API, кэш запросов.",
+      "example": "useQuery"
+    },
+    {
+      "term": "controlled input",
+      "meaning": "value+onChange из React state.",
+      "example": "form email"
+    },
+    {
+      "term": "modal",
+      "meaning": "Диалог поверх страницы.",
+      "example": "confirm delete"
+    }
+  ]
+}

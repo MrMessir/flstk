@@ -1,0 +1,118 @@
+{
+  "id": "testing-02",
+  "part": "testing",
+  "module": "test-unit",
+  "order": 2,
+  "title": "Vitest/Jest: unit-тесты",
+  "goal": "Напишешь тесты чистых функций с моками.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Vitest и его конфигурация"
+    },
+    {
+      "type": "paragraph",
+      "content": "Vitest — раннер тестов для проектов на Vite, совместимый по API с Jest, но заметно быстрее. Установка: npm i -D vitest, запуск: npx vitest (режим наблюдения) или vitest run (один прогон в CI). В vitest.config.ts выбери окружение: environment: 'node' для серверного кода и 'jsdom' для компонентов, которым нужен DOM."
+    },
+    {
+      "type": "heading",
+      "content": "Структура теста"
+    },
+    {
+      "type": "list",
+      "items": [
+        "describe группирует тесты одной функции или модуля.",
+        "it (или test) — один случай; имя описывает ожидаемое поведение.",
+        "expect(x).toBe(y) сравнивает примитивы по ===, toEqual глубоко сравнивает объекты и массивы, toThrow ловит исключения."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Для набора однотипных проверок используй it.each: таблица входов и ожидаемых результатов вместо копирования десяти тестов, например [[100, 'vip', 90], [100, 'regular', 100]]."
+    },
+    {
+      "type": "heading",
+      "content": "Моки и шпионы"
+    },
+    {
+      "type": "paragraph",
+      "content": "Мок подменяет зависимость, чтобы тест не ходил наружу. vi.fn() создаёт функцию-пустышку и запоминает вызовы: toHaveBeenCalledTimes(1), toHaveBeenCalledWith('a@b.c'). vi.spyOn(obj, 'method') следит за настоящим методом и при необходимости подменяет результат. Мокай границы системы (почта, платёжный шлюз, время), а не каждую внутреннюю функцию: если мок повторяет реализацию, тест проверяет только сам мок."
+    },
+    {
+      "type": "heading",
+      "content": "Время и случайность"
+    },
+    {
+      "type": "paragraph",
+      "content": "Тесты со временем нестабильны: проверка «через час» не должна ждать час. Используй vi.useFakeTimers() и vi.setSystemTime(new Date('2026-01-01')), а в конце верни vi.useRealTimers(). Сбрасывай моки между тестами (vi.restoreAllMocks или restoreMocks: true в конфиге), иначе один тест влияет на следующий, и падения становятся «плавающими»."
+    }
+  ],
+  "codeExample": "import { describe, it, expect, vi } from \"vitest\";\nimport { notify } from \"./notify\";\n\nit(\"sends email once\", () => {\n  const send = vi.fn();\n  notify({ send, to: \"a@b.c\" });\n  expect(send).toHaveBeenCalledTimes(1);\n});",
+  "practice": [
+    {
+      "title": "Таблица кейсов",
+      "description": "Для функции formatPrice напиши 3 it: 0, обычная цена, null → «—»."
+    },
+    {
+      "title": "vi.spyOn Date",
+      "description": "Зафиксируй now через vi.setSystemTime и проверь «сегодня» в форматтере даты."
+    },
+    {
+      "title": "watch mode",
+      "description": "Запусти vitest в watch, меняй код и смотри мгновенный перезапуск."
+    }
+  ],
+  "checklist": [
+    "Структурирую тесты через describe/it",
+    "Даю it понятное имя на русском или английском",
+    "Мокаю внешние сервисы, не тестируемую логику",
+    "Использую toBe/toEqual осознанно"
+  ],
+  "links": [
+    {
+      "title": "Vitest expect",
+      "url": "https://vitest.dev/api/expect.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "describe",
+      "meaning": "Группа связанных тестов.",
+      "example": "describe('auth')"
+    },
+    {
+      "term": "mock",
+      "meaning": "Подмена зависимости в тесте.",
+      "example": "vi.fn()"
+    },
+    {
+      "term": "AAA",
+      "meaning": "Arrange, Act, Assert.",
+      "example": "данные → вызов → expect"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "testing-02-q1",
+      "prompt": "Что проверяет unit-тест сервиса?",
+      "options": [
+        "Одну функцию/правило без поднятия всего HTTP-стека",
+        "Только визуальный скриншот Safari",
+        "Скорость CDN",
+        "Цвет кнопки в Figma"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "testing-02-q2",
+      "prompt": "Почему flaky e2e вредны?",
+      "options": [
+        "Ломают доверие к CI: красный прогон без реального бага",
+        "Ускоряют деплой",
+        "Заменяют unit-тесты полностью",
+        "Нужны только для HTML"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

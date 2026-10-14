@@ -1,0 +1,96 @@
+{
+  "id": "fullstack-06",
+  "part": "fullstack",
+  "module": "fs-features",
+  "order": 6,
+  "title": "Загрузка файлов end-to-end",
+  "goal": "Сделаешь превью, прогресс и аватар/картинку поста.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Путь файла"
+    },
+    {
+      "type": "paragraph",
+      "content": "Загрузка файла — цепочка: поле input type=file, multipart-запрос на API, сохранение на диск или в S3-совместимое хранилище, URL записывается в базу. Сам бинарник в базу данных не кладут: храни там ссылку или ключ объекта. Диск контейнера обычно эфемерный (пропадает при перезапуске), поэтому для боевой системы нужно внешнее хранилище."
+    },
+    {
+      "type": "heading",
+      "content": "FormData и прогресс"
+    },
+    {
+      "type": "paragraph",
+      "content": "Собери const fd = new FormData(); fd.append('avatar', file) и отправь через fetch с body: fd. Заголовок Content-Type не ставь вручную: браузер сам добавит boundary. fetch не показывает прогресс загрузки, для полоски процента используют XMLHttpRequest (upload.onprogress) или axios с onUploadProgress."
+    },
+    {
+      "type": "heading",
+      "content": "Превью"
+    },
+    {
+      "type": "paragraph",
+      "content": "URL.createObjectURL(file) мгновенно даёт ссылку для тега img до отправки. После ответа сервера подставь постоянный URL и вызови URL.revokeObjectURL, иначе память не освободится."
+    },
+    {
+      "type": "heading",
+      "content": "Защита на сервере"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Ограничь размер (в multer limits.fileSize) и число файлов.",
+        "Проверяй тип не по расширению и не по полю mimetype, которое присылает клиент, а по содержимому (сигнатура файла, библиотека file-type).",
+        "Имя сохраняй своё (случайный идентификатор), а не из originalname: иначе возможны перезапись и обход путей.",
+        "Не раздавай загруженные файлы как исполняемые: ограничь типы, выставь Content-Disposition и Content-Type.",
+        "Для больших файлов используй предподписанные URL (presigned) к S3: файл идёт напрямую в хранилище, мимо твоего API."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Для изображений полезно пережать и обрезать на сервере (sharp): это убирает метаданные (в том числе геопозицию) и уменьшает вес."
+    }
+  ],
+  "codeExample": "const fd = new FormData();\nfd.append('avatar', file);\nawait fetch(`${API}/users/me/avatar`, { method: 'POST', body: fd, credentials: 'include' });",
+  "practice": [
+    {
+      "title": "Превью аватара",
+      "description": "При выборе файла покажи круглое превью. Ограничь тип image/* и размер 2 МБ на клиенте."
+    },
+    {
+      "title": "POST multipart",
+      "description": "На API прими multer или busboy, сохрани файл в uploads/ и верни { url }. Запиши url в профиль пользователя."
+    },
+    {
+      "title": "Полоска прогресса",
+      "description": "Покажи progress bar во время upload. При ошибке 413 выведи «Файл слишком большой»."
+    }
+  ],
+  "checklist": [
+    "Отправляю файл через FormData, не JSON",
+    "Показываю превью и прогресс до ответа сервера",
+    "Валидирую тип и размер на клиенте и на API",
+    "Храню в БД URL, а не сам бинарник"
+  ],
+  "links": [
+    {
+      "title": "MDN: FormData",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/FormData"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "multipart",
+      "meaning": "Формат тела запроса с файлами.",
+      "example": "FormData"
+    },
+    {
+      "term": "object URL",
+      "meaning": "Временная ссылка на файл в памяти браузера.",
+      "example": "createObjectURL"
+    },
+    {
+      "term": "multer",
+      "meaning": "Middleware Express для upload.",
+      "example": "single('avatar')"
+    }
+  ]
+}

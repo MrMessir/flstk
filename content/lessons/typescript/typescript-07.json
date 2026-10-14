@@ -1,0 +1,83 @@
+{
+  "id": "typescript-07",
+  "part": "typescript",
+  "module": "ts-types",
+  "order": 7,
+  "title": "Утилитные типы",
+  "goal": "Применишь Partial, Required, Pick и Omit для DTO и форм редактирования.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Utility types встроены в TS и трансформируют существующий тип. Partial<User> делает все поля необязательными — удобно для патча updateUser. Required<User> наоборот убирает ?. Pick<User, 'id' | 'email'> и Omit<User, 'password'> строят подтипы без копирования полей вручную."
+    },
+    {
+      "type": "heading",
+      "content": "Record и Readonly"
+    },
+    {
+      "type": "paragraph",
+      "content": "Record<string, number> — словарь строка→число. Readonly<T> запрещает присвоение полям на уровне типов (не deep freeze в runtime). ReturnType<typeof fn> вытаскивает тип возврата функции. Parameters<typeof fn> — tuple аргументов. Эти утилиты экономят время при рефакторинге API."
+    },
+    {
+      "type": "heading",
+      "content": "Формы и API-слои"
+    },
+    {
+      "type": "paragraph",
+      "content": "type UserCreate = Omit<User, 'id' | 'createdAt'> — тело POST без серверных полей. type UserUpdate = Partial<UserCreate> — PATCH. Комбинируй утилиты: Pick + Partial для «редактируем только title и price». Не усложняй: иногда явный interface читается лучше цепочки Omit<Omit<...>>."
+    }
+  ],
+  "codeExample": "interface User {\n  id: string;\n  email: string;\n  name: string;\n  role: \"user\" | \"admin\";\n}\n\ntype UserCreate = Omit<User, \"id\">;\ntype UserUpdate = Partial<UserCreate>;\n\ntype RoleMap = Record<User[\"role\"], string>;\n\nconst labels: RoleMap = { user: \"Пользователь\", admin: \"Админ\" };",
+  "practice": [
+    {
+      "title": "Product CRUD типы",
+      "description": "interface Product { id: string; title: string; price: number; stock: number }. type CreateProduct = Omit<Product,'id'>. type UpdateProduct = Partial<CreateProduct>. Функции create(p: CreateProduct) и update(id: string, p: UpdateProduct) без дублирования полей."
+    },
+    {
+      "title": "Readonly config",
+      "description": "const defaults: Readonly<{ theme: 'light' | 'dark'; lang: string }> = { theme: 'light', lang: 'ru' }. Попробуй defaults.theme = 'dark' — TS ошибка. Объясни в комментарии разницу с Object.freeze."
+    },
+    {
+      "title": "ReturnType",
+      "description": "function buildUser() { return { id: '1', name: 'A' as const }; }. type Built = ReturnType<typeof buildUser>. Переменная x: Built должна принять результат buildUser() и отклонить лишнее поле."
+    }
+  ],
+  "checklist": [
+    "Использую Omit/Pick вместо копипасты полей",
+    "Partial для PATCH и необязательных форм",
+    "Record для словарей с известными ключами",
+    "ReturnType связываю с реальной функцией"
+  ],
+  "links": [
+    {
+      "title": "Handbook: Utility Types",
+      "url": "https://www.typescriptlang.org/docs/handbook/utility-types.html"
+    },
+    {
+      "title": "Handbook: Mapped Types",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/mapped-types.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Partial",
+      "meaning": "Все поля типа становятся optional.",
+      "example": "Partial<User>"
+    },
+    {
+      "term": "Omit",
+      "meaning": "Тип без указанных ключей.",
+      "example": "Omit<User, 'id'>"
+    },
+    {
+      "term": "Record",
+      "meaning": "Объект с ключами K и значениями T.",
+      "example": "Record<string, number>"
+    },
+    {
+      "term": "ReturnType",
+      "meaning": "Тип возвращаемого значения функции.",
+      "example": "ReturnType<typeof fn>"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "id": "tools-05",
+  "part": "tools",
+  "module": "setup",
+  "order": 5,
+  "title": "Установка окружения",
+  "goal": "Поставишь VS Code, Node.js и расширения, нужные для курса.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Редактор и Node.js"
+    },
+    {
+      "type": "paragraph",
+      "content": "VS Code — редактор с подсветкой синтаксиса, терминалом и расширениями. Node.js LTS — среда, где JavaScript работает вне браузера: скрипты сборки, сервер, npm-пакеты. Без Node позже не запустишь React и backend-часть курса."
+    },
+    {
+      "type": "paragraph",
+      "content": "Ставь Node с официального сайта или через nvm, если уже пользуешься им. Версию LTS выбирай по умолчанию — она стабильнее «current»."
+    },
+    {
+      "type": "heading",
+      "content": "Расширения и проверка"
+    },
+    {
+      "type": "paragraph",
+      "content": "В VS Code открой Extensions (Ctrl+Shift+X). Полезны: ESLint, Prettier, Live Server (локальный превью HTML). Русский язык интерфейса — по желанию."
+    },
+    {
+      "type": "list",
+      "items": [
+        "node -v — версия Node, например v22.x.",
+        "npm -v — версия менеджера пакетов.",
+        "code . в папке проекта — открыть VS Code здесь."
+      ]
+    }
+  ],
+  "codeExample": "# в терминале\nnode -v\nnpm -v\ncode .",
+  "practice": [
+    {
+      "title": "Проверь Node и npm",
+      "description": "Открой терминал (в VS Code: Terminal → New Terminal). Выполни node -v и npm -v. Если команда не найдена — установи Node LTS с nodejs.org, перезапусти терминал и повтори."
+    },
+    {
+      "title": "Установи Live Server",
+      "description": "В VS Code Ctrl+Shift+X, найди «Live Server» (Ritwick Dey), Install. Открой любой index.html, правый клик → Open with Live Server. Браузер должен открыться с адресом localhost и автообновлением."
+    },
+    {
+      "title": "Создай папку course-workspace",
+      "description": "На рабочем столе или в домашней директории создай папку course-workspace. В терминале cd в неё и выполни code . — откроется VS Code с этой папкой в Explorer слева."
+    }
+  ],
+  "checklist": [
+    "Знаю версии Node и npm из терминала",
+    "Открываю проект через code .",
+    "Запускаю HTML через Live Server",
+    "Умею открыть встроенный терминал VS Code"
+  ],
+  "links": [
+    {
+      "title": "Node.js",
+      "url": "https://nodejs.org/"
+    },
+    {
+      "title": "VS Code",
+      "url": "https://code.visualstudio.com/docs/setup/setup-overview"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "VS Code",
+      "meaning": "Редактор кода с расширениями и терминалом.",
+      "example": "code ."
+    },
+    {
+      "term": "Node.js",
+      "meaning": "JavaScript вне браузера + npm.",
+      "example": "node -v"
+    },
+    {
+      "term": "npm",
+      "meaning": "Менеджер пакетов для Node.",
+      "example": "npm install vite"
+    },
+    {
+      "term": "LTS",
+      "meaning": "Долгая поддержка: стабильная ветка Node.",
+      "example": "22.x LTS"
+    }
+  ]
+}

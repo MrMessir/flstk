@@ -1,0 +1,87 @@
+{
+  "id": "css-12",
+  "part": "css",
+  "module": "css-polish",
+  "order": 12,
+  "title": "Шрифт, фон и тень",
+  "goal": "Оформишь статью: читаемый текст, фон и мягкая тень у блока.",
+  "theory": [
+    {
+      "type": "list",
+      "items": [
+        "font-family — семейство шрифта. В конце всегда пиши запасной: sans-serif или serif.",
+        "font-size, font-weight — размер и жирность. 400 обычный, 700 жирный.",
+        "line-height: 1.6; — межстрочный интервал. Для длинного текста почти обязателен.",
+        "text-align: center; — выравнивание текста.",
+        "background-color и background-image — заливка и картинка фона.",
+        "linear-gradient(...) — переход цвета без картинки.",
+        "border-radius — скругление углов. box-shadow — тень."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Не ставь на абзац слишком мелкий шрифт и слишком яркий фон одновременно. Сначала читаемость, потом украшения."
+    },
+    {
+      "type": "paragraph",
+      "content": "Шрифт без запасных ломается на чужом компьютере: всегда добавляй system-ui или sans-serif в конец font-family. line-height 1.4–1.6 облегчает чтение длинных абзацев на landing."
+    },
+    {
+      "type": "paragraph",
+      "content": "text-shadow и box-shadow различаются: первый только для букв, второй для всей коробки. Не злоупотребляй тенью — достаточно лёгкой для карточки."
+    }
+  ],
+  "codeExample": "body {\n  font-family: Georgia, serif;\n  line-height: 1.6;\n  background: linear-gradient(#f7f9fc, #e8eef7);\n  color: #222;\n}\n\n.article {\n  max-width: 640px;\n  margin: 40px auto;\n  padding: 24px;\n  background: white;\n  border-radius: 12px;\n  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);\n}\n\nh1 {\n  font-size: 2rem;\n  letter-spacing: -0.02em;\n}",
+  "practice": [
+    {
+      "title": "font-family и запасные",
+      "description": "body { font-family: \"Segoe UI\", system-ui, sans-serif; }. Если первый шрифт нет — браузер берёт следующий. line-height: 1.5 на p для читаемости."
+    },
+    {
+      "title": "background cover",
+      "description": ".hero { background: url('https://placehold.co/800x400/png') center/cover no-repeat; min-height: 200px; }. Картинка заполняет блок без растягивания пропорций."
+    },
+    {
+      "title": "box-shadow карточка",
+      "description": ".card { box-shadow: 0 8px 24px rgba(0,0,0,.08); border-radius: 12px; }. Сравни с flat border — тень отделяет карточку от фона."
+    }
+  ],
+  "checklist": [
+    "Задаю читаемый line-height для текста",
+    "Ограничиваю ширину статьи через max-width",
+    "Добавляю скругление и тень осознанно",
+    "Держу запасной шрифт в font-family"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: стилизация текста",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Text_styling/Fundamentals"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "font-family",
+      "meaning": "Семейство шрифта.",
+      "example": "font-family: Georgia, serif;"
+    },
+    {
+      "term": "line-height",
+      "meaning": "Межстрочный интервал.",
+      "example": "line-height: 1.6;"
+    },
+    {
+      "term": "border-radius",
+      "meaning": "Скругление углов.",
+      "example": "border-radius: 12px;"
+    },
+    {
+      "term": "box-shadow",
+      "meaning": "Тень блока.",
+      "example": "box-shadow: 0 8px 24px rgba(0,0,0,.08);"
+    }
+  ]
+}

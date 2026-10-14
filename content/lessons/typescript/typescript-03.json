@@ -1,0 +1,83 @@
+{
+  "id": "typescript-03",
+  "part": "typescript",
+  "module": "ts-basics",
+  "order": 3,
+  "title": "Типизация функций",
+  "goal": "Запишешь типы аргументов, возвращаемого значения и необязательных параметров.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Сигнатура функции — это типы параметров и возвращаемое значение. function add(a: number, b: number): number { return a + b; } не даст передать строку и заставит вернуть number. Стрелочные функции типизируют так же: const mul = (a: number, b: number): number => a * b."
+    },
+    {
+      "type": "heading",
+      "content": "Необязательные и значения по умолчанию"
+    },
+    {
+      "type": "paragraph",
+      "content": "Параметр greet(name: string, title?: string) может быть undefined — внутри проверяй title перед использованием. Значение по умолчанию title = \"гость\" делает параметр необязательным для вызывающего кода. rest-параметр ...nums: number[] собирает хвост аргументов в массив чисел."
+    },
+    {
+      "type": "heading",
+      "content": "Тип функции как значение"
+    },
+    {
+      "type": "paragraph",
+      "content": "type Handler = (event: MouseEvent) => void описывает функцию-колбэк. Так типизируют props в React и методы API-клиента. void значит «ничего полезного не возвращаем»; never — функция не завершается нормально (throw или бесконечный цикл). Перегрузки (overload) нужны редко — для публичного API библиотек."
+    }
+  ],
+  "codeExample": "type FormatPrice = (amount: number, currency?: string) => string;\n\nconst formatPrice: FormatPrice = (amount, currency = \"RUB\") => {\n  return `${amount} ${currency}`;\n};\n\nfunction clamp(value: number, min: number, max: number): number {\n  return Math.min(max, Math.max(min, value));\n}\n\nconsole.log(formatPrice(100));\nconsole.log(clamp(150, 0, 100));",
+  "practice": [
+    {
+      "title": "formatUser",
+      "description": "В src/format.ts функция formatUser(name: string, age?: number): string возвращает «name, N лет» или только name без age. Импортируй в main.ts, проверь formatUser(\"Аня\", 20) и formatUser(\"Бот\")."
+    },
+    {
+      "title": "Тип колбэка FilterFn",
+      "description": "type FilterFn = (value: number) => boolean. Функция filterNums(nums: number[], fn: FilterFn): number[] без any. Передай fn, который оставляет чётные. Ожидай [2,4] для [1,2,3,4]."
+    },
+    {
+      "title": "Ошибка возвращаемого типа",
+      "description": "Напиши parseIntStrict(raw: string): number, но временно return raw. Прочитай ошибку TS2345/2322, исправь через Number(raw) и проверку Number.isNaN с throw. typecheck зелёный."
+    }
+  ],
+  "checklist": [
+    "Указываю типы всех параметров публичных функций",
+    "Помечаю необязательные параметры через ?",
+    "Использую type Alias для сигнатуры колбэка",
+    "Различаю void и отсутствие return"
+  ],
+  "links": [
+    {
+      "title": "Handbook: Functions",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/functions.html"
+    },
+    {
+      "title": "Handbook: More on Functions",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/functions.html#call-signatures"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "сигнатура",
+      "meaning": "Список типов параметров и возврата функции.",
+      "example": "(a: number) => string"
+    },
+    {
+      "term": "optional parameter",
+      "meaning": "Аргумент, который можно не передавать.",
+      "example": "title?: string"
+    },
+    {
+      "term": "void",
+      "meaning": "Функция не возвращает осмысленное значение.",
+      "example": "(): void => { log(); }"
+    },
+    {
+      "term": "rest parameter",
+      "meaning": "Сбор оставшихся аргументов в массив.",
+      "example": "...nums: number[]"
+    }
+  ]
+}

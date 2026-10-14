@@ -1,0 +1,74 @@
+{
+  "id": "security-10",
+  "part": "security",
+  "module": "sec-hardening",
+  "order": 10,
+  "title": "XSS, CSRF, SQL-инъекции, SSRF",
+  "goal": "Применишь базовые защиты: escape вывод, CSRF для cookie session, параметры SQL и blocklist URL.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "XSS — выполнение JS в браузере жертвы. API отдаёт JSON — reflected XSS реже; stored XSS если фронт рендерит post.body как HTML без sanitize. Используй DOMPurify на клиенте, Content-Type application/json. SQLi — конкатенация строк в SQL; Prisma ORM по умолчанию safe."
+    },
+    {
+      "type": "heading",
+      "content": "CSRF"
+    },
+    {
+      "type": "paragraph",
+      "content": "Cookie session автоматически шлётся браузером — злонамеренный сайт может POST от имени user. SameSite=Lax/Strict, CSRF token double-submit для cookie API. JWT в Authorization header CSRF не триггерит."
+    },
+    {
+      "type": "heading",
+      "content": "SSRF"
+    },
+    {
+      "type": "paragraph",
+      "content": "Endpoint fetch?url= позволяет стучаться во внутреннюю сеть. Allowlist доменов, block 169.254.169.254 metadata. Не проксируй произвольные URL."
+    }
+  ],
+  "codeExample": "// SQL safe\nawait prisma.$queryRaw`SELECT * FROM posts WHERE id = ${id}`;\n\n// CSRF (cookie session)\nimport csrf from \"csurf\";\napp.use(csrf({ cookie: true }));\napp.get(\"/csrf-token\", (req, res) => res.json({ csrfToken: req.csrfToken() }));",
+  "practice": [
+    {
+      "title": "Stored XSS thought",
+      "description": "POST post body `<script>alert(1)</script>`. JSON API ok. В README: как React {post.body} text node безопасен, dangerouslySetInnerHTML — нет."
+    },
+    {
+      "title": "$queryRaw parameterized",
+      "description": "Endpoint GET /posts/search-raw?q= — только tagged template $queryRaw с параметром. Попробуй q с кавычкой — запрос не ломается."
+    },
+    {
+      "title": "SSRF deny",
+      "description": "Если есть fetch preview — добавь validateUrl: только https и host in allowlist. Unit test: url http://127.0.0.1 reject."
+    }
+  ],
+  "checklist": [
+    "Prisma без конкатенации SQL строк",
+    "Понимаю CSRF для cookie session",
+    "Не использую dangerouslySetInnerHTML без sanitize",
+    "SSRF allowlist или нет arbitrary fetch"
+  ],
+  "links": [
+    {
+      "title": "OWASP XSS Prevention",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "XSS",
+      "meaning": "Cross-Site Scripting — внедрение JS.",
+      "example": "<script> в comment"
+    },
+    {
+      "term": "CSRF",
+      "meaning": "Cross-Site Request Forgery с cookie.",
+      "example": "hidden form POST"
+    },
+    {
+      "term": "SSRF",
+      "meaning": "Server-Side Request Forgery.",
+      "example": "fetch internal IP"
+    }
+  ]
+}

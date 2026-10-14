@@ -1,0 +1,89 @@
+{
+  "id": "js-project",
+  "part": "javascript",
+  "module": "project",
+  "order": 31,
+  "title": "Итог JS: список дел с сохранением",
+  "goal": "Сделаешь todo-приложение с модулями, localStorage и формой без перезагрузки страницы.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Итоговый проект модуля — маленькое приложение, а не набор отдельных сниппетов. HTML даёт форму и контейнер списка, CSS может быть минимальным, главная логика в JavaScript. Состояние — массив строк задач в памяти; при каждом изменении ты перерисовываешь список и сохраняешь копию в localStorage, чтобы после F5 данные вернулись."
+    },
+    {
+      "type": "heading",
+      "content": "Модули и разделение"
+    },
+    {
+      "type": "paragraph",
+      "content": "Вынеси loadTasks и saveTasks в storage.js с export/import. main.js отвечает за DOM: render(), обработчики submit и удаления. Подключи main.js как <script type=\"module\" src=\"./main.js\">. Так проще тестировать storage отдельно и не смешивать JSON.parse с разметкой. Пустые строки после trim не добавляй — пользователь не должен создавать «пустые» задачи."
+    },
+    {
+      "type": "heading",
+      "content": "Критерии готовности"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Поле #title и форма #form с preventDefault на submit.",
+        "Список #list перерисовывается из массива tasks.",
+        "Кнопка удаления у каждого пункта.",
+        "localStorage ключ todo, JSON.stringify/parse.",
+        "Опционально: classList.toggle('done') по клику на текст."
+      ]
+    }
+  ],
+  "codeExample": "// storage.js\nexport function loadTasks() {\n  const raw = localStorage.getItem(\"todo\");\n  return raw ? JSON.parse(raw) : [];\n}\nexport function saveTasks(tasks) {\n  localStorage.setItem(\"todo\", JSON.stringify(tasks));\n}\n\n// main.js\nimport { loadTasks, saveTasks } from \"./storage.js\";\n\nconst form = document.querySelector(\"#form\");\nconst input = document.querySelector(\"#title\");\nconst list = document.querySelector(\"#list\");\nlet tasks = loadTasks();\n\nfunction render() {\n  list.innerHTML = \"\";\n  for (const task of tasks) {\n    const li = document.createElement(\"li\");\n    li.textContent = task;\n    const btn = document.createElement(\"button\");\n    btn.textContent = \"Удалить\";\n    btn.addEventListener(\"click\", () => {\n      tasks = tasks.filter((item) => item !== task);\n      saveTasks(tasks);\n      render();\n    });\n    li.append(\" \", btn);\n    list.append(li);\n  }\n}\n\nform.addEventListener(\"submit\", (event) => {\n  event.preventDefault();\n  const value = input.value.trim();\n  if (!value) return;\n  tasks.push(value);\n  saveTasks(tasks);\n  input.value = \"\";\n  render();\n});\n\nrender();",
+  "practice": [
+    {
+      "title": "Разметка и storage.js",
+      "description": "Создай папку todo-js с index.html (form#form, input#title, ul#list) и storage.js с loadTasks/saveTasks. В консоли импортируй модуль через dev-сервер или проверь saveTasks([\"test\"]) и перезагрузку — loadTasks возвращает [\"test\"]."
+    },
+    {
+      "title": "main.js: добавление и удаление",
+      "description": "Подключи type=\"module\" main.js: submit добавляет задачу, кнопка «Удалить» убирает пункт без F5. После трёх задач обнови страницу — все три на месте. Пустой submit ничего не добавляет."
+    },
+    {
+      "title": "README и демо",
+      "description": "Добавь README.md: npm не обязателен, достаточно Live Server; скрин списка; как очистить localStorage. Залей в GitHub и вставь ссылку на репозиторий в сдачу урока."
+    }
+  ],
+  "checklist": [
+    "Дела добавляются и удаляются без перезагрузки",
+    "Список переживает обновление страницы",
+    "Код разбит на модули import/export",
+    "Форма не перезагружает страницу"
+  ],
+  "links": [
+    {
+      "title": "MDN: localStorage",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/Window/localStorage"
+    },
+    {
+      "title": "MDN: JavaScript-модули",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Guide/Modules"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "localStorage",
+      "meaning": "Хранилище ключ-строка в браузере между сессиями.",
+      "example": "localStorage.setItem(\"todo\", json)"
+    },
+    {
+      "term": "render",
+      "meaning": "Перерисовать UI из текущего состояния.",
+      "example": "list.innerHTML = \"\""
+    },
+    {
+      "term": "ES module",
+      "meaning": "Файл с export/import и type=\"module\".",
+      "example": "import { loadTasks } from \"./storage.js\""
+    },
+    {
+      "term": "persist",
+      "meaning": "Сохранить состояние, чтобы пережило F5.",
+      "example": "saveTasks после каждого изменения"
+    }
+  ]
+}

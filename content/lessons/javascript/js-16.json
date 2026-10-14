@@ -1,0 +1,107 @@
+{
+  "id": "js-16",
+  "part": "javascript",
+  "module": "js-advanced",
+  "order": 16,
+  "title": "Ждать: setTimeout и таймер",
+  "goal": "Запустишь отложенный код и сделаешь обратный отсчёт на странице.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Не весь код выполняется сразу. Иногда нужно подождать. setTimeout(fn, 1000) вызовет функцию через 1000 мс. setInterval повторяет, пока не остановишь clearInterval. Оба возвращают числовой id — сохрани его, иначе таймер не остановить."
+    },
+    {
+      "type": "paragraph",
+      "content": "Пока ждём, страница не обязана «зависать»: браузер может рисовать интерфейс. Это начало асинхронности. Слишком много вложенных колбэков называют callback hell — дальше промисы помогут писать ровнее."
+    },
+    {
+      "type": "heading",
+      "content": "Типичные ошибки"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Забыли clearInterval — счётчик тикает после ухода со страницы.",
+        "setTimeout(fn(), 1000) — скобки вызывают fn сразу; нужны setTimeout(fn, 1000) или () => fn().",
+        "Ожидать, что setTimeout(…, 0) выполнится «прямо сейчас» — он всё равно после текущего стека.",
+        "Несколько interval без id — потом не поймаешь, какой чистить."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Для обратного отсчёта на UI обновляй textContent каждый тик и на нуле вызывай clearInterval. В тестах и React позже таймеры мокают (vi.useFakeTimers) — пока достаточно ручной проверки в браузере."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "js-16-q1",
+      "prompt": "Что вернёт setInterval, и зачем это значение?",
+      "options": [
+        "id таймера — чтобы потом вызвать clearInterval",
+        "Promise, который всегда resolve",
+        "HTML-элемент таймера",
+        "Ничего, возвращаемого значения нет"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "js-16-q2",
+      "prompt": "Чем опасен вызов setTimeout(fn(), 1000)?",
+      "options": [
+        "fn выполнится сразу из‑за скобок, а не через секунду",
+        "Браузер удалит весь DOM",
+        "Это единственный правильный синтаксис",
+        "setTimeout перестанет существовать в JS"
+      ],
+      "correctIndex": 0
+    }
+  ],
+  "codeExample": "console.log(\"сейчас\");\nsetTimeout(() => {\n  console.log(\"через секунду\");\n}, 1000);\n\nlet left = 5;\nconst label = document.querySelector(\"#timer\");\nconst id = setInterval(() => {\n  label.textContent = String(left);\n  left -= 1;\n  if (left < 0) {\n    clearInterval(id);\n    label.textContent = \"готово\";\n  }\n}, 1000);",
+  "practice": [
+    {
+      "title": "setTimeout сообщение",
+      "description": "Через 2000 ms после load console.log(\"готово\"). ID таймера сохрани в переменную."
+    },
+    {
+      "title": "clearTimeout",
+      "description": "Кнопка «Отмена» вызывает clearTimeout(id) до срабатывания — «готово» не появляется."
+    },
+    {
+      "title": "setInterval секунды",
+      "description": "Каждую 1000 ms увеличивай #sec на 1. Кнопка stop — clearInterval. Счёт останавливается."
+    }
+  ],
+  "checklist": [
+    "Запускаю отложенный код setTimeout",
+    "Повторяю действие setInterval",
+    "Останавливаю таймер clearInterval",
+    "Вывожу тики на страницу"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: асинхронность",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Extensions/Async_JS/Introducing"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "setTimeout",
+      "meaning": "Выполнить функцию один раз через N миллисекунд.",
+      "example": "setTimeout(() => console.log(\"позже\"), 1000)"
+    },
+    {
+      "term": "setInterval",
+      "meaning": "Повторять функцию снова и снова.",
+      "example": "setInterval(tick, 1000)"
+    },
+    {
+      "term": "clearInterval",
+      "meaning": "Остановить повторение.",
+      "example": "clearInterval(id)"
+    }
+  ]
+}

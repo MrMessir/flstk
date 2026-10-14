@@ -1,0 +1,87 @@
+{
+  "id": "html-11",
+  "part": "html",
+  "module": "quality",
+  "order": 11,
+  "title": "Доступность: ARIA, фокус, клавиатура",
+  "goal": "Сделаешь страницу удобнее для клавиатуры и скринридеров.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Доступность — часть качества"
+    },
+    {
+      "type": "paragraph",
+      "content": "a11y (accessibility) — когда сайтом могут пользоваться не только мышью: только клавиатура, увеличенный текст, скринридер. Это не «галочка», а нормальная вёрстка: семантика, подписи, видимый фокус."
+    },
+    {
+      "type": "paragraph",
+      "content": "Сначала выбирай правильный тег: button для действия, a для перехода, label связан с input через for. ARIA (aria-label, aria-expanded, role) дополняет разметку, когда семантического тега не хватает — например, кастомное меню на div."
+    },
+    {
+      "type": "heading",
+      "content": "Фокус и Tab"
+    },
+    {
+      "type": "paragraph",
+      "content": "Tab переводит фокус между интерактивными элементами. Порядок должен совпадать с логикой страницы, а не прыгать в случайные места. :focus-visible рисует обводку только при навигации с клавиатуры — не убирай её без замены."
+    },
+    {
+      "type": "paragraph",
+      "content": "Контраст текста и фона проверяй глазами и через Lighthouse → Accessibility. Цель для учебной страницы — не ниже 90; красные пункты подскажут, что поправить."
+    }
+  ],
+  "codeExample": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"menu\">\n  Меню\n</button>\n<ul id=\"menu\" hidden>\n  <li><a href=\"#about\">Обо мне</a></li>\n</ul>\n\n<style>\n  a:focus-visible, button:focus-visible {\n    outline: 2px solid #0f766e;\n    outline-offset: 2px;\n  }\n</style>",
+  "practice": [
+    {
+      "title": "Пройди страницу только Tab",
+      "description": "Открой resume.html или index.html с меню и формой. Кликни в адресную строку, затем жми Tab и Shift+Tab. Запиши порядок фокуса: ссылки, поля, кнопка. Если фокус «теряется» — добавь tabindex только там, где без этого не обойтись."
+    },
+    {
+      "title": "Подпиши кнопку без текста",
+      "description": "Добавь кнопку с символом × для «закрыть». Внутри только символ — допиши aria-label=\"Закрыть\". Проверь во вкладке Elements, что атрибут на месте. Обнови страницу и снова Tab до кнопки — фокус должен быть виден."
+    },
+    {
+      "title": "Запусти Lighthouse Accessibility",
+      "description": "F12 → Lighthouse → Accessibility → Analyze page load. В отчёте открой первый провал (красный или жёлтый). Исправь одну проблему в HTML (например, alt у img или label for у input), перезапусти Lighthouse и сравни балл."
+    }
+  ],
+  "checklist": [
+    "Прохожу страницу Tab без хаотичных прыжков",
+    "Связываю label и input через for и id",
+    "Добавляю aria-label, когда видимого текста нет",
+    "Проверяю доступность через Lighthouse"
+  ],
+  "links": [
+    {
+      "title": "MDN: Accessibility",
+      "url": "https://developer.mozilla.org/ru/docs/Web/Accessibility"
+    },
+    {
+      "title": "MDN: ARIA",
+      "url": "https://developer.mozilla.org/ru/docs/Web/Accessibility/ARIA"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "a11y",
+      "meaning": "Accessibility — доступность интерфейса.",
+      "example": "навигация с клавиатуры"
+    },
+    {
+      "term": "ARIA",
+      "meaning": "Атрибуты role, aria-* для assistive tech.",
+      "example": "aria-label=\"Закрыть\""
+    },
+    {
+      "term": "фокус",
+      "meaning": "Элемент, принимающий ввод с клавиатуры.",
+      "example": "синяя обводка :focus-visible"
+    },
+    {
+      "term": "скринридер",
+      "meaning": "Программа, озвучивающая интерфейс.",
+      "example": "NVDA, VoiceOver"
+    }
+  ]
+}

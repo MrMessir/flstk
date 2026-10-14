@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-09",
+  "part": "nodejs",
+  "module": "node-express",
+  "order": 9,
+  "title": "Валидация через zod",
+  "goal": "Отклонишь невалидный body до бизнес-логики и вернёшь понятные ошибки 400.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Доверять req.body нельзя: клиент может прислать лишние поля, строку вместо числа или пустой title. Zod описывает схему и parse/ safeParse возвращает типизированный объект или ZodError. Валидацию ставят в middleware или первой строкой handler — до записи в БД."
+    },
+    {
+      "type": "heading",
+      "content": "strip и strict"
+    },
+    {
+      "type": "paragraph",
+      "content": "z.object({ title: z.string().min(1) }).strict() отклонит неизвестные ключи — полезно против mass assignment. .strip() (по умолчанию) удалит лишнее молча. Для публичного API документируй, какие поля игнорируются."
+    },
+    {
+      "type": "heading",
+      "content": "Ответ клиенту"
+    },
+    {
+      "type": "paragraph",
+      "content": "На ошибку валидации — 400 и массив { path, message }, не 500. Не отправляй сырой error.stack. Одна функция formatZodError упрощает фронту показ полей формы."
+    }
+  ],
+  "codeExample": "import { z } from \"zod\";\n\nexport const createPostSchema = z.object({\n  title: z.string().trim().min(1).max(200),\n  body: z.string().min(1),\n});\n\nexport function validateBody(schema) {\n  return (req, res, next) => {\n    const parsed = schema.safeParse(req.body);\n    if (!parsed.success) {\n      return res.status(400).json({ errors: parsed.error.flatten() });\n    }\n    req.validated = parsed.data;\n    next();\n  };\n}",
+  "practice": [
+    {
+      "title": "npm install zod",
+      "description": "Установи zod. Создай schemas/post.js с createPostSchema. Middleware validateBody подключи к POST /posts в routes/posts.js."
+    },
+    {
+      "title": "Негативные кейсы Postman",
+      "description": "Отправь POST /posts с {} — ожидай 400 и errors. Отправь title длиной 300 символов — снова 400. Отправь валидный JSON — 201 или 200 с телом поста."
+    },
+    {
+      "title": "req.validated в handler",
+      "description": "В handler используй только req.validated, не req.body. Добавь console.log один раз и убедись, что лишние поля из body не попали в validated при .strict()."
+    }
+  ],
+  "checklist": [
+    "Вынес схему zod в отдельный файл",
+    "Возвращаю 400 с flatten errors",
+    "Handler читает req.validated после middleware",
+    "Проверил пустой title и слишком длинный в Postman"
+  ],
+  "links": [
+    {
+      "title": "Zod",
+      "url": "https://zod.dev/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "safeParse",
+      "meaning": "Парсинг без throw, результат success/error.",
+      "example": "schema.safeParse(req.body)"
+    },
+    {
+      "term": "mass assignment",
+      "meaning": "Запись клиентских полей, которым не доверяют (role, isAdmin).",
+      "example": ".strict() в zod"
+    },
+    {
+      "term": "flatten",
+      "meaning": "Упрощённый вид ошибок Zod для JSON.",
+      "example": "error.flatten().fieldErrors"
+    }
+  ]
+}

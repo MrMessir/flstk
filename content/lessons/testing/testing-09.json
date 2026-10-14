@@ -1,0 +1,90 @@
+{
+  "id": "testing-09",
+  "part": "testing",
+  "module": "test-craft",
+  "order": 9,
+  "title": "GitHub Flow и conventional commits",
+  "goal": "Оформишь ветки и PR по договорённости команды.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "GitHub Flow"
+    },
+    {
+      "type": "paragraph",
+      "content": "Простая модель для команды: ветка main всегда готова к выкладке; каждая задача делается в отдельной короткой ветке, затем открывается pull request, проходит проверку CI и ревью, и только после этого вливается. Долгоживущие ветки ухудшают жизнь: чем дольше ветка живёт отдельно, тем больнее конфликты при слиянии."
+    },
+    {
+      "type": "heading",
+      "content": "Ветки и PR"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Имя ветки отражает задачу: feat/post-pagination, fix/auth-cookie. Не «ivan-fixes» на неделю.",
+        "Один PR решает одну задачу и читается за 10–15 минут; огромные PR на 2000 строк почти никто не ревьюит внимательно.",
+        "Описание PR: что сделано и зачем, как проверить (test plan), скриншот для UI, ссылка на задачу. Draft PR открывают рано, чтобы получить мнение до завершения."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Conventional Commits"
+    },
+    {
+      "type": "paragraph",
+      "content": "Формат сообщения: тип(область): описание. Типы: feat (новая возможность), fix (исправление), docs, test, refactor, chore. Пример: feat(auth): add login form validation. Такие сообщения читаются в истории и позволяют автоматически собирать changelog и определять версию релиза (feat — минорная, fix — патч, пометка BREAKING CHANGE — мажорная)."
+    },
+    {
+      "type": "heading",
+      "content": "Как вливать"
+    },
+    {
+      "type": "paragraph",
+      "content": "Squash merge превращает ветку в один аккуратный коммит на main, merge commit сохраняет всю историю, rebase выстраивает коммиты линейно. Выбери один способ и запиши в CONTRIBUTING.md, чтобы история main была предсказуемой. Включи защиту ветки main: прямой push запрещён, нужны зелёный CI и хотя бы одно одобрение. Опечатки в сообщении коммита поправь до пуша (git commit --amend), а не после. Не переписывай историю (force push) в ветке, с которой уже работают другие: сначала договорись с командой."
+    }
+  ],
+  "codeExample": "git checkout -b feat/login-form\ngit commit -m \"feat(auth): add login form validation\"\ngit push -u origin feat/login-form\ngh pr create --title \"feat(auth): login form\" --body \"## Test plan\\n- [ ] invalid email\"",
+  "practice": [
+    {
+      "title": "Три коммита conventional",
+      "description": "feat, fix, test в одной ветке учебного репо с осмысленными сообщениями."
+    },
+    {
+      "title": "PR template",
+      "description": "Добавь .github/pull_request_template.md с Test plan чеклистом."
+    },
+    {
+      "title": "Rebase или merge",
+      "description": "Обнови ветку от main (merge или rebase). Запиши, что выбрал и почему для команды."
+    }
+  ],
+  "checklist": [
+    "Коммичу с типом feat/fix/docs/test",
+    "Держу PR маленьким и с test plan",
+    "Не пушу напрямую в main без согласования",
+    "Привязываю ветку к одной задаче"
+  ],
+  "links": [
+    {
+      "title": "Conventional Commits",
+      "url": "https://www.conventionalcommits.org/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "PR",
+      "meaning": "Pull request на слияние ветки.",
+      "example": "feat → main"
+    },
+    {
+      "term": "feat",
+      "meaning": "Commit type: новая функция.",
+      "example": "feat(api): …"
+    },
+    {
+      "term": "main",
+      "meaning": "Главная ветка, всегда рабочая.",
+      "example": "protected branch"
+    }
+  ]
+}

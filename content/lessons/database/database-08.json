@@ -1,0 +1,74 @@
+{
+  "id": "database-08",
+  "part": "database",
+  "module": "db-design",
+  "order": 8,
+  "title": "Нормализация и ER",
+  "goal": "Нарисуешь ER-диаграмму магазина и доведёшь схему до 3NF без дублирования email в заказах.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Нормализация убирает избыточность и аномалии обновления. 1NF: атомарные ячейки, нет повторяющихся групп. 2NF: нет частичных зависимостей от составного ключа. 3NF: неключевые поля зависят только от PK. На практике «email в каждой строке order» — сигнал вынести customer_id."
+    },
+    {
+      "type": "heading",
+      "content": "ER-нотация"
+    },
+    {
+      "type": "paragraph",
+      "content": "Прямоугольник — сущность, ромб — атрибут (часто атрибуты внутри сущности), линия — связь с кратностью 1 и N. Инструменты: dbdiagram.io, draw.io, DBeaver ER."
+    },
+    {
+      "type": "heading",
+      "content": "Денормализация осознанно"
+    },
+    {
+      "type": "paragraph",
+      "content": "Иногда дублируют счётчик comments_count для скорости — с триггером синхронизации. Сначала нормальная схема, потом узкие места по EXPLAIN."
+    }
+  ],
+  "codeExample": "-- до: orders(customer_email, product_name, ...)\n-- после:\nCREATE TABLE customers (\n  id uuid PRIMARY KEY,\n  email text UNIQUE NOT NULL\n);\nCREATE TABLE orders (\n  id uuid PRIMARY KEY,\n  customer_id uuid REFERENCES customers(id),\n  placed_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE TABLE order_items (\n  order_id uuid REFERENCES orders(id),\n  product_id uuid REFERENCES products(id),\n  qty int NOT NULL CHECK (qty > 0),\n  PRIMARY KEY (order_id, product_id)\n);",
+  "practice": [
+    {
+      "title": "ER магазина",
+      "description": "Нарисуй Customer, Product, Order, OrderItem с связями. Экспорт PNG в docs/er-shop.png."
+    },
+    {
+      "title": "3NF проверка",
+      "description": "В README опиши, какой столбец нарушал 3NF в «плоской» таблице и куда его перенесли."
+    },
+    {
+      "title": "Сравни с блогом",
+      "description": "Таблица: сущность блога ↔ сущность магазина (User↔Customer, Post↔Product). Одна строка неочевидного отличия."
+    }
+  ],
+  "checklist": [
+    "Могу объяснить 1NF–3NF на примере заказа",
+    "ER-диаграмма с кратностями 1 и N",
+    "order_items как M:N order–product",
+    "Не дублирую email в каждой строке заказа"
+  ],
+  "links": [
+    {
+      "title": "dbdiagram.io",
+      "url": "https://dbdiagram.io/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "3NF",
+      "meaning": "Третья нормальная форма без транзитивных зависимостей.",
+      "example": "email только в customers"
+    },
+    {
+      "term": "ER-диаграмма",
+      "meaning": "Схема сущностей и связей предметной области.",
+      "example": "User —< Post"
+    },
+    {
+      "term": "аномалия",
+      "meaning": "Ошибка обновления из-за дублирования данных.",
+      "example": "смена email в 1000 orders"
+    }
+  ]
+}

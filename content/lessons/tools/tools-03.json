@@ -1,0 +1,87 @@
+{
+  "id": "tools-03",
+  "part": "tools",
+  "module": "web",
+  "order": 3,
+  "title": "Запросы и ответы HTTP",
+  "goal": "Различишь GET и POST и прочитаешь статус ответа в DevTools.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Методы запроса"
+    },
+    {
+      "type": "paragraph",
+      "content": "GET — «дай ресурс»: открытие страницы, загрузка картинки, чтение JSON. Обычно без тела. POST — «прими данные»: регистрация, отправка формы, создание записи. Тело запроса часто JSON или поля формы."
+    },
+    {
+      "type": "paragraph",
+      "content": "PUT, PATCH и DELETE используют в API, когда меняют или удаляют данные. На курсе чаще всего увидишь GET и POST; остальные — те же идеи с другим смыслом действия."
+    },
+    {
+      "type": "heading",
+      "content": "Статус, заголовки, тело"
+    },
+    {
+      "type": "paragraph",
+      "content": "Код статуса — короткий итог: 200 успех, 301/302 редирект, 404 не найдено, 500 ошибка на сервере. Заголовки несут метаданные: Content-Type, кэш, cookies. Тело — HTML, JSON или файл."
+    },
+    {
+      "type": "paragraph",
+      "content": "В Network DevTools видно метод, статус и размер. Красная строка или статус 4xx/5xx — повод открыть вкладку Response и прочитать текст ошибки, а не гадать."
+    }
+  ],
+  "codeExample": "GET /api/users HTTP/1.1\nHost: example.com\nAccept: application/json\n\n---\n\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n{\"users\":[]}",
+  "practice": [
+    {
+      "title": "Найди GET при загрузке страницы",
+      "description": "Открой любой сайт, F12 → Network, включи Preserve log, нажми F5. Отфильтруй Doc или All. Кликни строку документа — во вкладке Headers проверь, что Method: GET. Запиши Status Code."
+    },
+    {
+      "title": "Увидь 404 намеренно",
+      "description": "В адресной строке добавь к домену /this-page-does-not-exist-12345 и Enter. В Network найди запрос с Status 404. Открой Preview или Response — что показывает сервер?"
+    },
+    {
+      "title": "Отправь POST через httpbin",
+      "description": "Открой https://httpbin.org/forms/post. Заполни поля Customer name и Telephone, нажми Submit order. В Network найди запрос с Method POST и Status 200. Посмотри Form Data или Payload."
+    }
+  ],
+  "checklist": [
+    "Знаю, когда браузер шлёт GET, а когда POST",
+    "Могу расшифровать 200, 404 и 500",
+    "Умею открыть Headers и Response у запроса в Network",
+    "Вижу тело POST после отправки формы"
+  ],
+  "links": [
+    {
+      "title": "MDN: методы HTTP",
+      "url": "https://developer.mozilla.org/ru/docs/Web/HTTP/Methods"
+    },
+    {
+      "title": "MDN: коды ответа",
+      "url": "https://developer.mozilla.org/ru/docs/Web/HTTP/Status"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "GET",
+      "meaning": "Запрос на получение ресурса.",
+      "example": "открытие index.html"
+    },
+    {
+      "term": "POST",
+      "meaning": "Отправка данных на сервер.",
+      "example": "форма регистрации"
+    },
+    {
+      "term": "статус 404",
+      "meaning": "Ресурс по URL не найден.",
+      "example": "опечатка в пути"
+    },
+    {
+      "term": "Content-Type",
+      "meaning": "Заголовок: формат тела ответа.",
+      "example": "text/html; charset=utf-8"
+    }
+  ]
+}

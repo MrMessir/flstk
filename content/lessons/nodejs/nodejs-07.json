@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-07",
+  "part": "nodejs",
+  "module": "node-express",
+  "order": 7,
+  "title": "Middleware и логирование",
+  "goal": "Напишешь свой middleware и подключишь HTTP-логер запросов.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Middleware — функция (req, res, next). Она может изменить req/res, завершить ответ или вызвать next() для следующего звена. Цепочка идёт в порядке app.use. Ошибки передают в next(err) — их ловит error-handling middleware с четырьмя аргументами (err, req, res, next)."
+    },
+    {
+      "type": "heading",
+      "content": "requestId и время ответа"
+    },
+    {
+      "type": "paragraph",
+      "content": "Для отладки полезно генерировать requestId (crypto.randomUUID) и класть в req.id и заголовок ответа X-Request-Id. Логируй метод, путь, статус и duration ms — так находишь медленные эндпоинты. morgan в режиме 'dev' пишет цветную строку в консоль; в production — JSON в pino."
+    },
+    {
+      "type": "heading",
+      "content": "Где ставить auth-middleware"
+    },
+    {
+      "type": "paragraph",
+      "content": "Публичные маршруты (/health, /auth/login) — до проверки токена. Защищённые — router.use(requireAuth) только на /posts и /users. Не дублируй одну и ту же проверку в каждом handler."
+    }
+  ],
+  "codeExample": "import express from \"express\";\nimport morgan from \"morgan\";\nimport { randomUUID } from \"node:crypto\";\n\nconst app = express();\n\napp.use((req, res, next) => {\n  req.id = randomUUID();\n  res.setHeader(\"X-Request-Id\", req.id);\n  next();\n});\n\napp.use(morgan(\":method :url :status :response-time ms\"));\n\napp.get(\"/health\", (_req, res) => res.json({ ok: true }));",
+  "practice": [
+    {
+      "title": "Установи morgan",
+      "description": "npm install morgan. Подключи app.use(morgan('dev')) в src/index.js до маршрутов. Сделай несколько запросов curl — в консоли появятся строки GET /health 200."
+    },
+    {
+      "title": "Middleware requestId",
+      "description": "Добавь middleware из примера с randomUUID. Проверь curl -i http://localhost:3000/health — в заголовках есть X-Request-Id. Скопируй значение в заметку."
+    },
+    {
+      "title": "Лог req.id в handler",
+      "description": "В одном маршруте console.log(req.id, 'handling'). Убедись, что id совпадает с заголовком ответа. Убери console.log после проверки или замени на будущий logger."
+    }
+  ],
+  "checklist": [
+    "Пишу middleware с вызовом next()",
+    "Подключил morgan и вижу метод/статус/время",
+    "Прокидываю requestId в заголовок ответа",
+    "Понимаю порядок app.use относительно роутов"
+  ],
+  "links": [
+    {
+      "title": "Express: middleware",
+      "url": "https://expressjs.com/en/guide/using-middleware.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "next()",
+      "meaning": "Передать управление следующему middleware.",
+      "example": "if (ok) next();"
+    },
+    {
+      "term": "morgan",
+      "meaning": "HTTP request logger для Express.",
+      "example": "app.use(morgan('dev'))"
+    },
+    {
+      "term": "error middleware",
+      "meaning": "Обработчик с сигнатурой (err, req, res, next).",
+      "example": "app.use((err, req, res, next) => ...)"
+    }
+  ]
+}

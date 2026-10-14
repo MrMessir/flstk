@@ -1,0 +1,83 @@
+{
+  "id": "js-27",
+  "part": "javascript",
+  "module": "js-tooling",
+  "order": 27,
+  "title": "npm, Vite, ESLint и Prettier",
+  "goal": "Создашь проект на Vite и запустишь линт и форматирование одной командой.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "npm — менеджер пакетов Node: npm install lodash ставит зависимость в node_modules и записывает версию в package.json. Скрипты в \"scripts\": { \"dev\": \"vite\" } запускаются как npm run dev. Файл package-lock.json фиксирует точные версии — его коммитят в репозиторий, чтобы у всех сборка была одинаковой."
+    },
+    {
+      "type": "heading",
+      "content": "Vite в разработке"
+    },
+    {
+      "type": "paragraph",
+      "content": "npm create vite@latest my-app выбирает шаблон (Vanilla, React, TS). Vite поднимает dev-сервер с горячей заменой модулей: правки в main.js сразу видны без полной перезагрузки. npm run build собирает оптимизированные файлы в dist/ для деплоя. Для курса достаточно vanilla или react-ts шаблона — структура src/, index.html в корне, импорты ES modules."
+    },
+    {
+      "type": "heading",
+      "content": "ESLint и Prettier"
+    },
+    {
+      "type": "paragraph",
+      "content": "ESLint ищет ошибки и спорные места: неиспользуемые переменные, отсутствие return в ветках, неверное сравнение. Prettier не спорит о стиле — он переформатирует отступы, кавычки и переносы строк. Обычно eslint-config-prettier отключает правила ESLint, которые дублируют Prettier. Команды npx eslint . и npx prettier --write . вешают на npm run lint и npm run format в package.json."
+    }
+  ],
+  "codeExample": "/* package.json фрагмент */\n{\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\",\n    \"lint\": \"eslint src --ext .js\",\n    \"format\": \"prettier --write src\"\n  }\n}",
+  "practice": [
+    {
+      "title": "Новый проект Vite",
+      "description": "В терминале: npm create vite@latest js-tooling-lab -- --template vanilla. cd js-tooling-lab && npm install && npm run dev. Открой локальный URL, измени main.js — счётчик на странице должен обновиться без ручного F5."
+    },
+    {
+      "title": "Скрипт lint ловит ошибку",
+      "description": "npm install -D eslint @eslint/js. Добавь eslint.config.js по quick start с eslintjs.org. В main.js объяви const unused = 1; npm run lint (добавь script) должен показать предупреждение no-unused-vars. Удали переменную — lint проходит с кодом 0."
+    },
+    {
+      "title": "Prettier выравнивает файл",
+      "description": "npm install -D prettier. Создай .prettierrc с \"singleQuote\": true. Испорти отступы в main.js, выполни npx prettier --write src/main.js. git diff покажет только форматирование; логика файла не меняется."
+    }
+  ],
+  "checklist": [
+    "Создаю проект через npm create vite@latest",
+    "Запускаю dev-сервер командой npm run dev",
+    "Добавляю eslint и исправляю замечания линтера",
+    "Форматирую код Prettier перед коммитом"
+  ],
+  "links": [
+    {
+      "title": "Vite: начало работы",
+      "url": "https://vitejs.dev/guide/"
+    },
+    {
+      "title": "ESLint: начало работы",
+      "url": "https://eslint.org/docs/latest/use/getting-started"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "package.json",
+      "meaning": "Манифест проекта: зависимости и npm-скрипты.",
+      "example": "\"scripts\": { \"dev\": \"vite\" }"
+    },
+    {
+      "term": "Vite",
+      "meaning": "Dev-сервер и сборщик для современного фронтенда.",
+      "example": "npm run dev"
+    },
+    {
+      "term": "ESLint",
+      "meaning": "Статический анализ JavaScript/TypeScript кода.",
+      "example": "npm run lint"
+    },
+    {
+      "term": "Prettier",
+      "meaning": "Автоформаттер исходников по правилам.",
+      "example": "prettier --write ."
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "id": "security-09",
+  "part": "security",
+  "module": "sec-hardening",
+  "order": 9,
+  "title": "OWASP Top 10 обзор",
+  "goal": "Сопоставишь пункты OWASP Top 10 с твоим Express API и отметишь уже закрытые риски.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "OWASP Top 10 — частые классы уязвимостей web. A01 Broken Access Control — IDOR, missing authz (ты закрываешь owner middleware). A02 Cryptographic Failures — plaintext passwords, weak TLS. A03 Injection — SQL через Prisma parameterized ok, но $queryRaw осторожно."
+    },
+    {
+      "type": "heading",
+      "content": "A04–A07 кратко"
+    },
+    {
+      "type": "paragraph",
+      "content": "Insecure Design — нет rate limit на login. Security Misconfiguration — debug stack in prod, default creds. Vulnerable Components — npm audit. Authentication Failures — weak session, JWT in localStorage XSS."
+    },
+    {
+      "type": "heading",
+      "content": "A08–A10"
+    },
+    {
+      "type": "paragraph",
+      "content": "Software/Data Integrity — supply chain. Logging Failures — нет audit login fail. SSRF — fetch user-supplied URL на backend. Для блога SSRF реже, но webhook URL — риск."
+    }
+  ],
+  "codeExample": "// checklist map (comments in repo)\n// A01: requireOwner on PATCH/DELETE posts\n// A03: prisma.post.findUnique — no string concat SQL\n// A07: bcrypt + JWT exp 15m\n// A05: helmet() + hide x-powered-by\n// npm audit fix for transitive deps",
+  "practice": [
+    {
+      "title": "Таблица OWASP",
+      "description": "docs/owasp-map.md: 10 строк Top 10 (2021). Колонки: риск в блоге, статус (done/todo), файл/урок."
+    },
+    {
+      "title": "npm audit",
+      "description": "npm audit в API repo. Запиши 1 high если есть — plan fix или accept с reason."
+    },
+    {
+      "title": "Misconfig scan",
+      "description": "curl -I localhost:3000/health — есть ли X-Powered-By: Express. После helmet должен исчезнуть (урок 12)."
+    }
+  ],
+  "checklist": [
+    "Знаю A01 и A03 для своего стека",
+    "owasp-map.md в docs",
+    "Запускал npm audit",
+    "Связал IDOR с Broken Access Control"
+  ],
+  "links": [
+    {
+      "title": "OWASP Top 10",
+      "url": "https://owasp.org/www-project-top-ten/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Broken Access Control",
+      "meaning": "Пользователь делает то, что ему нельзя.",
+      "example": "IDOR delete"
+    },
+    {
+      "term": "injection",
+      "meaning": "Выполнение чужих команд через ввод.",
+      "example": "SQL injection"
+    },
+    {
+      "term": "misconfiguration",
+      "meaning": "Небезопасные дефолты и заголовки.",
+      "example": "stack trace in prod"
+    }
+  ]
+}

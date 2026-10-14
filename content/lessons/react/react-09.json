@@ -1,0 +1,83 @@
+{
+  "id": "react-09",
+  "part": "react",
+  "module": "react-data",
+  "order": 9,
+  "title": "React Router",
+  "goal": "Настроишь BrowserRouter, маршруты и ссылку NavLink между страницами SPA.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "React Router синхронизирует UI с URL без полной перезагрузки. BrowserRouter оборачивает приложение, Routes содержит Route path element. path=\"/products/:id\" даёт useParams(). Navigate to=\"/login\" — редирект. NavLink добавляет active class при совпадении маршрута."
+    },
+    {
+      "type": "heading",
+      "content": "Layout routes"
+    },
+    {
+      "type": "paragraph",
+      "content": "<Route element={<Layout />}> с Outlet внутри Layout — общий header/footer для вложенных страниц. index route для /. Loader/action в data routers (v6.4+) — обзор: данные можно подгружать до render route. Для курса достаточно declarative Routes + fetch в компонентах или hooks."
+    },
+    {
+      "type": "heading",
+      "content": "404 и программная навигация"
+    },
+    {
+      "type": "paragraph",
+      "content": "path=\"*\" element={<NotFound />}. useNavigate()() для редиректа после login. Link to=\"/cart\" вместо <a href> — без перезагрузки SPA. При деплое на static host нужен fallback на index.html для deep links."
+    }
+  ],
+  "codeExample": "import { BrowserRouter, Routes, Route, NavLink, Outlet } from \"react-router-dom\";\n\nfunction Layout() {\n  return (\n    <>\n      <nav>\n        <NavLink to=\"/\" end>Home</NavLink>\n        <NavLink to=\"/about\">About</NavLink>\n      </nav>\n      <Outlet />\n    </>\n  );\n}\n\nexport function AppRouter() {\n  return (\n    <BrowserRouter>\n      <Routes>\n        <Route element={<Layout />}>\n          <Route index element={<h1>Home</h1>} />\n          <Route path=\"about\" element={<h1>About</h1>} />\n          <Route path=\"*\" element={<h1>404</h1>} />\n        </Route>\n      </Routes>\n    </BrowserRouter>\n  );\n}",
+  "practice": [
+    {
+      "title": "Установи react-router-dom",
+      "description": "npm i react-router-dom. Подключи AppRouter в main.tsx. / и /about работают, NavLink подсвечивает активный пункт."
+    },
+    {
+      "title": "Страница товара :id",
+      "description": "Route path=\"products/:id\" ProductPage с useParams(). /products/42 показывает «Товар 42»."
+    },
+    {
+      "title": "404 и Link",
+      "description": "/unknown показывает 404 внутри Layout. С Home Link на /about — без full page reload ( проверь в Network)."
+    }
+  ],
+  "checklist": [
+    "Оборачиваю приложение в BrowserRouter",
+    "Использую Link/NavLink вместо href для внутренних URL",
+    "Читаю параметры через useParams",
+    "Добавил catch-all route для 404"
+  ],
+  "links": [
+    {
+      "title": "React Router: Tutorial",
+      "url": "https://reactrouter.com/en/main/start/tutorial"
+    },
+    {
+      "title": "React Router: NavLink",
+      "url": "https://reactrouter.com/en/main/components/nav-link"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "SPA",
+      "meaning": "Single Page Application без полных перезагрузок.",
+      "example": "client-side routing"
+    },
+    {
+      "term": "Route",
+      "meaning": "Сопоставление path и компонента.",
+      "example": "path=\"/about\""
+    },
+    {
+      "term": "useParams",
+      "meaning": "Хук параметров динамического сегмента URL.",
+      "example": ":id"
+    },
+    {
+      "term": "Outlet",
+      "meaning": "Место вложенного child route в layout.",
+      "example": "<Outlet />"
+    }
+  ]
+}

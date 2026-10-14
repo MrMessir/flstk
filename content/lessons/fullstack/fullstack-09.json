@@ -1,0 +1,91 @@
+{
+  "id": "fullstack-09",
+  "part": "fullstack",
+  "module": "fs-features",
+  "order": 9,
+  "title": "WebSocket и Socket.IO",
+  "goal": "Сделаешь мини-чат или realtime-уведомления.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Когда HTTP недостаточно"
+    },
+    {
+      "type": "paragraph",
+      "content": "HTTP работает по схеме «запрос — ответ»: сервер не может сам написать клиенту. Для чата, уведомлений, совместного редактирования нужен канал, по которому сервер отправляет данные сам. WebSocket держит соединение открытым в обе стороны. Socket.IO — библиотека поверх него: добавляет комнаты, автоматическое переподключение, подтверждения доставки и запасной вариант через long polling."
+    },
+    {
+      "type": "heading",
+      "content": "События и комнаты"
+    },
+    {
+      "type": "paragraph",
+      "content": "Клиент отправляет socket.emit('join', { room: postId }). Сервер вызывает socket.join(room) и рассылает io.to(room).emit('comment', payload) только подписанным. Названия событий — часть контракта, как пути REST: опиши их в README и проверяй входные данные теми же схемами zod."
+    },
+    {
+      "type": "heading",
+      "content": "Авторизация на handshake"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Проверяй пользователя при подключении (middleware io.use(...)): читай cookie с сессией или токен из auth, отклоняй гостей.",
+        "Права на комнату проверяй на сервере при каждом join: не верь клиенту, что он «имеет право» на комнату.",
+        "Не отправляй в общий broadcast приватные данные.",
+        "Настрой CORS для Socket.IO отдельно (origin и credentials), иначе в браузере соединение молча не поднимется."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Обрывы связи"
+    },
+    {
+      "type": "paragraph",
+      "content": "Сеть пропадает постоянно: телефон засыпает, Wi-Fi переключается. После переподключения клиент должен заново выполнить join и догрузить пропущенные сообщения через REST (запрос «после id N»). Для защиты от дублей у сообщений должен быть id, который клиент проверяет перед добавлением. Выход со страницы: leave или disconnect при размонтировании компонента, иначе подписки копятся. При масштабировании на несколько экземпляров сервера нужен адаптер (Redis adapter), иначе рассылка дойдёт только до клиентов одного экземпляра."
+    }
+  ],
+  "codeExample": "import { io } from 'socket.io-client';\nconst socket = io(import.meta.env.VITE_WS_URL, { withCredentials: true });\nsocket.on('comment', (c) => setComments((xs) => [...xs, c]));",
+  "practice": [
+    {
+      "title": "Echo-сервер",
+      "description": "Подними socket.io на API. Клиент шлёт ping, получает pong в консоль."
+    },
+    {
+      "title": "Комната поста",
+      "description": "При открытии поста join room postId. Новый комментарий появляется у второго вкладочного клиента."
+    },
+    {
+      "title": "Auth на handshake",
+      "description": "Передай cookie или token в auth handshake и отклоняй анонимный join приватной комнаты."
+    }
+  ],
+  "checklist": [
+    "Подключаю socket.io-client к тому же origin или CORS с credentials",
+    "Join комнаты при mount, leave при unmount",
+    "Не дублирую сообщения при reconnect без dedupe id",
+    "Проверяю права на сервере, а не только на клиенте"
+  ],
+  "links": [
+    {
+      "title": "Socket.IO docs",
+      "url": "https://socket.io/docs/v4/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "WebSocket",
+      "meaning": "Дуплексный канал поверх TCP.",
+      "example": "ws://"
+    },
+    {
+      "term": "room",
+      "meaning": "Группа сокетов для таргетированной рассылки.",
+      "example": "post:42"
+    },
+    {
+      "term": "handshake",
+      "meaning": "Первое соединение с auth.",
+      "example": "auth: { token }"
+    }
+  ]
+}

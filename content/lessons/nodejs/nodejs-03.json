@@ -1,0 +1,79 @@
+{
+  "id": "nodejs-03",
+  "part": "nodejs",
+  "module": "node-basics",
+  "order": 3,
+  "title": "npm и package.json",
+  "goal": "Опишешь зависимости, скрипты и правила semver в своём API-проекте.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "package.json — паспорт проекта: имя, версия, скрипты запуска и список зависимостей. npm install express добавляет пакет в node_modules и фиксирует версию в package-lock.json. Без lock-файла у коллеги могут установиться другие минорные версии и CI начнёт падать «само»."
+    },
+    {
+      "type": "heading",
+      "content": "dependencies и devDependencies"
+    },
+    {
+      "type": "paragraph",
+      "content": "dependencies нужны в рантайме: express, zod, prisma. devDependencies — только для разработки: typescript, nodemon, eslint. На прод-сервере часто ставят npm ci --omit=dev, чтобы не тащить лишнее. Не клади runtime-библиотеки в devDependencies — деплой сломается."
+    },
+    {
+      "type": "heading",
+      "content": "Semver и caret"
+    },
+    {
+      "type": "paragraph",
+      "content": "Версия MAJOR.MINOR.PATCH. Запись ^4.19.0 разрешает обновления minor и patch, но не major. Тильда ~4.19.0 — только patch. Для учебного проекта caret нормален; перед релизом проверяй npm outdated и changelog major-версий."
+    }
+  ],
+  "codeExample": "{\n  \"name\": \"blog-api\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"node --watch src/index.js\",\n    \"start\": \"node src/index.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.21.0\",\n    \"zod\": \"^3.23.0\"\n  },\n  \"devDependencies\": {\n    \"nodemon\": \"^3.1.0\"\n  }\n}",
+  "practice": [
+    {
+      "title": "Установи Express",
+      "description": "В корне blog-api-node выполни npm install express. Открой package.json: express должен появиться в dependencies. Убедись, что создался package-lock.json. Закоммить оба файла, node_modules — нет."
+    },
+    {
+      "title": "Скрипт dev",
+      "description": "Добавь в scripts \"dev\": \"node --watch src/index.js\" (Node 22+) или установи nodemon и \"dev\": \"nodemon src/index.js\". Создай src/index.js с console.log('API'). Запусти npm run dev — при сохранении файла процесс перезапускается."
+    },
+    {
+      "title": "Разбор semver",
+      "description": "Выполни npm ls express. Запиши в README: какая точная версия установилась и что означает ^ в package.json. Попробуй npm install express@4.18.0 и снова npm ls — увидишь смену дерева."
+    }
+  ],
+  "checklist": [
+    "Различаю dependencies и devDependencies",
+    "Добавил npm run dev и проверил перезапуск",
+    "Храню package-lock.json в git",
+    "Могу объяснить разницу между ^ и ~ на примере express"
+  ],
+  "links": [
+    {
+      "title": "npm: package.json",
+      "url": "https://docs.npmjs.com/cli/v10/configuring-npm/package-json"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "package-lock.json",
+      "meaning": "Фиксированное дерево версий для воспроизводимой установки.",
+      "example": "npm ci"
+    },
+    {
+      "term": "semver",
+      "meaning": "Схема версий major.minor.patch.",
+      "example": "4.21.2"
+    },
+    {
+      "term": "npm scripts",
+      "meaning": "Команды проекта через npm run имя.",
+      "example": "npm run dev"
+    },
+    {
+      "term": "node_modules",
+      "meaning": "Локальная папка установленных пакетов.",
+      "example": ".gitignore → node_modules/"
+    }
+  ]
+}

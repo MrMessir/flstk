@@ -1,0 +1,74 @@
+{
+  "id": "database-07",
+  "part": "database",
+  "module": "db-design",
+  "order": 7,
+  "title": "JOIN и CTE",
+  "goal": "Соберёшь пост с автором, комментариями и тегами одним запросом с JOIN и WITH.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "INNER JOIN posts и users оставляет только посты с существующим author_id. JOIN comments дублирует строки поста — для списка постов с числом комментов лучше подзапрос или aggregation. LEFT JOIN tags через post_tags покажет пост без тегов с NULL."
+    },
+    {
+      "type": "heading",
+      "content": "CTE WITH"
+    },
+    {
+      "type": "paragraph",
+      "content": "WITH recent AS (SELECT ... LIMIT 50) SELECT * FROM recent JOIN ... — читаемый шаг. Рекурсивный CTE для деревьев комментариев — позже; сейчас достаточно линейного списка."
+    },
+    {
+      "type": "heading",
+      "content": "N+1 в приложении"
+    },
+    {
+      "type": "paragraph",
+      "content": "Плохо: 1 запрос списка постов + N запросов author по id. Лучше: один JOIN или Prisma include. JOIN в SQL — способ убрать N+1 на уровне БД."
+    }
+  ],
+  "codeExample": "WITH post_row AS (\n  SELECT p.id, p.title, u.email AS author_email\n  FROM posts p\n  JOIN users u ON u.id = p.author_id\n  WHERE p.id = $1\n)\nSELECT pr.*, t.name AS tag\nFROM post_row pr\nLEFT JOIN post_tags pt ON pt.post_id = pr.id\nLEFT JOIN tags t ON t.id = pt.tag_id;",
+  "practice": [
+    {
+      "title": "JOIN post + author",
+      "description": "SELECT p.title, u.email FROM posts p JOIN users u ON u.id = p.author_id. Убедись, что email совпадает с seed user."
+    },
+    {
+      "title": "CTE recent posts",
+      "description": "WITH recent AS (SELECT * FROM posts ORDER BY created_at DESC LIMIT 5) SELECT r.title, u.email FROM recent r JOIN users u ON u.id = r.author_id;"
+    },
+    {
+      "title": "Теги поста",
+      "description": "Запрос с LEFT JOIN tags для одного post id. Если тегов нет — одна строка с tag NULL. Добавь tag и повтори — несколько строк."
+    }
+  ],
+  "checklist": [
+    "Пишу JOIN вместо N+1 в голове",
+    "Использую WITH для читаемости",
+    "LEFT JOIN для optional связей",
+    "Сохранил запрос post-detail.sql"
+  ],
+  "links": [
+    {
+      "title": "PostgreSQL: JOIN",
+      "url": "https://www.postgresql.org/docs/current/tutorial-join.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "INNER JOIN",
+      "meaning": "Только совпадающие строки обеих таблиц.",
+      "example": "posts JOIN users"
+    },
+    {
+      "term": "CTE",
+      "meaning": "Именованный подзапрос через WITH.",
+      "example": "WITH x AS (...)"
+    },
+    {
+      "term": "N+1",
+      "meaning": "Лишние запросы: один список + по одному на элемент.",
+      "example": "JOIN вместо цикла"
+    }
+  ]
+}

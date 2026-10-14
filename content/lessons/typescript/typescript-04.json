@@ -1,0 +1,83 @@
+{
+  "id": "typescript-04",
+  "part": "typescript",
+  "module": "ts-types",
+  "order": 4,
+  "title": "type и interface",
+  "goal": "Опишешь форму объекта через interface и type и выберешь подходящий инструмент.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "interface User { id: string; name: string; } задаёт контракт объекта: у каждого User есть эти поля с указанными типами. interface можно расширять: interface Admin extends User { role: string }. Несколько объявлений с одним именем interface сливаются — удобно для augmentation библиотек."
+    },
+    {
+      "type": "heading",
+      "content": "type alias"
+    },
+    {
+      "type": "paragraph",
+      "content": "type Point = { x: number; y: number } или type Id = string | number описывает не только объекты, но union и примитивы. type нельзя «дописать» дважды с тем же именем — одно определение. Для объектов interface и type часто взаимозаменяемы; команды выбирают стиль в eslint-правиле."
+    },
+    {
+      "type": "heading",
+      "content": "readonly и опциональные поля"
+    },
+    {
+      "type": "paragraph",
+      "content": "readonly id: string запрещает присвоение после создания. email?: string означает string | undefined. Индексная сигнатура [key: string]: number описывает словарь. Для React props чаще interface ComponentProps { ... }, для union состояний — type State = 'idle' | 'loading'."
+    }
+  ],
+  "codeExample": "interface Product {\n  readonly id: string;\n  title: string;\n  price: number;\n  tag?: string;\n}\n\ntype CartLine = Product & { qty: number };\n\nfunction lineTotal(line: CartLine): number {\n  return line.price * line.qty;\n}\n\nconst line: CartLine = {\n  id: \"p1\",\n  title: \"Книга\",\n  price: 500,\n  qty: 2,\n};\n\nconsole.log(lineTotal(line));",
+  "practice": [
+    {
+      "title": "interface Task",
+      "description": "src/models.ts: interface Task { readonly id: string; title: string; done: boolean }. Функция toggleTask(tasks: Task[], id: string): Task[] возвращает новый массив с инвертированным done. Без мутации исходного массива."
+    },
+    {
+      "title": "type Status union",
+      "description": "type LoadStatus = 'idle' | 'loading' | 'error' | 'success'. type LoadState = { status: LoadStatus; message?: string }. Функция isLoading(s: LoadState): boolean с type guard. Проверь все четыре status в switch."
+    },
+    {
+      "title": "extends vs intersection",
+      "description": "interface Animal { name: string }. interface Dog extends Animal { breed: string }. Параллельно type Cat = Animal & { lives: number }. Создай по одному объекту Dog и Cat — TS должен принять оба."
+    }
+  ],
+  "checklist": [
+    "Описываю объекты через interface или type осознанно",
+    "Использую readonly для неизменяемых id",
+    "Помечаю опциональные поля через ?",
+    "Комбинирую типы через extends или &"
+  ],
+  "links": [
+    {
+      "title": "Handbook: Object Types",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/objects.html"
+    },
+    {
+      "title": "TS: interface vs type",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#differences-between-type-aliases-and-interfaces"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "interface",
+      "meaning": "Именованный контракт формы объекта.",
+      "example": "interface User { id: string }"
+    },
+    {
+      "term": "type alias",
+      "meaning": "Имя для любого типа, включая union.",
+      "example": "type Id = string | number"
+    },
+    {
+      "term": "extends",
+      "meaning": "Наследование полей interface.",
+      "example": "interface Admin extends User"
+    },
+    {
+      "term": "intersection",
+      "meaning": "Объединение типов через &.",
+      "example": "Product & { qty: number }"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "id": "react-18",
+  "part": "react",
+  "module": "react-next",
+  "order": 18,
+  "title": "Next.js: layouts, loading и вложенные маршруты",
+  "goal": "Соберёшь App Router с layout, вложенным сегментом и loading.tsx.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "В App Router каждый сегмент папки может иметь layout.tsx — общий UI (шапка, сайдбар), который не размонтируется при навигации между дочерними page.tsx. loading.tsx показывает fallback на время серверного рендера сегмента. error.tsx ловит ошибки ниже по дереву. Параллельные маршруты и route groups (папки в скобках) не меняют URL, но помогают организовать layouts."
+    },
+    {
+      "type": "heading",
+      "content": "Вложенность"
+    },
+    {
+      "type": "paragraph",
+      "content": "app/dashboard/layout.tsx оборачивает app/dashboard/page.tsx и app/dashboard/settings/page.tsx. Ссылки — через next/link, активное состояние можно читать из usePathname в клиентском компоненте. Не клади всё приложение в один «use client»: держи серверные page тонкими, интерактив выноси в листовые компоненты."
+    },
+    {
+      "type": "list",
+      "items": [
+        "layout.tsx — оболочка сегмента.",
+        "page.tsx — UI маршрута.",
+        "loading.tsx — мгновенный skeleton.",
+        "Link prefetch — по умолчанию для видимых ссылок."
+      ]
+    }
+  ],
+  "codeExample": "// app/dashboard/layout.tsx\nexport default function DashboardLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <div className=\"dashboard\">\n      <aside>Меню</aside>\n      <main>{children}</main>\n    </div>\n  );\n}\n\n// app/dashboard/loading.tsx\nexport default function Loading() {\n  return <p>Загрузка дашборда…</p>;\n}",
+  "practice": [
+    {
+      "title": "Сегмент dashboard",
+      "description": "Создай app/dashboard/layout.tsx с aside и app/dashboard/page.tsx. Перейди с главной через Link — layout остаётся."
+    },
+    {
+      "title": "loading.tsx",
+      "description": "Добавь loading.tsx и искусственную задержку await new Promise(r => setTimeout(r, 800)) в page — увидишь fallback."
+    },
+    {
+      "title": "Вложенный settings",
+      "description": "app/dashboard/settings/page.tsx. Проверь, что меню из layout видно на обоих URL."
+    }
+  ],
+  "checklist": [
+    "Понимаю разницу layout и page",
+    "Добавил loading.tsx для сегмента",
+    "Навигация через next/link",
+    "Не пометил весь layout как use client без нужды"
+  ],
+  "links": [
+    {
+      "title": "Next.js: Layouts and Pages",
+      "url": "https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "layout",
+      "meaning": "Общий UI сегмента маршрута.",
+      "example": "app/dashboard/layout.tsx"
+    },
+    {
+      "term": "loading.tsx",
+      "meaning": "Fallback при загрузке сегмента.",
+      "example": "skeleton"
+    },
+    {
+      "term": "route segment",
+      "meaning": "Папка в app/, часть URL.",
+      "example": "app/blog/[slug]"
+    },
+    {
+      "term": "Link",
+      "meaning": "Клиентская навигация Next.",
+      "example": "import Link from 'next/link'"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-18-q1",
+      "prompt": "Что сохраняется при переходе между дочерними page одного layout?",
+      "options": [
+        "Состояние и DOM оболочки layout",
+        "Только CSS файлы сайта",
+        "Все cookies удаляются",
+        "Node process перезапускается"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "react-18-q2",
+      "prompt": "Для чего loading.tsx?",
+      "options": [
+        "Показать fallback, пока сегмент грузится",
+        "Заменить nginx",
+        "Хранить JWT secret",
+        "Отключить TypeScript"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "id": "database-12",
+  "part": "database",
+  "module": "db-ops",
+  "order": 12,
+  "title": "Prisma ORM",
+  "goal": "Опишешь модели Prisma и выполнишь CRUD постов из Express без сырого SQL.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Prisma Client генерируется из schema: типобезопасные findMany, create, update. prisma.post.findMany({ where: { authorId }, include: { comments: true } }) заменяет JOIN. $queryRaw остаётся для сложного SQL."
+    },
+    {
+      "type": "heading",
+      "content": "Singleton client"
+    },
+    {
+      "type": "paragraph",
+      "content": "Один экземпляр PrismaClient на процесс — в db/prisma.js экспорт singleton. В dev hot-reload создаёт лишние соединения — паттерн globalThis.prisma из доки Prisma."
+    },
+    {
+      "type": "heading",
+      "content": "Repository поверх Prisma"
+    },
+    {
+      "type": "paragraph",
+      "content": "postsRepo.create вызывает prisma.post.create — service не импортирует Prisma напрямую. Завтра mock repo для тестов без БД."
+    }
+  ],
+  "codeExample": "import { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient();\n\nexport async function listPosts(page, limit) {\n  const skip = (page - 1) * limit;\n  const [items, total] = await Promise.all([\n    prisma.post.findMany({ skip, take: limit, orderBy: { createdAt: \"desc\" } }),\n    prisma.post.count(),\n  ]);\n  return { items, page, limit, total };\n}",
+  "practice": [
+    {
+      "title": "generate client",
+      "description": "npx prisma generate после schema. Импорт PrismaClient в repositories/postsRepo.js без ошибок TS/JS."
+    },
+    {
+      "title": "CRUD из route",
+      "description": "GET /posts через findMany с skip/take из query. POST create с data из zod DTO. Postman: создай пост, list показывает его."
+    },
+    {
+      "title": "include author",
+      "description": "GET /posts/:id с include: { author: { select: { email: true } } }. Ответ содержит вложенный author.email."
+    }
+  ],
+  "checklist": [
+    "Prisma Client singleton в проекте",
+    "CRUD posts работает через repository",
+    "Пагинация skip/take на list",
+    "include заменил ручной JOIN для detail"
+  ],
+  "links": [
+    {
+      "title": "Prisma Client API",
+      "url": "https://www.prisma.io/docs/orm/prisma-client"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Prisma Client",
+      "meaning": "Сгенерированный типобезопасный клиент БД.",
+      "example": "prisma.post.findMany()"
+    },
+    {
+      "term": "include",
+      "meaning": "Eager-load связанных моделей.",
+      "example": "include: { comments: true }"
+    },
+    {
+      "term": "skip/take",
+      "meaning": "Offset и limit в Prisma.",
+      "example": "skip: 20, take: 10"
+    }
+  ]
+}

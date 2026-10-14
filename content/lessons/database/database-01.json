@@ -1,0 +1,79 @@
+{
+  "id": "database-01",
+  "part": "database",
+  "module": "db-sql",
+  "order": 1,
+  "title": "Зачем базы данных и ACID",
+  "goal": "Выберешь PostgreSQL для блога и объяснишь четыре буквы ACID на примере перевода денег.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Файл JSON на диске подходит для прототипа, но при двух одновременных запросах легко потерять обновление. База данных даёт транзакции, индексы и язык запросов SQL. Реляционная модель — таблицы со строгими типами и связями; документная (MongoDB) хранит JSON-документы; ключ-значение (Redis) — кэш и очереди."
+    },
+    {
+      "type": "heading",
+      "content": "ACID по-человечески"
+    },
+    {
+      "type": "paragraph",
+      "content": "Atomicity: перевод списывает с одного счёта и зачисляет на другой — либо обе операции, либо ни одной. Consistency: сумма на счетах не нарушает правила (баланс ≥ 0). Isolation: два перевода параллельно не перемешивают промежуточные значения. Durability: после COMMIT данные переживут перезагрузку сервера."
+    },
+    {
+      "type": "heading",
+      "content": "Почему PostgreSQL на курсе"
+    },
+    {
+      "type": "paragraph",
+      "content": "PostgreSQL — полноценный SQL, бесплатный, с JSONB, полнотекстом и расширениями. Он совпадает с тем, что часто ждут на работе в продуктовых командах. Учебный блог: users, posts, comments, tags — классическая реляционная схема."
+    }
+  ],
+  "codeExample": "-- users 1—N posts\nCREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  email text UNIQUE NOT NULL\n);\n\nCREATE TABLE posts (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  author_id uuid NOT NULL REFERENCES users(id),\n  title text NOT NULL\n);",
+  "practice": [
+    {
+      "title": "Схема на бумаге",
+      "description": "Нарисуй на листе или в Excalidraw четыре сущности блога: User, Post, Comment, Tag. Подпиши связи 1:N и M:N. Сфотографируй или сохрани PNG в docs/er-sketch.png."
+    },
+    {
+      "title": "ACID-сценарий",
+      "description": "Напиши в README абзац из 5–7 предложений: пользователь покупает подписку — какие шаги в одной транзакции и что будет при сбое на середине."
+    },
+    {
+      "title": "Сравнение с JSON-файлом",
+      "description": "Открой свой in-memory API из модуля Node. Запиши один риск гонки (два POST одновременно) и как БД его снимает через транзакцию."
+    }
+  ],
+  "checklist": [
+    "Могу назвать все четыре свойства ACID своими словами",
+    "Обосновал выбор PostgreSQL для блога",
+    "Отличаю реляционную БД от Redis и Mongo по задаче",
+    "Нарисовал ER-черновик сущностей курса"
+  ],
+  "links": [
+    {
+      "title": "PostgreSQL: tutorial",
+      "url": "https://www.postgresql.org/docs/current/tutorial.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "ACID",
+      "meaning": "Atomicity, Consistency, Isolation, Durability транзакций.",
+      "example": "BEGIN; UPDATE ...; COMMIT;"
+    },
+    {
+      "term": "реляционная БД",
+      "meaning": "Данные в таблицах со связями и SQL.",
+      "example": "PostgreSQL"
+    },
+    {
+      "term": "транзакция",
+      "meaning": "Группа операций, фиксируемая целиком.",
+      "example": "BEGIN ... COMMIT"
+    },
+    {
+      "term": "SQL",
+      "meaning": "Язык запросов к реляционным БД.",
+      "example": "SELECT * FROM posts"
+    }
+  ]
+}

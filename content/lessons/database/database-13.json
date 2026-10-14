@@ -1,0 +1,74 @@
+{
+  "id": "database-13",
+  "part": "database",
+  "module": "db-ops",
+  "order": 13,
+  "title": "Пагинация, поиск и NoSQL-обзор",
+  "goal": "Сделаешь offset и cursor пагинацию с поиском по title и поймёшь, где уместны Redis и Mongo.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Offset page/limit прост для UI, но на больших OFFSET Postgres всё равно «пролистывает» строки. Cursor: WHERE created_at < $cursor ORDER BY created_at DESC LIMIT 20 — стабильнее для ленты. Поиск: ILIKE '%node%' или to_tsvector для full-text позже."
+    },
+    {
+      "type": "heading",
+      "content": "Redis"
+    },
+    {
+      "type": "paragraph",
+      "content": "Кэш популярных постов, rate limit counters, session store. Не основное хранилище блога на курсе. TTL ключей — автоматическое устаревание. Hands-on: урок database-15 (Redis в Docker, кэш списка и 429 на login)."
+    },
+    {
+      "type": "heading",
+      "content": "MongoDB"
+    },
+    {
+      "type": "paragraph",
+      "content": "Гибкая схема документов, вложенные комментарии в одном doc. Жертвуешь JOIN и строгими FK. Для relational blog Postgres + Prisma логичнее."
+    }
+  ],
+  "codeExample": "// offset\nconst page = 2, limit = 10;\nconst items = await prisma.post.findMany({\n  skip: (page - 1) * limit,\n  take: limit,\n  where: { title: { contains: q, mode: \"insensitive\" } },\n});\n\n// cursor\nconst items = await prisma.post.findMany({\n  take: 10,\n  cursor: { id: lastId },\n  skip: 1,\n  orderBy: { createdAt: \"desc\" },\n});",
+  "practice": [
+    {
+      "title": "Query q на list",
+      "description": "GET /posts?q=node фильтрует title contains insensitive. Seed 5 постов с разными title. Postman: q находит подмножество."
+    },
+    {
+      "title": "Cursor endpoint",
+      "description": "Добавь GET /posts?cursor=<uuid>&limit=5. Ответ { items, nextCursor }. Пролистай 3 страницы cursor без skip."
+    },
+    {
+      "title": "Redis заметка",
+      "description": "В README таблица: Postgres vs Redis vs Mongo — одна строка «задача» и «выбор курса» для каждого."
+    }
+  ],
+  "checklist": [
+    "Реализовал page/limit и cursor",
+    "Поиск по title без регистра",
+    "Понимаю минус большого OFFSET",
+    "Могу назвать роль Redis в API"
+  ],
+  "links": [
+    {
+      "title": "Prisma: pagination",
+      "url": "https://www.prisma.io/docs/orm/prisma-client/queries/pagination"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "cursor pagination",
+      "meaning": "Пагинация по маркеру последней строки.",
+      "example": "cursor: { id: lastId }"
+    },
+    {
+      "term": "ILIKE",
+      "meaning": "Поиск подстроки без учёта регистра в SQL.",
+      "example": "title ILIKE '%node%'"
+    },
+    {
+      "term": "Redis",
+      "meaning": "In-memory store для кэша и счётчиков.",
+      "example": "SET post:1:views 42 EX 3600"
+    }
+  ]
+}

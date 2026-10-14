@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-10",
+  "part": "nodejs",
+  "module": "node-arch",
+  "order": 10,
+  "title": "Ошибки и конфигурация",
+  "goal": "Сделаешь центральный error handler и вынесешь настройки в переменные окружения.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Разбросанные try/catch с res.status(500) дублируют код и забывают вызвать next(err). В Express последний middleware с четырьмя аргументами ловит ошибки из async-handler и sync-роутов. Классы ошибок AppError с полем statusCode отделяют «пост не найден» (404) от «БД недоступна» (503)."
+    },
+    {
+      "type": "heading",
+      "content": "dotenv и NODE_ENV"
+    },
+    {
+      "type": "paragraph",
+      "content": "Секреты и порты не хардкодят: PORT, DATABASE_URL, JWT_SECRET в .env (файл в .gitignore). dotenv/config при старте или --env-file в Node 20+. В production переменные задаёт платформа (Render, Docker). NODE_ENV=production отключает подробные ошибки клиенту."
+    },
+    {
+      "type": "heading",
+      "content": "Async errors"
+    },
+    {
+      "type": "paragraph",
+      "content": "Async handler без try/catch не попадёт в error middleware — промис упадёт как unhandled. Обёртка asyncHandler(fn) или express-async-errors вызывает next(err). В Node 16+ можно await в route, но обёртка всё равно спасает."
+    }
+  ],
+  "codeExample": "import \"dotenv/config\";\nimport express from \"express\";\n\nconst app = express();\nconst PORT = Number(process.env.PORT ?? 3000);\n\nexport class AppError extends Error {\n  constructor(status, message) {\n    super(message);\n    this.statusCode = status;\n  }\n}\n\napp.use((err, _req, res, _next) => {\n  const status = err.statusCode ?? 500;\n  res.status(status).json({\n    error: err.message,\n    ...(process.env.NODE_ENV !== \"production\" && { stack: err.stack }),\n  });\n});\n\napp.listen(PORT);",
+  "practice": [
+    {
+      "title": "Файл .env",
+      "description": "Создай .env с PORT=3001 и добавь .env в .gitignore. Подключи dotenv/config в entry. Запусти npm run dev — сервер слушает 3001. Создай .env.example только с ключами без секретов."
+    },
+    {
+      "title": "AppError и 404",
+      "description": "В GET /posts/:id если пост не найден — throw new AppError(404, 'Post not found'). Error middleware возвращает JSON { error }. Проверь curl -i для несуществующего id."
+    },
+    {
+      "title": "Async route",
+      "description": "Сделай GET /crash с throw new Error('test') внутри async handler через обёртку asyncHandler. Убедись, что ответ 500 JSON, а не зависший запрос."
+    }
+  ],
+  "checklist": [
+    "Секреты в .env, example в репозитории",
+    "Единый error middleware на все маршруты",
+    "Использую AppError с осмысленным statusCode",
+    "Async-ошибки доходят до handler через next(err)"
+  ],
+  "links": [
+    {
+      "title": "Express: error handling",
+      "url": "https://expressjs.com/en/guide/error-handling.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "dotenv",
+      "meaning": "Загрузка переменных из файла .env в process.env.",
+      "example": "import \"dotenv/config\""
+    },
+    {
+      "term": "AppError",
+      "meaning": "Прикладная ошибка с HTTP-статусом.",
+      "example": "throw new AppError(404, 'Not found')"
+    },
+    {
+      "term": "NODE_ENV",
+      "meaning": "Режим приложения: development или production.",
+      "example": "NODE_ENV=production"
+    }
+  ]
+}

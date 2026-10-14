@@ -1,0 +1,74 @@
+{
+  "id": "security-12",
+  "part": "security",
+  "module": "sec-hardening",
+  "order": 12,
+  "title": "Rate limit, helmet, audit",
+  "goal": "Ограничишь частоту login, подключишь helmet и залогируешь неудачные входы.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "express-rate-limit: windowMs 15 min, max 10 на POST /auth/login per IP. helmet() ставит X-Content-Type-Options, HSTS на prod, убирает X-Powered-By. Audit log: structured { event: 'login_failed', emailHash, ip } без пароля."
+    },
+    {
+      "type": "heading",
+      "content": "Trust proxy"
+    },
+    {
+      "type": "paragraph",
+      "content": "За nginx/render app.set('trust proxy', 1) — иначе rate limit видит один IP балансера. Иначе все пользователи делят один bucket."
+    },
+    {
+      "type": "heading",
+      "content": "Alerting basics"
+    },
+    {
+      "type": "paragraph",
+      "content": "Spike login_failed — сигнал brute force. На курсе достаточно counter в log + README «куда смотреть»."
+    }
+  ],
+  "codeExample": "import helmet from \"helmet\";\nimport rateLimit from \"express-rate-limit\";\n\napp.use(helmet());\n\nconst loginLimiter = rateLimit({\n  windowMs: 15 * 60 * 1000,\n  max: 10,\n  standardHeaders: true,\n  legacyHeaders: false,\n});\n\napp.post(\"/auth/login\", loginLimiter, loginHandler);",
+  "practice": [
+    {
+      "title": "helmet headers",
+      "description": "npm install helmet. curl -I /health — X-Content-Type-Options: nosniff, нет X-Powered-By."
+    },
+    {
+      "title": "Rate limit login",
+      "description": "11-й POST login с неверным паролем за минуту — 429 Too Many Requests. Postman test на status 429."
+    },
+    {
+      "title": "Audit log line",
+      "description": "На failed login req.log.warn({ event: 'login_failed', ip: req.ip }). Redact email или hash. Покажи одну строку JSON в терминале."
+    }
+  ],
+  "checklist": [
+    "helmet подключён глобально",
+    "login rate limit 429 работает",
+    "login_failed в structured log",
+    "trust proxy если за reverse proxy"
+  ],
+  "links": [
+    {
+      "title": "helmet",
+      "url": "https://helmetjs.github.io/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "rate limiting",
+      "meaning": "Ограничение числа запросов за окно времени.",
+      "example": "10 login / 15 min"
+    },
+    {
+      "term": "helmet",
+      "meaning": "Middleware безопасных HTTP-заголовков.",
+      "example": "app.use(helmet())"
+    },
+    {
+      "term": "audit log",
+      "meaning": "Журнал security-событий для расследований.",
+      "example": "login_failed"
+    }
+  ]
+}

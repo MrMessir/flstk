@@ -1,0 +1,87 @@
+{
+  "id": "tools-04",
+  "part": "tools",
+  "module": "web",
+  "order": 4,
+  "title": "Браузер и DevTools",
+  "goal": "Научишься смотреть Elements, Network и Console у любой страницы.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Где что лежит"
+    },
+    {
+      "type": "paragraph",
+      "content": "Elements — дерево HTML и применённые CSS справа. Console — ошибки JavaScript и вывод console.log. Network — все запросы: документ, стили, картинки, fetch. Sources — файлы скриптов и точки останова."
+    },
+    {
+      "type": "paragraph",
+      "content": "Открыть панель: F12 или Ctrl+Shift+I (Cmd+Option+I на Mac). Правый клик по элементу → «Просмотреть код» сразу попадает в Elements на нужный узел."
+    },
+    {
+      "type": "heading",
+      "content": "Как читать ошибки"
+    },
+    {
+      "type": "paragraph",
+      "content": "Строка в Console обычно содержит тип ошибки, файл и номер строки. Клик по ссылке открывает Sources на месте сбоя. Сначала прочитай сообщение целиком — часто там уже написано, что undefined или null."
+    },
+    {
+      "type": "paragraph",
+      "content": "Network фильтруй по Fetch/XHR, когда отладишь API. Красный статус — кликни запрос и смотри Response. Disable cache включай, пока правишь CSS или JS, чтобы не ловить старую версию файла."
+    }
+  ],
+  "codeExample": "// В Console на любой странице:\nconsole.log('DevTools работает');\n1 + 1",
+  "practice": [
+    {
+      "title": "Подсвети элемент в Elements",
+      "description": "Открой index.html курса в браузере. F12 → Elements. Нажми Ctrl+Shift+C (режим выбора), кликни по заголовку h1. В дереве должен подсветиться тот же тег — запиши его имя."
+    },
+    {
+      "title": "Выполни команду в Console",
+      "description": "На той же странице открой Console. Введи document.title и Enter — увидишь текст вкладки. Затем введи console.log('привет') и проверь, что строка появилась в логе."
+    },
+    {
+      "title": "Отфильтруй CSS в Network",
+      "description": "Обнови страницу с открытым Network. В фильтре выбери CSS (или введи css в поле фильтра). Кликни файл .css — во вкладке Preview или Response должны быть правила. Запиши имя файла."
+    }
+  ],
+  "checklist": [
+    "Открываю DevTools с F12 или Ctrl+Shift+I",
+    "Умею найти тег через Inspect и Ctrl+Shift+C",
+    "Читаю в Console тип ошибки и ссылку на файл",
+    "Фильтрую запросы CSS и JS во вкладке Network"
+  ],
+  "links": [
+    {
+      "title": "Chrome DevTools: обзор",
+      "url": "https://developer.chrome.com/docs/devtools/overview"
+    },
+    {
+      "title": "MDN: инструменты разработчика",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "DevTools",
+      "meaning": "Встроенные инструменты разработчика в браузере.",
+      "example": "F12 в Chrome"
+    },
+    {
+      "term": "Console",
+      "meaning": "Вкладка логов и ошибок JavaScript.",
+      "example": "Uncaught ReferenceError"
+    },
+    {
+      "term": "Network",
+      "meaning": "Список сетевых запросов страницы.",
+      "example": "фильтр Fetch/XHR"
+    },
+    {
+      "term": "Elements",
+      "meaning": "DOM-дерево и стили выбранного узла.",
+      "example": "правка color в Styles"
+    }
+  ]
+}

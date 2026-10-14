@@ -1,0 +1,83 @@
+{
+  "id": "typescript-06",
+  "part": "typescript",
+  "module": "ts-types",
+  "order": 6,
+  "title": "Generics",
+  "goal": "Напишешь функцию и тип с параметром типа T, чтобы не дублировать код.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Generic — параметр типа в угловых скобках: function first<T>(arr: T[]): T | undefined { return arr[0]; }. Один и тот же код работает для string[] и number[], сохраняя связь «элемент массива того же T». TS выводит T из аргумента, но можно указать явно first<number>([1,2])."
+    },
+    {
+      "type": "heading",
+      "content": "Ограничения extends"
+    },
+    {
+      "type": "paragraph",
+      "content": "function len<T extends { length: number }>(x: T): number { return x.length; } принимает строки и массивы, но не числа. keyof T даёт union ключей объекта — основа для типобезопасного pick. Несколько параметров: function pair<A, B>(a: A, b: B): [A, B]."
+    },
+    {
+      "type": "heading",
+      "content": "Generics в React и API"
+    },
+    {
+      "type": "paragraph",
+      "content": "useState<number>(0), useRef<HTMLInputElement>(null), Promise<User> — повседневные generics. Обёртка apiGet<T>(url): Promise<T> требует осторожности: без runtime-валидации T — только обещание компилятора. На курсе generics на функциях и type ApiResponse<T> достаточно для 80% задач."
+    }
+  ],
+  "codeExample": "function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {\n  const out = {} as Pick<T, K>;\n  for (const k of keys) out[k] = obj[k];\n  return out;\n}\n\nconst user = { id: 1, name: \"Ada\", role: \"admin\" };\nconst lite = pick(user, [\"id\", \"name\"]);\n\nasync function apiGet<T>(url: string): Promise<T> {\n  const res = await fetch(url);\n  return res.json() as Promise<T>;\n}",
+  "practice": [
+    {
+      "title": "identity и first",
+      "description": "В generics.ts реализуй identity<T>(x: T): T и first<T>(arr: T[]): T | undefined. Проверь first([\"a\"]) тип string | undefined, first([]) → undefined."
+    },
+    {
+      "title": "pick двух ключей",
+      "description": "Реализуй pick как в примере для объекта Product { id, title, price }. pick(p, ['title','price']) не содержит id в типе результата — наведи курсор и убедись в Pick."
+    },
+    {
+      "title": "Оберни useState",
+      "description": "В react-ts или псевдокоде опиши function useLocalStorage<T>(key: string, initial: T): [T, (v: T) => void]. T должен быть serializable — добавь constraint T extends string | number | object в комментарии, почему не Function."
+    }
+  ],
+  "checklist": [
+    "Объявляю generic-параметры на функциях и типах",
+    "Использую extends для ограничения T",
+    "Понимаю вывод T из аргументов",
+    "Не злоупотребляю generic там, где хватит union"
+  ],
+  "links": [
+    {
+      "title": "Handbook: Generics",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html"
+    },
+    {
+      "title": "Handbook: keyof",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/keyof-types.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "generic",
+      "meaning": "Параметр типа в определении.",
+      "example": "function id<T>(x: T): T"
+    },
+    {
+      "term": "extends (generic)",
+      "meaning": "Ограничение параметра типа.",
+      "example": "T extends keyof U"
+    },
+    {
+      "term": "Pick",
+      "meaning": "Utility: подмножество ключей типа.",
+      "example": "Pick<User, 'id'>"
+    },
+    {
+      "term": "inference",
+      "meaning": "Вывод T из переданных аргументов.",
+      "example": "first([1,2]) → number"
+    }
+  ]
+}

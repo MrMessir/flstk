@@ -1,0 +1,74 @@
+{
+  "id": "security-11",
+  "part": "security",
+  "module": "sec-hardening",
+  "order": 11,
+  "title": "CORS правильно",
+  "goal": "Настроишь cors middleware с явным origin без wildcard на cookie-based API.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Браузер блокирует XHR с frontend origin A на API origin B без CORS headers. Access-Control-Allow-Origin должен echo конкретный origin, не * если credentials: include и cookies. Preflight OPTIONS для PATCH с Authorization."
+    },
+    {
+      "type": "heading",
+      "content": "credentials и headers"
+    },
+    {
+      "type": "paragraph",
+      "content": "cors({ origin: 'http://localhost:5173', credentials: true }). Allow-Headers: Content-Type, Authorization. Expose-Headers: X-Request-Id optional. На prod whitelist env CORS_ORIGINS split comma."
+    },
+    {
+      "type": "heading",
+      "content": "Не путать с auth"
+    },
+    {
+      "type": "paragraph",
+      "content": "CORS — только browser enforcement. curl/postman игнорируют CORS. Security auth остаётся на JWT/session."
+    }
+  ],
+  "codeExample": "import cors from \"cors\";\n\nconst allowed = (process.env.CORS_ORIGINS ?? \"http://localhost:5173\").split(\",\");\n\napp.use(\n  cors({\n    origin(origin, cb) {\n      if (!origin || allowed.includes(origin)) return cb(null, true);\n      cb(new Error(\"CORS blocked\"));\n    },\n    credentials: true,\n  }),\n);",
+  "practice": [
+    {
+      "title": "npm cors",
+      "description": "Установи cors, конфиг из примера. FRONTEND на 5173 fetch http://localhost:3000/health with credentials — успех. Postman без Origin — всё ещё работает."
+    },
+    {
+      "title": "Blocked origin",
+      "description": "Добавь временно origin http://evil.test — браузерный fetch с другого origin (или curl -H 'Origin: http://evil.test') получает ошибку CORS."
+    },
+    {
+      "title": "Preflight",
+      "description": "DevTools Network: PATCH с Authorization показывает OPTIONS 204 перед PATCH. Запиши Allow-Methods из ответа."
+    }
+  ],
+  "checklist": [
+    "Не использую Allow-Origin * с credentials",
+    "CORS_ORIGINS в .env.example",
+    "credentials: true для cookie API",
+    "Проверил fetch из Vite dev server"
+  ],
+  "links": [
+    {
+      "title": "MDN: CORS",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "preflight",
+      "meaning": "OPTIONS запрос перед не-simple CORS.",
+      "example": "PATCH + Authorization"
+    },
+    {
+      "term": "credentials",
+      "meaning": "Разрешение отправки cookies cross-origin.",
+      "example": "fetch(..., { credentials: 'include' })"
+    },
+    {
+      "term": "Allow-Origin",
+      "meaning": "Заголовок разрешённого frontend origin.",
+      "example": "http://localhost:5173"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "id": "react-19",
+  "part": "react",
+  "module": "react-next",
+  "order": 19,
+  "title": "Next.js: Server Actions и формы",
+  "goal": "Отправишь форму через Server Action без отдельного API route.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Server Actions — асинхронные функции с директивой 'use server', которые можно вызвать из формы (action={fn}) или из клиентского кода. Они выполняются на сервере: доступ к БД и секретам без публичного REST endpoint. Валидируй вход (zod) внутри action: клиент ненадёжен. После мутации вызывай revalidatePath или revalidateTag, чтобы обновить кэш RSC."
+    },
+    {
+      "type": "heading",
+      "content": "Границы безопасности"
+    },
+    {
+      "type": "paragraph",
+      "content": "Action — публичная точка входа, как POST-эндпоинт. Проверяй сессию/права до записи в БД. Не доверяй скрытым полям формы. Для прогресса UI на клиенте используй useFormStatus / useActionState. Тяжёлую интерактивность оставляй в Client Components; action держи тонким: validate → mutate → revalidate."
+    },
+    {
+      "type": "list",
+      "items": [
+        "'use server' в файле или над функцией.",
+        "form action={createPost}.",
+        "zod.safeParse перед записью.",
+        "revalidatePath('/posts') после успеха."
+      ]
+    }
+  ],
+  "codeExample": "// app/actions.ts\n'use server';\nimport { revalidatePath } from 'next/cache';\nimport { z } from 'zod';\n\nconst schema = z.object({ title: z.string().min(1).max(120) });\n\nexport async function createPost(formData: FormData) {\n  const parsed = schema.safeParse({ title: formData.get('title') });\n  if (!parsed.success) return { error: 'Некорректный заголовок' };\n  // await db.post.create({ data: parsed.data })\n  revalidatePath('/posts');\n  return { ok: true };\n}\n\n// app/posts/new/page.tsx\nimport { createPost } from '@/app/actions';\nexport default function NewPostPage() {\n  return (\n    <form action={createPost}>\n      <input name=\"title\" required />\n      <button type=\"submit\">Создать</button>\n    </form>\n  );\n}",
+  "practice": [
+    {
+      "title": "Action createPost",
+      "description": "Файл app/actions.ts с 'use server' и zod-проверкой title. Пока без БД — console.log и revalidatePath('/')."
+    },
+    {
+      "title": "Форма",
+      "description": "Страница с <form action={createPost}>. После submit заголовок появляется в логе сервера (терминал next dev)."
+    },
+    {
+      "title": "Ошибка валидации",
+      "description": "Отправь пустой title (убери required) — action возвращает error; покажи текст на странице через useActionState или searchParams."
+    }
+  ],
+  "checklist": [
+    "Понимаю, что action — серверная точка входа",
+    "Валидирую FormData на сервере",
+    "Вызываю revalidatePath после мутации",
+    "Не храню секреты в клиентском бандле"
+  ],
+  "links": [
+    {
+      "title": "Next.js: Server Actions",
+      "url": "https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Server Action",
+      "meaning": "Серверная функция, вызываемая из UI/формы.",
+      "example": "'use server'"
+    },
+    {
+      "term": "revalidatePath",
+      "meaning": "Сброс кэша RSC для пути.",
+      "example": "revalidatePath('/posts')"
+    },
+    {
+      "term": "FormData",
+      "meaning": "Данные формы в action.",
+      "example": "formData.get('title')"
+    },
+    {
+      "term": "useActionState",
+      "meaning": "Хук состояния результата action.",
+      "example": "ошибка валидации в UI"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-19-q1",
+      "prompt": "Нужно ли валидировать FormData внутри Server Action?",
+      "options": [
+        "Да — клиент нельзя считать доверенным",
+        "Нет, HTML required достаточно",
+        "Только если используешь CSS",
+        "Только в Pages Router"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "react-19-q2",
+      "prompt": "Зачем revalidatePath после записи?",
+      "options": [
+        "Обновить закэшированный серверный UI",
+        "Удалить Docker volume",
+        "Сбросить DNS",
+        "Отключить ESLint"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "id": "devops-03",
+  "part": "devops",
+  "module": "ops-docker",
+  "order": 3,
+  "title": "Docker: образы и контейнеры",
+  "goal": "Напишешь Dockerfile для API и соберёшь образ.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Образ и контейнер"
+    },
+    {
+      "type": "paragraph",
+      "content": "Образ — запакованный рецепт приложения: система, зависимости, код. Контейнер — запущенный экземпляр образа, изолированный процесс. Образ неизменяем: чтобы выкатить новую версию, ты собираешь новый образ с новым тегом, а не заходишь на сервер и правишь файлы руками. Так среда воспроизводима, и откат — это запуск предыдущего тега."
+    },
+    {
+      "type": "heading",
+      "content": "Dockerfile по строкам"
+    },
+    {
+      "type": "list",
+      "items": [
+        "FROM — базовый образ (например, node:22-alpine).",
+        "WORKDIR — рабочая папка внутри образа.",
+        "COPY — копирует файлы с твоего компьютера в образ.",
+        "RUN — команда при сборке (npm ci, npm run build).",
+        "CMD — команда, которая запускается при старте контейнера.",
+        "EXPOSE документирует порт, но наружу его не открывает; публикует порт только флаг docker run -p 3000:3000."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Слои и кэш"
+    },
+    {
+      "type": "paragraph",
+      "content": "Каждая инструкция создаёт слой, и Docker переиспользует слой, если ничего выше не менялось. Поэтому сначала копируют только package*.json и ставят зависимости (npm ci), а исходники копируют потом. Тогда при правке кода зависимости не ставятся заново, а берутся из кэша; сборка ускоряется с минут до секунд. Если сделать COPY . . первой строкой, любая правка кода сбросит кэш."
+    },
+    {
+      "type": "heading",
+      "content": "dockerignore и секреты"
+    },
+    {
+      "type": "paragraph",
+      "content": "Файл .dockerignore работает как .gitignore: исключи node_modules, .git, dist и .env. Иначе в контекст сборки попадёт гигабайт ненужного, а вместе с ним и секреты. Не передавай секреты через ENV или ARG в Dockerfile: они остаются в слоях образа. Пароли подставляй при запуске. Проверь результат: docker build -t api . и docker run -p 3000:3000 api, затем curl http://localhost:3000/health."
+    }
+  ],
+  "codeExample": "FROM node:22-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\nCMD [\"node\", \"dist/index.js\"]",
+  "practice": [
+    {
+      "title": "Собери образ API",
+      "description": "docker build -t myapi:local . из папки API. docker run -p 3000:3000 myapi:local."
+    },
+    {
+      "title": "dockerignore",
+      "description": "Добавь node_modules и .env в .dockerignore, пересобери — время build должно упасть."
+    },
+    {
+      "title": "Проверь health",
+      "description": "curl localhost:3000/health из хоста к контейнеру."
+    }
+  ],
+  "checklist": [
+    "Пишу Dockerfile с явным WORKDIR и CMD",
+    "Кэширую npm ci отдельным слоем",
+    "Использую .dockerignore",
+    "Не кладу секреты через ENV в Dockerfile"
+  ],
+  "links": [
+    {
+      "title": "Docker: Dockerfile reference",
+      "url": "https://docs.docker.com/reference/dockerfile/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "образ",
+      "meaning": "Шаблон файловой системы приложения.",
+      "example": "myapi:1.0"
+    },
+    {
+      "term": "контейнер",
+      "meaning": "Запущенный процесс из образа.",
+      "example": "docker run"
+    },
+    {
+      "term": "слой",
+      "meaning": "Кэшируемый шаг Dockerfile.",
+      "example": "RUN npm ci"
+    }
+  ]
+}

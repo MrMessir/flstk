@@ -1,0 +1,74 @@
+{
+  "id": "database-05",
+  "part": "database",
+  "module": "db-sql",
+  "order": 5,
+  "title": "Агрегация и GROUP BY",
+  "goal": "Посчитаешь COUNT и AVG по постам автора с GROUP BY и фильтром HAVING.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Агрегатные функции сжимают множество строк в одно значение: COUNT(*), SUM, AVG, MIN, MAX. GROUP BY author_id даёт по строке на автора. WHERE отфильтровывает строки до группировки, HAVING — группы после (например, авторы с count > 5)."
+    },
+    {
+      "type": "heading",
+      "content": "COUNT(*) vs COUNT(column)"
+    },
+    {
+      "type": "paragraph",
+      "content": "COUNT(*) считает все строки группы. COUNT(comment_id) игнорирует NULL — полезно для «постов с хотя бы одним комментом». DISTINCT внутри COUNT(DISTINCT tag_id) считает уникальные теги на пост."
+    },
+    {
+      "type": "heading",
+      "content": "ORDER BY на агрегате"
+    },
+    {
+      "type": "paragraph",
+      "content": "SELECT author_id, COUNT(*) AS posts FROM posts GROUP BY author_id ORDER BY posts DESC LIMIT 10 — топ авторов. Псевдоним posts можно использовать в ORDER BY в PostgreSQL."
+    }
+  ],
+  "codeExample": "SELECT u.email, COUNT(p.id) AS post_count\nFROM users u\nLEFT JOIN posts p ON p.author_id = u.id\nGROUP BY u.id, u.email\nHAVING COUNT(p.id) >= 1\nORDER BY post_count DESC;",
+  "practice": [
+    {
+      "title": "Посты на автора",
+      "description": "Выполни запрос GROUP BY author_id с COUNT(*) из таблицы posts. Сравни с числом строк SELECT * FROM posts WHERE author_id = ..."
+    },
+    {
+      "title": "LEFT JOIN и нули",
+      "description": "Добавь user без постов. Запрос с LEFT JOIN users-posts покажет post_count = 0. HAVING COUNT(p.id) >= 1 скроет такого user — осознай разницу."
+    },
+    {
+      "title": "AVG длины title",
+      "description": "SELECT AVG(char_length(title)) FROM posts. Добавь GROUP BY author_id — средняя длина заголовка per author. Сохрани запрос в db/queries/stats.sql."
+    }
+  ],
+  "checklist": [
+    "Различаю WHERE и HAVING",
+    "Использую GROUP BY со всеми неагрегированными столбцами",
+    "Применил LEFT JOIN для учёта нулей",
+    "Сохранил рабочий stats.sql в репозитории"
+  ],
+  "links": [
+    {
+      "title": "PostgreSQL: aggregate functions",
+      "url": "https://www.postgresql.org/docs/current/functions-aggregate.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "GROUP BY",
+      "meaning": "Группировка строк для агрегатов.",
+      "example": "GROUP BY author_id"
+    },
+    {
+      "term": "HAVING",
+      "meaning": "Фильтр групп после агрегации.",
+      "example": "HAVING COUNT(*) > 5"
+    },
+    {
+      "term": "LEFT JOIN",
+      "meaning": "Join с сохранением всех строк левой таблицы.",
+      "example": "users LEFT JOIN posts"
+    }
+  ]
+}

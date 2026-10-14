@@ -1,0 +1,109 @@
+{
+  "id": "nodejs-11",
+  "part": "nodejs",
+  "module": "node-arch",
+  "order": 11,
+  "title": "Слои: routes, services, repositories",
+  "goal": "Разделишь HTTP-слой, бизнес-логику и доступ к данным без толстых контроллеров.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Route handler не должен содержать SQL и сложные if на десять экранов. Типичные слои: routes (HTTP, статус, валидация), services (правила: «автор может редактировать свой пост»), repositories (чтение/запись в БД или файл). Так unit-тесты бьют по service без поднятия Express."
+    },
+    {
+      "type": "heading",
+      "content": "Зависимости между слоями"
+    },
+    {
+      "type": "paragraph",
+      "content": "Routes вызывают только services. Services вызывают repositories. Repository не знает про req/res. Направление зависимостей внутрь — если завтра Postgres заменишь на Prisma, меняешь repository, а service остаётся."
+    },
+    {
+      "type": "heading",
+      "content": "In-memory repository для старта"
+    },
+    {
+      "type": "paragraph",
+      "content": "До подключения БД postsRepository может хранить Map или массив в памяти. Интерфейс findById, create, list — тот же, что потом у Prisma. Проектный урок заменит реализацию, не переписывая routes."
+    }
+  ],
+  "codeExample": "// routes/posts.js\nrouter.post(\"/\", validateBody(createPostSchema), async (req, res, next) => {\n  try {\n    const post = await postsService.create(req.validated);\n    res.status(201).json(post);\n  } catch (e) {\n    next(e);\n  }\n});\n\n// services/postsService.js\nexport async function create(dto) {\n  return postsRepo.insert(dto);\n}\n\n// repositories/postsRepo.js\nconst store = new Map();\nexport function insert(dto) {\n  const id = crypto.randomUUID();\n  const row = { id, ...dto, createdAt: new Date().toISOString() };\n  store.set(id, row);\n  return row;\n}",
+  "practice": [
+    {
+      "title": "Папки services и repositories",
+      "description": "Создай services/postsService.js и repositories/postsRepo.js с Map. Перенеси логику создания поста из route в service → repo. Route остаётся на ~10 строк."
+    },
+    {
+      "title": "Правило в service",
+      "description": "В updatePost service проверь: если dto.title пустой после trim — throw AppError(400). Repository только сохраняет. Проверь PATCH с пробелами в title."
+    },
+    {
+      "title": "Диаграмма слоёв",
+      "description": "Нарисуй в README или docs/layers.md стрелки: HTTP → Service → Repository → Store. Подпиши один пример вызова create post."
+    }
+  ],
+  "checklist": [
+    "Route не импортирует repository напрямую",
+    "Business-правила живут в service",
+    "Repository скрывает детали хранения",
+    "Могу заменить Map на БД, не трогая routes"
+  ],
+  "links": [
+    {
+      "title": "Node.js Best Practices",
+      "url": "https://github.com/goldbergyoni/nodebestpractices"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "service layer",
+      "meaning": "Слой бизнес-логики приложения.",
+      "example": "postsService.create"
+    },
+    {
+      "term": "repository",
+      "meaning": "Абстракция доступа к данным.",
+      "example": "postsRepo.findById(id)"
+    },
+    {
+      "term": "controller",
+      "meaning": "HTTP-обработчик; в курсе — route + thin handler.",
+      "example": "router.post('/', ...)"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-11-q1",
+      "prompt": "Кто должен содержать SQL/обращения к БД?",
+      "options": [
+        "repository",
+        "route handler напрямую всегда",
+        "CSS-модуль",
+        "browser localStorage"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "nodejs-11-q2",
+      "prompt": "Где жить бизнес-правилу «автор редактирует только свой пост»?",
+      "options": [
+        "service",
+        "Dockerfile",
+        "favicon.ico",
+        "nginx gzip"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "nodejs-11-q3",
+      "prompt": "Route может импортировать repository напрямую?",
+      "options": [
+        "Нет, лучше только service — иначе слои смешиваются",
+        "Да, это единственный правильный способ",
+        "Только в React",
+        "Только через WebSocket"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

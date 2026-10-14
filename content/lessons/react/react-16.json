@@ -1,0 +1,83 @@
+{
+  "id": "react-16",
+  "part": "react",
+  "module": "react-basics",
+  "order": 16,
+  "title": "Практика: UI-кит",
+  "goal": "Соберёшь Button, Input и Modal с focus trap и закрытием по Escape.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "UI-кит — набор переиспользуемых компонентов с единым API: variant, size, disabled. Button type=\"button\" по умолчанию, чтобы не submit форму случайно. Input связывает label, aria-invalid при ошибке, id из useId() для уникальности."
+    },
+    {
+      "type": "heading",
+      "content": "Modal и a11y"
+    },
+    {
+      "type": "paragraph",
+      "content": "Modal: role=\"dialog\" aria-modal=\"true\", focus на первый focusable при open, return focus на trigger при close. Overlay click и Escape закрывают. Блокируй scroll body при open (class overflow-hidden). Portal createPortal(modal, document.body) — overlay поверх всего дерева."
+    },
+    {
+      "type": "heading",
+      "content": "Документация в Storybook (обзор)"
+    },
+    {
+      "type": "paragraph",
+      "content": "Stories показывают состояния: primary/disabled/error. Для сдачи курса достаточно pages/UiPlayground.tsx со всеми вариантами. Тестируй клавиатурой: Tab не уходит под modal, Shift+Tab цикл внутри."
+    }
+  ],
+  "codeExample": "import { useEffect, useId, useRef } from \"react\";\nimport { createPortal } from \"react-dom\";\n\nexport function Modal({ open, title, onClose, children }: {\n  open: boolean;\n  title: string;\n  onClose: () => void;\n  children: React.ReactNode;\n}) {\n  const titleId = useId();\n  const ref = useRef<HTMLDivElement>(null);\n\n  useEffect(() => {\n    if (!open) return;\n    function onKey(e: KeyboardEvent) {\n      if (e.key === \"Escape\") onClose();\n    }\n    document.addEventListener(\"keydown\", onKey);\n    ref.current?.focus();\n    return () => document.removeEventListener(\"keydown\", onKey);\n  }, [open, onClose]);\n\n  if (!open) return null;\n  return createPortal(\n    <div className=\"overlay\" onClick={onClose}>\n      <div role=\"dialog\" aria-modal aria-labelledby={titleId} tabIndex={-1} ref={ref} onClick={(e) => e.stopPropagation()}>\n        <h2 id={titleId}>{title}</h2>\n        {children}\n      </div>\n    </div>,\n    document.body\n  );\n}",
+  "practice": [
+    {
+      "title": "Button + Input",
+      "description": "ui/Button.tsx и ui/TextField.tsx с label, error prop. UiPlayground рендерит disabled и error состояния."
+    },
+    {
+      "title": "Modal open/close",
+      "description": "Кнопка «Открыть» → Modal с текстом. Escape и клик по overlay закрывают. focus виден внутри dialog."
+    },
+    {
+      "title": "Форма внутри Modal",
+      "description": "Submit в modal вызывает onClose после validate. preventDefault, не закрывай при ошибке поля."
+    }
+  ],
+  "checklist": [
+    "Button имеет type=\"button\" где не submit",
+    "Modal ловит Escape и возвращает focus",
+    "Input связан с label через htmlFor/useId",
+    "Portal рендерит modal в document.body"
+  ],
+  "links": [
+    {
+      "title": "WAI-ARIA: Dialog",
+      "url": "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"
+    },
+    {
+      "title": "React: createPortal",
+      "url": "https://react.dev/reference/react-dom/createPortal"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "UI kit",
+      "meaning": "Набор базовых компонентов дизайн-системы.",
+      "example": "Button, Modal"
+    },
+    {
+      "term": "focus trap",
+      "meaning": "Удержание Tab внутри модального окна.",
+      "example": "tabIndex={-1} + focus"
+    },
+    {
+      "term": "Portal",
+      "meaning": "Render React-узла в другой DOM-контейнер.",
+      "example": "createPortal(..., body)"
+    },
+    {
+      "term": "useId",
+      "meaning": "Стабильный уникальный id для a11y связей.",
+      "example": "aria-labelledby"
+    }
+  ]
+}

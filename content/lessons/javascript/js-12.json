@@ -1,0 +1,90 @@
+{
+  "id": "js-12",
+  "part": "javascript",
+  "module": "js-dom",
+  "order": 12,
+  "title": "DOM: найти элемент на странице",
+  "goal": "Найдёшь элементы страницы разными способами и выведешь их в консоль.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "DOM — дерево страницы"
+    },
+    {
+      "type": "paragraph",
+      "content": "Браузер строит из HTML дерево узлов. document.querySelector находит первый элемент по CSS-селектору, querySelectorAll — список. Без найденного элемента методы упадут — сначала проверь, что узел есть."
+    },
+    {
+      "type": "paragraph",
+      "content": "Ищи устойчивые селекторы: data-атрибуты или id для якорей, классы для групп. Не привязывайся к порядку «третий div» — вёрстка поедет, скрипт сломается."
+    },
+    {
+      "type": "paragraph",
+      "content": "DOM — дерево объектов страницы. JavaScript может найти узел и потом менять его. document — вход в это дерево."
+    },
+    {
+      "type": "list",
+      "items": [
+        "document.querySelector(\".card\") — первый подходящий по CSS-селектору.",
+        "document.querySelectorAll(\"li\") — все подходящие. Похоже на массив, но это список узлов.",
+        "document.getElementById(\"app\") — поиск по id.",
+        "element.children — прямые дети.",
+        "element.parentElement — родитель.",
+        "element.classList — список классов: можно смотреть и менять."
+      ]
+    }
+  ],
+  "codeExample": "<h1 id=\"title\">Привет</h1>\n<ul class=\"list\">\n  <li>Один</li>\n  <li>Два</li>\n</ul>\n\n<script>\nconst title = document.querySelector(\"#title\");\nconst items = document.querySelectorAll(\".list li\");\nconsole.log(title);\nconsole.log(items.length);\nconsole.log(items[0].textContent);\n</script>",
+  "practice": [
+    {
+      "title": "querySelector заголовок",
+      "description": "index.html с h1#title. В dom.js const el = document.querySelector(\"#title\"); console.log(el.textContent)."
+    },
+    {
+      "title": "querySelectorAll",
+      "description": "Три li.menu-item. querySelectorAll(\".menu-item\").length === 3. forEach выведи textContent каждого."
+    },
+    {
+      "title": "null без элемента",
+      "description": "querySelector(\"#missing\") → null. if (!el) console.log(\"не найден\") — без ошибки reading textContent."
+    }
+  ],
+  "checklist": [
+    "Нахожу один элемент через querySelector",
+    "Нахожу список через querySelectorAll",
+    "Читаю textContent",
+    "Достаю parentElement"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: DOM",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/DOM_scripting"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "DOM",
+      "meaning": "Дерево объектов страницы, которым управляет JS.",
+      "example": "document.querySelector(\"h1\")"
+    },
+    {
+      "term": "querySelector",
+      "meaning": "Найти первый элемент по CSS-селектору.",
+      "example": "document.querySelector(\"#title\")"
+    },
+    {
+      "term": "querySelectorAll",
+      "meaning": "Найти все подходящие элементы.",
+      "example": "document.querySelectorAll(\"li\")"
+    },
+    {
+      "term": "textContent",
+      "meaning": "Текст внутри элемента.",
+      "example": "title.textContent"
+    }
+  ]
+}

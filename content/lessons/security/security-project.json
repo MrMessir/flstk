@@ -1,0 +1,74 @@
+{
+  "id": "security-project",
+  "part": "security",
+  "module": "project",
+  "order": 15,
+  "title": "Итог Security: auth для API блога",
+  "goal": "Добавишь регистрацию, JWT или session, роли, reset password и hardening в blog API.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Финал модуля: auth поверх database-project API. Register/login, bcrypt, access+refresh или session cookie, requireOwner на mutating posts, admin role на модерацию. forgot/reset password с hashed tokens. helmet, cors whitelist, rate limit login, audit failed login."
+    },
+    {
+      "type": "heading",
+      "content": "Scope сдачи"
+    },
+    {
+      "type": "paragraph",
+      "content": "Обязательно: auth на CRUD posts/comments, 401/403 корректно, secrets в env, Postman folder Auth + Protected. Опционально: OAuth, 2FA design doc, email SMTP."
+    },
+    {
+      "type": "heading",
+      "content": "Документация безопасности"
+    },
+    {
+      "type": "paragraph",
+      "content": "docs/security.md: модель auth, где хранятся tokens, CORS origins, как rotate JWT secrets. owasp-map.md обнови статусы done."
+    }
+  ],
+  "codeExample": "POST /auth/register → 201 user\nPOST /auth/login → access + refresh\nGET /posts → public\nPOST /posts → Bearer access\nPATCH /posts/:id → owner or admin\nPOST /auth/forgot-password → neutral 200\nPOST /auth/reset-password → one-time token",
+  "practice": [
+    {
+      "title": "Full auth flow",
+      "description": "Postman: register, login, create post with token, refresh access, logout/invalidate refresh. Все шаги green tests."
+    },
+    {
+      "title": "Hardening checklist",
+      "description": "helmet, cors, login rate limit, pino redact authorization. curl -I и 429 demo скрин или лог."
+    },
+    {
+      "title": "security.md",
+      "description": "docs/security.md + обновлённый owasp-map. README ссылка «Security model»."
+    }
+  ],
+  "checklist": [
+    "Register/login без утечки passwordHash",
+    "Protected routes с owner/admin checks",
+    "Reset password one-time token TTL",
+    "helmet + CORS + login rate limit включены"
+  ],
+  "links": [
+    {
+      "title": "OWASP ASVS",
+      "url": "https://owasp.org/www-project-application-security-verification-standard/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "refresh rotation",
+      "meaning": "Новый refresh при каждом обновлении access.",
+      "example": "invalidate old refresh hash"
+    },
+    {
+      "term": "hardening",
+      "meaning": "Базовые защитные middleware и лимиты.",
+      "example": "helmet + rate limit"
+    },
+    {
+      "term": "ASVS",
+      "meaning": "Стандарт verification security requirements.",
+      "example": "OWASP ASVS Level 1"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "id": "css-14",
+  "part": "css",
+  "module": "css-polish",
+  "order": 14,
+  "title": "Страница на телефоне и компьютере",
+  "goal": "Сделаешь макет, который на узком экране складывается в одну колонку.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Адаптивность — страница удобна и на телефоне, и на большом мониторе. Сначала делают простой мобильный вид, потом добавляют правила для широких экранов. Такой подход называют mobile-first."
+    },
+    {
+      "type": "list",
+      "items": [
+        "В head обязательна строка <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />. Без неё телефон «притворяется» широким экраном.",
+        "@media (min-width: 700px) { ... } — правила только если окно шире 700px.",
+        "Относительные единицы и flex/grid с auto-fit уже помогают без медиазапросов.",
+        "clamp(1rem, 2vw, 2rem) — размер между минимумом и максимумом."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Проверяй не только телефоном: потяни край окна браузера. Если при ширине меньше 700px колонки встают друг под другом — ты на верном пути."
+    },
+    {
+      "type": "paragraph",
+      "content": "Без meta viewport мобильный браузер рисует страницу «как на desktop», уменьшенную в миниатюру. @media (min-width: …) добавляет правила только когда окно достаточно широкое — mobile-first пишут базу для узкого экрана, потом расширяют."
+    }
+  ],
+  "codeExample": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n\n.page {\n  display: grid;\n  gap: 16px;\n}\n\n.card { padding: 16px; background: white; }\n\n@media (min-width: 700px) {\n  .page {\n    grid-template-columns: 2fr 1fr;\n  }\n}",
+  "practice": [
+    {
+      "title": "meta viewport",
+      "description": "В head добавь <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />. DevTools → Toggle device toolbar → iPhone SE. Без viewport текст мелкий — с viewport масштаб нормальный."
+    },
+    {
+      "title": "@media min-width",
+      "description": ".cards { display: grid; grid-template-columns: 1fr; } @media (min-width: 768px) { .cards { grid-template-columns: repeat(3, 1fr); } }. Расширь окно past 768px — три колонки."
+    },
+    {
+      "title": "max-width контейнер",
+      "description": ".container { width: min(100% - 32px, 960px); margin-inline: auto; }. На широком мониторе контент не растягивается на весь экран."
+    }
+  ],
+  "checklist": [
+    "Ставлю meta viewport",
+    "Пишу сначала мобильный вид, потом min-width",
+    "Проверяю вёрстку сужением окна",
+    "Перестраиваю сетку через @media"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: медиазапросы",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/CSS_layout/Media_queries"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "meta viewport",
+      "meaning": "Чтобы телефон не «притворялся» широким экраном.",
+      "example": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />"
+    },
+    {
+      "term": "@media",
+      "meaning": "Правила только при определённой ширине окна.",
+      "example": "@media (min-width: 700px) { ... }"
+    },
+    {
+      "term": "mobile-first",
+      "meaning": "Сначала стили для узкого экрана, потом дополнения для широкого.",
+      "example": "база → min-width: 700px"
+    }
+  ]
+}

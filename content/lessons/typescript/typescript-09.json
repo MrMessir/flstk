@@ -1,0 +1,107 @@
+{
+  "id": "typescript-09",
+  "part": "typescript",
+  "module": "ts-app",
+  "order": 9,
+  "title": "Типизация API и zod",
+  "goal": "Сопоставишь ответ fetch с типом и проверишь JSON через zod на runtime.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "fetch возвращает unknown в виде JSON: компилятор не знает форму ответа. as User опасно — сервер мог прислать другое. Правильный пайп: прочитать json(), прогнать через схему zod, получить типизированный объект или ошибку валидации. z.infer<typeof UserSchema> связывает runtime-схему и TS-тип."
+    },
+    {
+      "type": "heading",
+      "content": "Схема zod"
+    },
+    {
+      "type": "paragraph",
+      "content": "const UserSchema = z.object({ id: z.string(), email: z.string().email(), age: z.number().optional() }). safeParse(data) возвращает { success: true, data } или { success: false, error }. parse бросает ZodError. Вложенные объекты, массивы z.array(z.string()), union z.union([z.literal('a'), z.literal('b')]) покрывают большинство REST-ответов."
+    },
+    {
+      "type": "heading",
+      "content": "Обёртка apiClient"
+    },
+    {
+      "type": "paragraph",
+      "content": "async function getUser(id: string): Promise<User> { const res = await fetch(`/api/users/${id}`); const json = await res.json(); const parsed = UserSchema.safeParse(json); if (!parsed.success) throw new Error('Invalid API'); return parsed.data; } — тип User совпадает со схемой. При смене API тесты и zod упадут раньше, чем UI покажет undefined."
+    }
+  ],
+  "codeExample": "import { z } from \"zod\";\n\nconst PostSchema = z.object({\n  id: z.number(),\n  title: z.string(),\n  body: z.string(),\n});\n\ntype Post = z.infer<typeof PostSchema>;\n\nasync function fetchPost(id: number): Promise<Post> {\n  const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);\n  const json: unknown = await res.json();\n  const parsed = PostSchema.safeParse(json);\n  if (!parsed.success) throw new Error(parsed.error.message);\n  return parsed.data;\n}",
+  "practice": [
+    {
+      "title": "PostSchema и fetchPost",
+      "description": "npm install zod в vanilla-ts или vite проект. Реализуй fetchPost(1) как в примере. main.ts выводит title поста в DOM. Подмени схему (id: string) и убедись, что safeParse падает на реальном JSON."
+    },
+    {
+      "title": "Массив постов",
+      "description": "PostListSchema = z.array(PostSchema). fetchPosts(): Promise<Post[]> с URL /posts. Проверь length > 0 и тип первого элемента."
+    },
+    {
+      "title": "Ошибка для UI",
+      "description": "Функция loadPostSafe(id: number): Promise<{ ok: true; post: Post } | { ok: false; message: string }> без throw наружу. В UI покажи message при ok false."
+    }
+  ],
+  "checklist": [
+    "Не кастую JSON к типу без runtime-проверки",
+    "Держу z.infer рядом со схемой",
+    "Использую safeParse для пользовательских сообщений",
+    "Обрабатываю сетевые и validation ошибки отдельно"
+  ],
+  "links": [
+    {
+      "title": "Zod documentation",
+      "url": "https://zod.dev/"
+    },
+    {
+      "title": "MDN: fetch",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/Fetch_API"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "zod",
+      "meaning": "Библиотека runtime-валидации и схем.",
+      "example": "z.object({ id: z.string() })"
+    },
+    {
+      "term": "z.infer",
+      "meaning": "Вывод TS-типа из zod-схемы.",
+      "example": "type User = z.infer<typeof UserSchema>"
+    },
+    {
+      "term": "safeParse",
+      "meaning": "Парсинг без throw, результат success/error.",
+      "example": "UserSchema.safeParse(data)"
+    },
+    {
+      "term": "DTO",
+      "meaning": "Объект передачи данных с API.",
+      "example": "Post из JSON"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "typescript-09-q1",
+      "prompt": "Зачем zod на границе API?",
+      "options": [
+        "Проверить runtime-данные; TypeScript типы исчезают в JS",
+        "Заменить HTTP статусы",
+        "Скомпилировать CSS",
+        "Отключить strict mode"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "typescript-09-q2",
+      "prompt": "Что даёт z.infer<typeof schema>?",
+      "options": [
+        "Тип TypeScript из zod-схемы",
+        "SQL-миграцию",
+        "Docker image",
+        "JWT secret"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

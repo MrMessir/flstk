@@ -1,0 +1,96 @@
+{
+  "id": "js-01",
+  "part": "javascript",
+  "module": "js-basics",
+  "order": 1,
+  "title": "Первый скрипт в консоли",
+  "goal": "Подключишь JavaScript к странице и выведешь текст в консоль браузера.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Где живёт скрипт"
+    },
+    {
+      "type": "paragraph",
+      "content": "JavaScript в браузере запускается после того, как страница его подключила. Открой DevTools → Console и набери 1 + 1 — движок сразу ответит. Так удобно проверять маленькие куски кода, пока не завёл файл script.js."
+    },
+    {
+      "type": "paragraph",
+      "content": "В файле пиши обычные команды и смотри результат через console.log. Ошибки тоже появятся в Console: красный текст, файл и номер строки. Привыкай читать их целиком — это карта к исправлению."
+    },
+    {
+      "type": "paragraph",
+      "content": "JavaScript добавляет поведение: реакция на кнопку, подсчёт, загрузка данных. HTML — каркас, CSS — вид, JS — действия."
+    },
+    {
+      "type": "heading",
+      "content": "Как подключить"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Файл script.js рядом со страницей.",
+        "В конце body: <script src=\"script.js\"></script>. В конце — чтобы HTML уже успел появиться.",
+        "defer в подключении в head тоже можно: <script src=\"script.js\" defer></script>. Скрипт подождёт разметку.",
+        "async загружает параллельно и запускает, как только готов. Для учебного первого файла бери обычный script в конце body."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Консоль — вкладка в инструментах браузера, куда скрипт пишет сообщения. Открой страницу → F12 или правый клик → «Просмотреть код» не путай с консолью. Нужна вкладка Console / Консоль. console.log(\"привет\") печатает туда строку."
+    }
+  ],
+  "codeExample": "<!-- в конце body -->\n<script src=\"script.js\"></script>\n\n/* script.js */\nconsole.log(\"Привет\");\nconsole.log(2 + 2);\nconsole.log([\"яблоко\", \"груша\"]);",
+  "practice": [
+    {
+      "title": "script.js и консоль",
+      "description": "Создай index.html с <script src=\"script.js\"></script> в конце body. В script.js две строки console.log с именем и суммой 2+2. Открой F12 → Console, обнови страницу — обе строки видны."
+    },
+    {
+      "title": "defer в head",
+      "description": "Второй файл defer.html: <script src=\"script.js\" defer></script> в head, body с одним абзацем. Убедись, что скрипт выполняется после разметки (в консоли нет ошибок querySelector null)."
+    },
+    {
+      "title": "Ошибка в консоли",
+      "description": "Временно добавь console.log(unknownVar). Прочитай красное сообщение ReferenceError, исправь файл и снова получи чистую консоль после F5."
+    }
+  ],
+  "checklist": [
+    "Подключаю script в конце body",
+    "Открываю вкладку Console",
+    "Пишу сообщение через console.log",
+    "Вижу свои строки после обновления страницы"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: что такое JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/What_is_JavaScript"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "JavaScript",
+      "meaning": "Язык поведения страницы: клики, расчёты, запросы.",
+      "example": "console.log(\"Привет\")"
+    },
+    {
+      "term": "<script src>",
+      "meaning": "Подключение файла скрипта к HTML.",
+      "example": "<script src=\"script.js\"></script>"
+    },
+    {
+      "term": "console.log",
+      "meaning": "Печатает значение во вкладку Console.",
+      "example": "console.log(\"Hello world\")"
+    },
+    {
+      "term": "консоль",
+      "meaning": "Вкладка инструментов браузера для сообщений и ошибок.",
+      "example": "F12 → Console"
+    }
+  ]
+}

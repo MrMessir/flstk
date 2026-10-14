@@ -1,0 +1,86 @@
+{
+  "id": "js-09",
+  "part": "javascript",
+  "module": "js-data",
+  "order": 9,
+  "title": "Массив: map, filter, reduce",
+  "goal": "Отфильтруешь и преобразуешь список объектов короткими методами.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "map, filter, reduce"
+    },
+    {
+      "type": "paragraph",
+      "content": "Эти методы не заменяют мышление, а сокращают шаблонные циклы. map превращает каждый элемент. filter оставляет подходящие. reduce сжимает список в одно значение: сумму, объект, строку."
+    },
+    {
+      "type": "paragraph",
+      "content": "Цепочки читаются сверху вниз: сначала отфильтровал, потом преобразовал. Не делай в map побочные эффекты вроде записи в DOM — для этого обычный for…of или forEach осознанно."
+    },
+    {
+      "type": "paragraph",
+      "content": "Методы высшего порядка принимают функцию и сами проходят по массиву."
+    },
+    {
+      "type": "list",
+      "items": [
+        "map — получить новый массив той же длины, преобразовав каждый элемент.",
+        "filter — оставить только подходящие.",
+        "reduce — свернуть список в одно значение: сумму, объект.",
+        "find — первый подходящий или undefined.",
+        "some / every — есть ли хотя бы один / все ли подходят.",
+        "forEach — просто сделать действие для каждого. Новый массив не создаёт.",
+        "sort — сортирует на месте. Для чисел пиши (a, b) => a - b."
+      ]
+    }
+  ],
+  "codeExample": "const users = [\n  { name: \"Аня\", age: 20 },\n  { name: \"Боря\", age: 17 },\n  { name: \"Кира\", age: 22 },\n];\n\nconst names = users.map((u) => u.name);\nconst adults = users.filter((u) => u.age >= 18);\nconst totalAge = users.reduce((sum, u) => sum + u.age, 0);\n\nconsole.log(names);\nconsole.log(adults);\nconsole.log(totalAge);",
+  "practice": [
+    {
+      "title": "map цены ×2",
+      "description": "const prices = [100, 200]; const doubled = prices.map(p => p * 2); console.log(doubled) → [200,400]."
+    },
+    {
+      "title": "filter только активные",
+      "description": "users = [{name:'A', active:true},{name:'B', active:false}]. filter active → один объект. map to names → [\"A\"]."
+    },
+    {
+      "title": "reduce сумма",
+      "description": "reduce массива [1,2,3,4] в sum === 10. Затем reduce того же массива в строку \"1-2-3-4\" через join в аккумуляторе."
+    }
+  ],
+  "checklist": [
+    "Преобразую список через map",
+    "Фильтрую через filter",
+    "Считаю сумму через reduce",
+    "Передаю функцию внутрь метода массива"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: методы массивов",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Array"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "map",
+      "meaning": "Новый массив: каждый элемент преобразован.",
+      "example": "users.map(u => u.name)"
+    },
+    {
+      "term": "filter",
+      "meaning": "Новый массив только из подходящих элементов.",
+      "example": "users.filter(u => u.age >= 18)"
+    },
+    {
+      "term": "reduce",
+      "meaning": "Свернуть массив в одно значение.",
+      "example": "nums.reduce((s, n) => s + n, 0)"
+    }
+  ]
+}

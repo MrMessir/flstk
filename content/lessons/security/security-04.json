@@ -1,0 +1,74 @@
+{
+  "id": "security-04",
+  "part": "security",
+  "module": "sec-tokens",
+  "order": 4,
+  "title": "Сессии и cookies",
+  "goal": "Настроишь httpOnly session cookie с secure и sameSite для SPA на том же site.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Session id — случайный token в cookie, данные сессии на сервере (Redis/PostgreSQL session table). express-session middleware создаёт req.session.userId после login. Cookie флаги: httpOnly (JS не читает), secure (только HTTPS), sameSite=Lax/Strict против CSRF."
+    },
+    {
+      "type": "heading",
+      "content": "SameSite и cross-origin"
+    },
+    {
+      "type": "paragraph",
+      "content": "Фронт localhost:5173 и API localhost:3000 — разные origins. Cookie с SameSite=Lax может не ехать на XHR — тогда JWT или same-site proxy. Для cookie API часто SameSite=None; Secure на prod."
+    },
+    {
+      "type": "heading",
+      "content": "Rotation session"
+    },
+    {
+      "type": "paragraph",
+      "content": "regenerate session id после login против fixation. destroy на logout. TTL session 7d sliding optional."
+    }
+  ],
+  "codeExample": "import session from \"express-session\";\n\napp.use(\n  session({\n    name: \"sid\",\n    secret: process.env.SESSION_SECRET,\n    resave: false,\n    saveUninitialized: false,\n    cookie: {\n      httpOnly: true,\n      secure: process.env.NODE_ENV === \"production\",\n      sameSite: \"lax\",\n      maxAge: 7 * 24 * 60 * 60 * 1000,\n    },\n  }),\n);\n\n// login\nreq.session.userId = user.id;",
+  "practice": [
+    {
+      "title": "express-session",
+      "description": "npm install express-session. SESSION_SECRET в .env. После login req.session.userId = user.id. GET /auth/me читает session — 200 с user или 401."
+    },
+    {
+      "title": "Cookie в DevTools",
+      "description": "Login через Postman с cookie jar включённым. Повтор GET /auth/me без Authorization — cookie sid отправляется. Application → Cookies: HttpOnly ✓."
+    },
+    {
+      "title": "Logout",
+      "description": "POST /auth/logout вызывает req.session.destroy. Следующий /auth/me — 401."
+    }
+  ],
+  "checklist": [
+    "SESSION_SECRET не в git",
+    "Cookie httpOnly и sameSite настроены",
+    "session regenerate или новый sid после login",
+    "Logout уничтожает session"
+  ],
+  "links": [
+    {
+      "title": "MDN: Set-Cookie",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "httpOnly",
+      "meaning": "Cookie недоступна JavaScript.",
+      "example": "document.cookie не видит sid"
+    },
+    {
+      "term": "sameSite",
+      "meaning": "Ограничение отправки cookie cross-site.",
+      "example": "SameSite=Lax"
+    },
+    {
+      "term": "session fixation",
+      "meaning": "Атака подмены session id до login victim.",
+      "example": "regenerate после login"
+    }
+  ]
+}

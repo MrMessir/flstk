@@ -1,0 +1,89 @@
+{
+  "id": "react-project",
+  "part": "react",
+  "module": "project",
+  "order": 21,
+  "title": "Итог React: SPA-каталог товаров",
+  "goal": "Соберёшь SPA с роутингом, списком товаров, карточкой и корзиной на React+TS.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Итог React — приложение уровня витрины: каталог, страница товара, корзина. Данные можно взять из fakestoreapi.com или json файл в public/. Router разводит URL: /, /product/:id, /cart. State корзины — Context или Zustand; server list — useQuery или useEffect+fetch."
+    },
+    {
+      "type": "heading",
+      "content": "Минимальный scope MVP"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Главная: сетка карточек title, price, кнопка «В корзину».",
+        "Страница товара: описание, добавление в корзину.",
+        "Корзина: список, удаление, сумма.",
+        "React Router + TypeScript strict.",
+        "README, npm run build без ошибок."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Качество сдачи"
+    },
+    {
+      "type": "paragraph",
+      "content": "Компоненты разнесены: ui/, pages/, hooks/, store/. Loading/error на fetch. Не обязательен pixel-perfect дизайн — важны маршруты, state и читаемость. Скрин или GIF в README, ссылка на GitHub Pages/Vercel optional."
+    }
+  ],
+  "codeExample": "// store/cart.ts (Zustand sketch)\nimport { create } from \"zustand\";\n\ntype Item = { id: number; title: string; price: number; qty: number };\n\ntype CartState = {\n  lines: Item[];\n  add: (p: Omit<Item, \"qty\">) => void;\n  remove: (id: number) => void;\n  total: () => number;\n};\n\nexport const useCart = create<CartState>((set, get) => ({\n  lines: [],\n  add: (p) => set((s) => {\n    const existing = s.lines.find((l) => l.id === p.id);\n    if (existing) {\n      return { lines: s.lines.map((l) => l.id === p.id ? { ...l, qty: l.qty + 1 } : l) };\n    }\n    return { lines: [...s.lines, { ...p, qty: 1 }] };\n  }),\n  remove: (id) => set((s) => ({ lines: s.lines.filter((l) => l.id !== id) })),\n  total: () => get().lines.reduce((sum, l) => sum + l.price * l.qty, 0),\n}));",
+  "practice": [
+    {
+      "title": "Роуты и каталог",
+      "description": "Vite react-ts + react-router-dom. HomePage грузит список товаров, ProductPage по :id. NavLink Catalog/Cart."
+    },
+    {
+      "title": "Корзина и total",
+      "description": "Zustand или Context: add/remove, CartPage показывает lines и total(). Badge на иконке корзины с count."
+    },
+    {
+      "title": "README и build",
+      "description": "npm run build успешен. README: стек, маршруты, скрин. Ссылка на repo в сдаче."
+    }
+  ],
+  "checklist": [
+    "Три маршрута работают без перезагрузки",
+    "Корзина сохраняет items между страницами",
+    "Fetch показывает loading и error",
+    "TypeScript build без ошибок"
+  ],
+  "links": [
+    {
+      "title": "Fake Store API",
+      "url": "https://fakestoreapi.com/"
+    },
+    {
+      "title": "React Router",
+      "url": "https://reactrouter.com/en/main"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "catalog SPA",
+      "meaning": "Витрина товаров в одностраничном приложении.",
+      "example": "/ + /product/:id"
+    },
+    {
+      "term": "cart state",
+      "meaning": "Клиентский список выбранных товаров.",
+      "example": "Zustand lines"
+    },
+    {
+      "term": "MVP",
+      "meaning": "Минимальный работающий продукт для сдачи.",
+      "example": "list + cart"
+    },
+    {
+      "term": "product detail",
+      "meaning": "Страница одного товара по id.",
+      "example": "useParams()"
+    }
+  ]
+}

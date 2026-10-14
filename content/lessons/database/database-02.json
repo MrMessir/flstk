@@ -1,0 +1,74 @@
+{
+  "id": "database-02",
+  "part": "database",
+  "module": "db-sql",
+  "order": 2,
+  "title": "PostgreSQL в Docker и клиенты",
+  "goal": "Поднимешь Postgres в Docker и подключишься через psql или DBeaver.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Локальный PostgreSQL в Docker изолирует версию и не засоряет систему. Контейнер postgres:16 слушает порт 5432, данные живут в volume. Строка подключения: postgresql://USER:PASSWORD@localhost:5432/DBNAME — её же потом положишь в DATABASE_URL для Prisma."
+    },
+    {
+      "type": "heading",
+      "content": "docker compose"
+    },
+    {
+      "type": "paragraph",
+      "content": "Файл docker-compose.yml описывает сервис db с переменными POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB. Команда docker compose up -d поднимает фон. docker compose down -v удалит volume — только если сознательно сбрасываешь данные."
+    },
+    {
+      "type": "heading",
+      "content": "psql и GUI"
+    },
+    {
+      "type": "paragraph",
+      "content": "psql -h localhost -U blog -d blog — интерактивная консоль: \\dt список таблиц, \\d posts описание. DBeaver или pgAdmin удобны для просмотра данных и EXPLAIN. На курсе держи оба: psql для скриптов, GUI для отладки."
+    }
+  ],
+  "codeExample": "services:\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_USER: blog\n      POSTGRES_PASSWORD: blog\n      POSTGRES_DB: blog\n    ports:\n      - \"5432:5432\"\n    volumes:\n      - pgdata:/var/lib/postgresql/data\nvolumes:\n  pgdata:",
+  "practice": [
+    {
+      "title": "compose up",
+      "description": "В репозитории API создай docker-compose.yml из примера. Выполни docker compose up -d. docker compose ps — статус running. Добавь compose в git, пароли только учебные."
+    },
+    {
+      "title": "psql ping",
+      "description": "docker compose exec db psql -U blog -d blog -c 'SELECT 1 AS ok'. Должна вернуться строка ok=1. Сохрани команду в README «База»."
+    },
+    {
+      "title": "DBeaver",
+      "description": "Создай подключение PostgreSQL localhost:5432, user/password blog. Test connection OK. Создай пустую схему public — таблиц пока нет, это нормально."
+    }
+  ],
+  "checklist": [
+    "Postgres 16 крутится в Docker на 5432",
+    "Знаю строку DATABASE_URL для Prisma",
+    "Подключился через psql или GUI",
+    "Понимаю, что down -v стирает данные"
+  ],
+  "links": [
+    {
+      "title": "PostgreSQL Docker",
+      "url": "https://hub.docker.com/_/postgres"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "DATABASE_URL",
+      "meaning": "Строка подключения к БД для приложения.",
+      "example": "postgresql://blog:blog@localhost:5432/blog"
+    },
+    {
+      "term": "volume",
+      "meaning": "Постоянное хранилище данных контейнера.",
+      "example": "pgdata:/var/lib/postgresql/data"
+    },
+    {
+      "term": "psql",
+      "meaning": "CLI-клиент PostgreSQL.",
+      "example": "psql -U blog -d blog"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-08",
+  "part": "nodejs",
+  "module": "node-express",
+  "order": 8,
+  "title": "REST и OpenAPI",
+  "goal": "Спроектируешь ресурсы REST для блога и опишешь их в черновике OpenAPI 3.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "REST — соглашение об URL, методах и кодах ответа, а не отдельный протокол. Клиент (React, мобилка, Postman) читает одну спецификацию и знает форматы. OpenAPI 3 — YAML или JSON с paths, components.schemas и responses. Swagger UI монтируют на /docs и генерируют из того же файла."
+    },
+    {
+      "type": "heading",
+      "content": "Идемпотентность и методы"
+    },
+    {
+      "type": "paragraph",
+      "content": "GET, HEAD, PUT, DELETE идемпотентны: повтор запроса не должен плодить побочные эффекты (кроме логов). POST создаёт ресурс — повтор может создать дубликат, если нет Idempotency-Key. PATCH — частичное обновление; документируй, какие поля optional."
+    },
+    {
+      "type": "heading",
+      "content": "Схемы в components"
+    },
+    {
+      "type": "paragraph",
+      "content": "Вынеси Post, CreatePostDto, Error в components/schemas и ссылайся $ref. Так Postman и codegen не копируют JSON вручную. Укажи required поля и примеры — это контракт между фронтом и бэком."
+    }
+  ],
+  "codeExample": "openapi: 3.0.3\ninfo:\n  title: Blog API\n  version: 0.1.0\npaths:\n  /posts:\n    get:\n      summary: List posts\n      responses:\n        \"200\":\n          description: OK\n    post:\n      summary: Create post\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/CreatePost\"\ncomponents:\n  schemas:\n    CreatePost:\n      type: object\n      required: [title, body]\n      properties:\n        title: { type: string }\n        body: { type: string }",
+  "practice": [
+    {
+      "title": "Файл openapi.yaml",
+      "description": "Создай docs/openapi.yaml с info, paths /health и /posts (GET list, POST create). Опиши схему CreatePost с title и body. Проверь синтаксис на editor.swagger.io — импорт файла."
+    },
+    {
+      "title": "Импорт в Postman",
+      "description": "Postman → Import → openapi.yaml. Сгенерируй коллекцию. Отправь GET /health на localhost — убедись, что URL и метод совпадают со спекой (даже если сервер ещё не реализовал POST)."
+    },
+    {
+      "title": "Таблица эндпоинтов",
+      "description": "В README добавь таблицу: Method | Path | Auth | Описание для posts, comments, categories — минимум 6 строк. Сверь с openapi.yaml."
+    }
+  ],
+  "checklist": [
+    "Описал paths и schemas в OpenAPI 3",
+    "Различаю POST и PATCH по смыслу",
+    "Импортировал спеку в Postman или Swagger Editor",
+    "Держу контракт API в файле, не только в голове"
+  ],
+  "links": [
+    {
+      "title": "OpenAPI Specification",
+      "url": "https://spec.openapis.org/oas/v3.0.3"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "OpenAPI",
+      "meaning": "Машиночитаемое описание HTTP API.",
+      "example": "docs/openapi.yaml"
+    },
+    {
+      "term": "идемпотентность",
+      "meaning": "Повтор запроса даёт тот же эффект на сервере.",
+      "example": "DELETE /posts/1"
+    },
+    {
+      "term": "DTO",
+      "meaning": "Объект передачи данных для create/update.",
+      "example": "CreatePost { title, body }"
+    }
+  ]
+}

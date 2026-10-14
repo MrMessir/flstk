@@ -1,0 +1,74 @@
+{
+  "id": "database-10",
+  "part": "database",
+  "module": "db-ops",
+  "order": 10,
+  "title": "Транзакции",
+  "goal": "Обернёшь создание поста и первого комментария в BEGIN/COMMIT с откатом при ошибке.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "BEGIN открывает транзакцию. COMMIT фиксирует изменения. ROLLBACK отменяет всё с BEGIN. В Node pg: client.query('BEGIN'), несколько query, COMMIT или ROLLBACK в catch. Prisma: $transaction([...]) или interactive transaction."
+    },
+    {
+      "type": "heading",
+      "content": "Isolation levels"
+    },
+    {
+      "type": "paragraph",
+      "content": "PostgreSQL default READ COMMITTED — каждый statement видит committed snapshot. REPEATABLE READ для отчётов в одной транзакции. Serializable реже, дороже. Для учебного CRUD достаточно default."
+    },
+    {
+      "type": "heading",
+      "content": "Deadlock"
+    },
+    {
+      "type": "paragraph",
+      "content": "Две транзакции блокируют строки в разном порядке — Postgres убивает одну. Лечение: один порядок обновления таблиц, короткие транзакции."
+    }
+  ],
+  "codeExample": "BEGIN;\n\nINSERT INTO posts (author_id, title, body)\nVALUES ($1, 'Draft', 'text') RETURNING id;\n\nINSERT INTO comments (post_id, author_id, body)\nVALUES ($post_id, $1, 'First!');\n\nCOMMIT;\n-- при ошибке: ROLLBACK;",
+  "practice": [
+    {
+      "title": "Успешная транзакция",
+      "description": "В psql BEGIN; INSERT post; INSERT comment с тем же post_id; COMMIT;. Проверь обе таблицы."
+    },
+    {
+      "title": "ROLLBACK",
+      "description": "BEGIN; INSERT post; нарочно INSERT comment с неверным post_id; ROLLBACK;. Post не должен остаться."
+    },
+    {
+      "title": "Prisma $transaction",
+      "description": "Если Prisma уже стоит: prisma.$transaction([createPost, createComment]). Иначе запиши псевдокод в services/postsService.js для следующего урока."
+    }
+  ],
+  "checklist": [
+    "Использую BEGIN/COMMIT/ROLLBACK в psql",
+    "Связанные INSERT в одной транзакции",
+    "Знаю, что ROLLBACK отменяет всю транзакцию",
+    "Планирую $transaction в Prisma для пары операций"
+  ],
+  "links": [
+    {
+      "title": "PostgreSQL: transactions",
+      "url": "https://www.postgresql.org/docs/current/tutorial-transactions.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "COMMIT",
+      "meaning": "Зафиксировать изменения транзакции.",
+      "example": "COMMIT;"
+    },
+    {
+      "term": "ROLLBACK",
+      "meaning": "Отменить незавершённую транзакцию.",
+      "example": "ROLLBACK;"
+    },
+    {
+      "term": "isolation",
+      "meaning": "Степень видимости чужих незакоммиченных изменений.",
+      "example": "READ COMMITTED"
+    }
+  ]
+}

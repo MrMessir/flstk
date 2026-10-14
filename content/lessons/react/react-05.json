@@ -1,0 +1,83 @@
+{
+  "id": "react-05",
+  "part": "react",
+  "module": "react-hooks",
+  "order": 5,
+  "title": "Формы и события в React",
+  "goal": "Сделаешь controlled input и отправку формы без перезагрузки страницы.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Controlled component: value input берётся из state, onChange обновляет state. Так React — единственный источник правды для текста поля. onSubmit формы: e.preventDefault(), читаешь state, валидируешь, сбрасываешь поле setTitle(''). Не используй document.querySelector для значений формы в React-приложении."
+    },
+    {
+      "type": "heading",
+      "content": "События в React"
+    },
+    {
+      "type": "paragraph",
+      "content": "SyntheticEvent оборачивает нативное событие. onClick={(e) => ...}, onChange для input, onSubmit для form. Для checkbox value заменяется на checked: boolean. textarea тоже controlled через value + onChange. name и id связывают с label htmlFor для a11y."
+    },
+    {
+      "type": "heading",
+      "content": "Ошибки валидации"
+    },
+    {
+      "type": "paragraph",
+      "content": "Храни error: string | null в state. При submit если title.trim() === '' — setError('Введите текст'), иначе setError(null) и добавь todo. Показывай error под полем с role=\"alert\". disabled на кнопке при loading optional."
+    }
+  ],
+  "codeExample": "import { useState, FormEvent } from \"react\";\n\nexport function TodoForm({ onAdd }: { onAdd: (title: string) => void }) {\n  const [title, setTitle] = useState(\"\");\n  const [error, setError] = useState<string | null>(null);\n\n  function handleSubmit(e: FormEvent) {\n    e.preventDefault();\n    const value = title.trim();\n    if (!value) {\n      setError(\"Введите задачу\");\n      return;\n    }\n    setError(null);\n    onAdd(value);\n    setTitle(\"\");\n  }\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <label htmlFor=\"title\">Задача</label>\n      <input id=\"title\" value={title} onChange={(e) => setTitle(e.target.value)} />\n      {error && <p role=\"alert\">{error}</p>}\n      <button type=\"submit\">Добавить</button>\n    </form>\n  );\n}",
+  "practice": [
+    {
+      "title": "TodoForm controlled",
+      "description": "Реализуй TodoForm из примера, подключи к App onAdd. Пустой submit показывает ошибку, успешный очищает input."
+    },
+    {
+      "title": "Checkbox «важное»",
+      "description": "Добавь checkbox important: checked + onChange. onAdd передаёт { title, important }. В списке important отмечай «!»."
+    },
+    {
+      "title": "Enter отправляет форму",
+      "description": "Фокус в input, Enter — submit. Кнопка type=\"submit\". Страница не перезагружается (Network без document reload)."
+    }
+  ],
+  "checklist": [
+    "Связываю input через value и onChange",
+    "Вызываю preventDefault на submit",
+    "Показываю ошибки валидации из state",
+    "Связываю label htmlFor с id поля"
+  ],
+  "links": [
+    {
+      "title": "React: Forms",
+      "url": "https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable"
+    },
+    {
+      "title": "React: Events",
+      "url": "https://react.dev/learn/responding-to-events"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "controlled input",
+      "meaning": "Значение поля полностью из React state.",
+      "example": "value={title}"
+    },
+    {
+      "term": "SyntheticEvent",
+      "meaning": "Обёртка React над DOM-событием.",
+      "example": "FormEvent"
+    },
+    {
+      "term": "preventDefault",
+      "meaning": "Отмена отправки формы браузером.",
+      "example": "e.preventDefault()"
+    },
+    {
+      "term": "trim",
+      "meaning": "Обрезка пробелов по краям строки.",
+      "example": "title.trim()"
+    }
+  ]
+}

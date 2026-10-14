@@ -1,0 +1,79 @@
+{
+  "id": "css-07",
+  "part": "css",
+  "module": "css-box",
+  "order": 7,
+  "title": "Картинка слева, текст справа",
+  "goal": "Сделаешь обтекание картинки текстом и поймёшь, зачем clear.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Раньше колонки часто делали через float. Сейчас для раскладки берут Flexbox и Grid, но float всё ещё встречается: картинка слева, текст обтекает её справа."
+    },
+    {
+      "type": "list",
+      "items": [
+        "float: left; — элемент прижат влево, текст обтекает справа.",
+        "float: right; — наоборот.",
+        "После «плывущих» блоков родитель иногда схлопывается по высоте.",
+        "clear: both; на следующем блоке говорит: начни ниже всех float."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Для новой вёрстки страницы не строй колонки на float. Этот урок — чтобы понять чужой код и сделать простое обтекание картинки."
+    },
+    {
+      "type": "paragraph",
+      "content": "float когда-то был главным способом обтекания картинок текстом; сегодня для макетов чаще flex и grid, но float ещё встречается в старых стилях и в PDF-подобных вёрстках."
+    }
+  ],
+  "codeExample": ".photo {\n  float: left;\n  width: 160px;\n  margin: 0 16px 8px 0;\n}\n\n.after {\n  clear: both;\n  border-top: 1px solid #ddd;\n  padding-top: 12px;\n}",
+  "practice": [
+    {
+      "title": "float картинки",
+      "description": "img { float: left; width: 120px; margin: 0 16px 8px 0; } внутри article — текст обтекает справа. F5 на index.html с картинкой и абзацем."
+    },
+    {
+      "title": "clear под float",
+      "description": "После обтекаемого блока добавь .clearfix::after { content: \"\"; display: block; clear: both; } на родителя или div с clear: both. Фон родителя снова обнимает float."
+    },
+    {
+      "title": "Когда flex вместо float",
+      "description": "Продублируй блок через display: flex; gap: 16px; на родителе без float. Сравни: flex проще для «картинка + текст». Закомментируй float-версию, оставь flex."
+    }
+  ],
+  "checklist": [
+    "Делаю обтекание картинки через float",
+    "Ставлю отступ, чтобы текст не лип к картинке",
+    "Использую clear: both, чтобы следующий блок пошёл ниже",
+    "Помню, что новые колонки лучше делать на flex или grid"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: float",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/CSS_layout/Floats"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "float",
+      "meaning": "Элемент «плывёт», текст обтекает его.",
+      "example": "float: left;"
+    },
+    {
+      "term": "clear",
+      "meaning": "Следующий блок начинается ниже float.",
+      "example": "clear: both;"
+    },
+    {
+      "term": "обтекание",
+      "meaning": "Текст обходит блок слева или справа.",
+      "example": "картинка слева, текст справа"
+    }
+  ]
+}

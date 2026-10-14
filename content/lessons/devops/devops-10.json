@@ -1,0 +1,86 @@
+{
+  "id": "devops-10",
+  "part": "devops",
+  "module": "ops-prod",
+  "order": 10,
+  "title": "Логи, Sentry, uptime",
+  "goal": "Подключишь ошибки в Sentry и uptime-мониторинг.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Три вида сигналов"
+    },
+    {
+      "type": "paragraph",
+      "content": "Когда приложение работает у пользователей, ты узнаёшь о проблемах тремя путями: журналы (что происходило), ошибки (что сломалось и где) и доступность (живо ли вообще). Без них о проблеме узнаёшь от пользователя, и это худший вариант."
+    },
+    {
+      "type": "heading",
+      "content": "Sentry для ошибок"
+    },
+    {
+      "type": "paragraph",
+      "content": "Sentry собирает необработанные исключения с клиента и сервера: с трассировкой стека, окружением, версией релиза и пользователем. Подключение: SDK и ключ DSN из переменной окружения, инициализировать нужно как можно раньше (до остального кода). Привязывай ошибки к релизу, например git sha или semver-тегу образа, и увидишь, какая версия принесла проблему. Не отправляй туда пароли и персональные данные: настрой фильтрацию."
+    },
+    {
+      "type": "heading",
+      "content": "Доступность и журналы"
+    },
+    {
+      "type": "paragraph",
+      "content": "Сервис вроде UptimeRobot проверяет публичный адрес /health раз в несколько минут и пишет, если сайт лежит. Журналы пиши структурированно, в JSON: уровень, время, requestId, сообщение. По requestId находится вся цепочка одного запроса, а в Loki или CloudWatch такие записи искать удобно, а смесь console.log — мучение. Не логируй пароли и токены."
+    },
+    {
+      "type": "heading",
+      "content": "Алерты без шума"
+    },
+    {
+      "type": "paragraph",
+      "content": "Оповещение должно означать «нужно действовать». Реагируй на рост доли ошибок 5xx и простой дольше двух минут, а не на каждый 404 от ботов: иначе привыкнешь игнорировать письма и пропустишь настоящий сбой. Проверь систему: вызови тестовое исключение и убедись, что событие пришло в Sentry и оповещение дошло до тебя. И добавь requestId в ответ клиенту: пользователь пришлёт его в сообщении, и ты найдёшь нужную запись в журнале за секунды."
+    }
+  ],
+  "codeExample": "// instrument.js — подключается самым первым (node --import ./instrument.js app.js)\nimport * as Sentry from \"@sentry/node\";\nSentry.init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV });\n\n// app.js — после регистрации всех маршрутов\nimport * as Sentry from \"@sentry/node\";\nSentry.setupExpressErrorHandler(app);",
+  "practice": [
+    {
+      "title": "Sentry test event",
+      "description": "Кнопка /debug-sentry или throw в dev — event в dashboard."
+    },
+    {
+      "title": "Uptime monitor",
+      "description": "UptimeRobot/Better Stack на production URL /health."
+    },
+    {
+      "title": "requestId",
+      "description": "Middleware добавляет x-request-id в log line на каждый request."
+    }
+  ],
+  "checklist": [
+    "Подключил Sentry DSN через env",
+    "Мониторю uptime публичного /health",
+    "Логирую ошибки с контекстом, не только message",
+    "Не алерчу на шумные 404"
+  ],
+  "links": [
+    {
+      "title": "Sentry for Node",
+      "url": "https://docs.sentry.io/platforms/javascript/guides/node/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "DSN",
+      "meaning": "URL проекта Sentry.",
+      "example": "SENTRY_DSN"
+    },
+    {
+      "term": "uptime",
+      "meaning": "Доступность сервиса снаружи.",
+      "example": "99.9%"
+    },
+    {
+      "term": "requestId",
+      "meaning": "Корреляция логов одного запроса.",
+      "example": "uuid v4"
+    }
+  ]
+}

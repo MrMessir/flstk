@@ -1,0 +1,80 @@
+{
+  "id": "js-06",
+  "part": "javascript",
+  "module": "js-basics",
+  "order": 6,
+  "title": "Циклы: повторить действие",
+  "goal": "Посчитаешь сумму чисел и выведешь таблицу умножения циклом.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Зачем циклы"
+    },
+    {
+      "type": "paragraph",
+      "content": "Цикл повторяет одно и то же действие для разных данных: пройти массив, нарисовать карточки, проверить каждый символ строки. for удобен, когда знаешь число шагов. while — когда условие «пока ещё не готово»."
+    },
+    {
+      "type": "paragraph",
+      "content": "for…of идёт по значениям массива или строки. for…in — по ключам объекта (для массивов лучше не злоупотреблять). break выходит сразу, continue переходит к следующей итерации."
+    },
+    {
+      "type": "list",
+      "items": [
+        "for (let i = 1; i <= 5; i++) { ... } — повтори, пока условие правда. i++ увеличивает счётчик на 1.",
+        "while (условие) { ... } — повторяй, пока условие не станет ложным. Следи, чтобы условие когда-нибудь закончилось.",
+        "do { ... } while (условие); — тело выполнится хотя бы один раз.",
+        "for (const item of list) — пройти массив по элементам.",
+        "break — выйти из цикла. continue — пропустить текущий круг и идти дальше."
+      ]
+    }
+  ],
+  "codeExample": "let sum = 0;\nfor (let i = 1; i <= 5; i++) {\n  sum = sum + i;\n}\nconsole.log(sum); // 15\n\nfor (let i = 1; i <= 3; i++) {\n  console.log(\"2 x \" + i + \" = \" + 2 * i);\n}\n\nconst fruits = [\"яблоко\", \"груша\"];\nfor (const fruit of fruits) {\n  console.log(fruit);\n}",
+  "practice": [
+    {
+      "title": "for от 1 до 5",
+      "description": "Цикл for выводит сумму 1+2+3+4+5 в переменную sum. console.log(sum) === 15."
+    },
+    {
+      "title": "while обратный отсчёт",
+      "description": "let n = 3; while (n > 0) { console.log(n); n--; }. Последняя строка 1, затем цикл завершается."
+    },
+    {
+      "title": "break при первом чётном",
+      "description": "Массив [1,3,4,5]. for...of: при первом чётном выведи число и break. В консоли только 4."
+    }
+  ],
+  "checklist": [
+    "Пишу for со счётчиком",
+    "Умею сложить числа в цикле",
+    "Обхожу массив через for...of",
+    "Понимаю, зачем break и continue"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: циклы",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/Loops"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "for",
+      "meaning": "Цикл со счётчиком.",
+      "example": "for (let i = 1; i <= 5; i++) { ... }"
+    },
+    {
+      "term": "while",
+      "meaning": "Повторять, пока условие правда.",
+      "example": "while (n > 0) { n--; }"
+    },
+    {
+      "term": "for...of",
+      "meaning": "Пройти элементы массива.",
+      "example": "for (const item of list) { ... }"
+    }
+  ]
+}

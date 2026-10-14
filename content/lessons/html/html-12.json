@@ -1,0 +1,87 @@
+{
+  "id": "html-12",
+  "part": "html",
+  "module": "quality",
+  "order": 12,
+  "title": "SEO-база и валидность HTML",
+  "goal": "Настроишь title, description, Open Graph и проверишь разметку валидатором.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Мета для поиска и соцсетей"
+    },
+    {
+      "type": "paragraph",
+      "content": "title — заголовок вкладки и главная строка сниппета в Google. meta name=\"description\" — короткий текст под ссылкой; пиши для людей, не набор ключевых слов. Один h1 на странице, h2–h3 по смыслу разделов."
+    },
+    {
+      "type": "paragraph",
+      "content": "Open Graph (og:title, og:description, og:image) задаёт превью, когда ссылку кидают в Telegram или VK. robots.txt и sitemap.xml — подсказки роботам; для учебного resume достаточно знать, что они существуют."
+    },
+    {
+      "type": "heading",
+      "content": "Валидный HTML"
+    },
+    {
+      "type": "paragraph",
+      "content": "W3C Validator проверяет разметку по правилам: незакрытые теги, p внутри p, дубли id. Браузер часто «догадается», но ошибки ломают предсказуемость и SEO."
+    },
+    {
+      "type": "paragraph",
+      "content": "lang на html, charset UTF-8, осмысленные alt у картинок — база и для людей, и для роботов. Имена классов придумывай так, чтобы потом не стыдно было в CSS."
+    }
+  ],
+  "codeExample": "<head>\n  <meta charset=\"UTF-8\" />\n  <title>Резюме — Аня Ковалева | junior frontend</title>\n  <meta name=\"description\" content=\"HTML-резюме начинающего разработчика: навыки, проекты, контакты.\" />\n  <meta property=\"og:title\" content=\"Резюме — Аня\" />\n  <meta property=\"og:description\" content=\"Учусь fullstack, ищу стажировку.\" />\n  <meta property=\"og:image\" content=\"https://example.com/preview.png\" />\n</head>",
+  "practice": [
+    {
+      "title": "Заполни title и description",
+      "description": "В resume.html в head добавь уникальный title с именем и meta description на 120–160 символов. Открой файл в браузере — title должен появиться на вкладке. Сохрани скрин вкладки."
+    },
+    {
+      "title": "Добавь три Open Graph тега",
+      "description": "Вставь og:title, og:description и og:image (можно заглушку placehold.co). Проверь через https://developers.facebook.com/tools/debug/ или аналог: вставь URL файла, если выложен, или локальный preview после деплоя — для учёбы достаточно корректного HTML в Elements."
+    },
+    {
+      "title": "Прогон через W3C Validator",
+      "description": "Открой https://validator.w3.org/, вкладка Validate by File Upload, выбери resume.html. Исправь первую ошибку из списка (часто незакрытый тег), загрузи снова, пока не останется 0 errors."
+    }
+  ],
+  "checklist": [
+    "Пишу осмысленный title и meta description",
+    "Добавляю og:title и og:description для шаринга",
+    "Держу один h1 и логичную иерархию заголовков",
+    "Проверяю HTML в validator.w3.org без ошибок"
+  ],
+  "links": [
+    {
+      "title": "MDN: meta",
+      "url": "https://developer.mozilla.org/ru/docs/Web/HTML/Element/meta"
+    },
+    {
+      "title": "W3C Validator",
+      "url": "https://validator.w3.org/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "SEO",
+      "meaning": "Поисковая оптимизация: как страница выглядит в выдаче.",
+      "example": "<title>Резюме — Анна</title>"
+    },
+    {
+      "term": "Open Graph",
+      "meaning": "Мета-теги og:* для превью в соцсетях.",
+      "example": "og:image"
+    },
+    {
+      "term": "сниппет",
+      "meaning": "Блок title + description в результатах поиска.",
+      "example": "строка под ссылкой в Google"
+    },
+    {
+      "term": "валидатор",
+      "meaning": "Сервис проверки HTML на ошибки.",
+      "example": "validator.w3.org"
+    }
+  ]
+}

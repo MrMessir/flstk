@@ -1,0 +1,83 @@
+{
+  "id": "react-17",
+  "part": "react",
+  "module": "react-data",
+  "order": 17,
+  "title": "Практика: поиск с debounce",
+  "goal": "Сделаешь live search с задержкой запроса и отменой устаревших fetch.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Поиск на каждый keypress бьёт API. Debounce ждёт паузу в вводе: 300 ms после последнего символа — только тогда query. Реализация в useEffect с setTimeout и cleanup clearTimeout. Контролируемый input query + setQuery как в формах."
+    },
+    {
+      "type": "heading",
+      "content": "AbortController"
+    },
+    {
+      "type": "paragraph",
+      "content": "const ac = new AbortController(); fetch(url, { signal: ac.signal }); return () => ac.abort(); — отменяет запрос, если query сменился. Лови AbortError и не показывай как «ошибку сети». React Query делает это в queryFn автоматически при смене key."
+    },
+    {
+      "type": "heading",
+      "content": "UX поиска"
+    },
+    {
+      "type": "paragraph",
+      "content": "Показывай loading только если запрос дольше 200 ms (optional). Пустой query — не fetch. Сохраняй результаты при back navigation optional. aria-live=\"polite\" для числа результатов."
+    }
+  ],
+  "codeExample": "import { useEffect, useState } from \"react\";\n\nexport function useDebouncedValue<T>(value: T, delayMs: number) {\n  const [debounced, setDebounced] = useState(value);\n  useEffect(() => {\n    const id = setTimeout(() => setDebounced(value), delayMs);\n    return () => clearTimeout(id);\n  }, [value, delayMs]);\n  return debounced;\n}\n\nexport function UserSearch() {\n  const [q, setQ] = useState(\"\");\n  const debouncedQ = useDebouncedValue(q, 300);\n  const [hits, setHits] = useState<{ id: number; name: string }[]>([]);\n\n  useEffect(() => {\n    if (!debouncedQ.trim()) {\n      setHits([]);\n      return;\n    }\n    const ac = new AbortController();\n    fetch(`https://jsonplaceholder.typicode.com/users?name_like=${debouncedQ}`, { signal: ac.signal })\n      .then((r) => r.json())\n      .then(setHits)\n      .catch(() => {});\n    return () => ac.abort();\n  }, [debouncedQ]);\n\n  return (\n    <>\n      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder=\"Поиск\" />\n      <ul>{hits.map((u) => <li key={u.id}>{u.name}</li>)}</ul>\n    </>\n  );\n}",
+  "practice": [
+    {
+      "title": "useDebouncedValue",
+      "description": "Хук из примера в hooks/useDebouncedValue.ts. console.log debouncedQ — срабатывает реже, чем q при быстром наборе."
+    },
+    {
+      "title": "UserSearch список",
+      "description": "Подключи jsonplaceholder users (или локальный массив filter). Ввод «Leanne» находит пользователя. Пустой input — пустой ul."
+    },
+    {
+      "title": "Abort при смене query",
+      "description": "DevTools Network: быстро меняй query — предыдущие запросы canceled. Нет мигания старых имён после нового ввода."
+    }
+  ],
+  "checklist": [
+    "Debounce перед fetch, не на каждый keypress",
+    "Отменяю fetch в cleanup effect",
+    "Не показываю AbortError пользователю",
+    "Пустой query не дергает API"
+  ],
+  "links": [
+    {
+      "title": "MDN: AbortController",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/AbortController"
+    },
+    {
+      "title": "React: useEffect",
+      "url": "https://react.dev/reference/react/useEffect"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "debounce",
+      "meaning": "Задержка действия до паузы во вводе.",
+      "example": "300 ms после keyup"
+    },
+    {
+      "term": "AbortController",
+      "meaning": "API отмены fetch через signal.",
+      "example": "ac.abort()"
+    },
+    {
+      "term": "controlled search",
+      "meaning": "Строка поиска в React state.",
+      "example": "value={q}"
+    },
+    {
+      "term": "race condition",
+      "meaning": "Старый ответ перекрывает новый.",
+      "example": "решается abort"
+    }
+  ]
+}

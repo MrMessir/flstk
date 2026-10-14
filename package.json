@@ -1,0 +1,38 @@
+{
+  "name": "fullstacker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "lint": "eslint",
+    "content:generate": "python3 scripts/generate_course_content.py",
+    "content:enrich": "python3 scripts/enrich_lessons.py",
+    "content:fix-curriculum": "python3 scripts/apply_curriculum_fixes.py",
+    "content:verify": "npx --yes tsx scripts/verify-curriculum.mjs",
+    "seed:admin": "node --env-file=.env.local scripts/seed-admin.mjs",
+    "test:security": "node scripts/security-smoke.mjs",
+    "test:judge": "npx --yes tsx scripts/judge-security-test.mjs",
+    "predeploy": "node scripts/predeploy.mjs"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

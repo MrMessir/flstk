@@ -1,0 +1,87 @@
+{
+  "id": "tools-02",
+  "part": "tools",
+  "module": "web",
+  "order": 2,
+  "title": "Как устроен интернет",
+  "goal": "Поймёшь путь от адреса в строке браузера до ответа сервера.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Клиент и сервер"
+    },
+    {
+      "type": "paragraph",
+      "content": "Браузер — клиент: он просит страницу или данные. Компьютер с программой-сервером отвечает файлами HTML, CSS, картинками или JSON. Запрос уходит по сети, ответ приходит обратно — иногда за миллисекунды, иногда дольше, если сервер далеко или перегружен."
+    },
+    {
+      "type": "paragraph",
+      "content": "У каждого сервера есть IP-адрес — числовой «адрес дома». Людям неудобно помнить 203.0.113.10, поэтому DNS переводит имя вроде example.com в IP. Без DNS пришлось бы вводить цифры вместо домена."
+    },
+    {
+      "type": "heading",
+      "content": "HTTP и HTTPS"
+    },
+    {
+      "type": "paragraph",
+      "content": "HTTP — язык запросов и ответов: метод, путь, заголовки, тело. HTTPS — тот же HTTP, но трафик шифруется TLS. Замочек в адресной строке значит, что провайдер и сосед по Wi‑Fi не прочитают пароль в открытом виде."
+    },
+    {
+      "type": "paragraph",
+      "content": "Когда ты вводишь URL и жмёшь Enter, браузер спрашивает DNS, устанавливает соединение с сервером и отправляет HTTP-запрос. Сервер отвечает кодом статуса и содержимым — страницей или ошибкой 404."
+    }
+  ],
+  "codeExample": "",
+  "practice": [
+    {
+      "title": "Посмотри DNS через терминал",
+      "description": "Открой терминал. Выполни nslookup developer.mozilla.org (на Linux/macOS) или nslookup developer.mozilla.org 8.8.8.8. Запиши в notes.md один IP из ответа — это адрес, куда браузер реально идёт после DNS."
+    },
+    {
+      "title": "Сравни HTTP и HTTPS",
+      "description": "Открой http://neverssl.com и https://developer.mozilla.org в двух вкладках. В адресной строке Chrome или Firefox посмотри: у HTTP нет замка, у HTTPS есть. Сделай скрин обеих вкладок с видимой строкой адреса."
+    },
+    {
+      "title": "Проследи первый запрос в Network",
+      "description": "На https://developer.mozilla.org нажми F12 → Network. Обнови страницу (F5). Кликни первую строку с типом document. Во вкладке Headers найди Request URL и Status Code. Выпиши их в notes.md."
+    }
+  ],
+  "checklist": [
+    "Могу назвать роли клиента и сервера",
+    "Знаю, зачем нужен DNS",
+    "Отличаю HTTP от HTTPS по замку в браузере",
+    "Умею найти статус и URL первого запроса во вкладке Network"
+  ],
+  "links": [
+    {
+      "title": "MDN: как работает веб",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Getting_started/Web_standards/How_the_web_works"
+    },
+    {
+      "title": "MDN: что такое DNS",
+      "url": "https://developer.mozilla.org/ru/docs/Glossary/DNS"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "DNS",
+      "meaning": "Система имён: домен → IP-адрес.",
+      "example": "example.com → 93.184.216.34"
+    },
+    {
+      "term": "HTTP",
+      "meaning": "Протокол запросов и ответов в вебе.",
+      "example": "GET /index.html"
+    },
+    {
+      "term": "HTTPS",
+      "meaning": "HTTP с шифрованием TLS.",
+      "example": "замочек в адресной строке"
+    },
+    {
+      "term": "клиент",
+      "meaning": "Программа, которая запрашивает ресурсы.",
+      "example": "Chrome, curl"
+    }
+  ]
+}

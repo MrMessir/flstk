@@ -1,0 +1,83 @@
+{
+  "id": "react-03",
+  "part": "react",
+  "module": "react-basics",
+  "order": 3,
+  "title": "Компоненты и props",
+  "goal": "Разобьёшь экран на компоненты и передашь данные через props только вниз.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Props — read-only аргументы компонента: function Avatar({ name, size }: { name: string; size?: number }). Родитель решает, что показать; ребёнок не меняет props напрямую. Композиция: вместо prop type=\"primary\" иногда передают children или slot-компонент Button внутри Card."
+    },
+    {
+      "type": "heading",
+      "content": "Декомпозиция"
+    },
+    {
+      "type": "paragraph",
+      "content": "Один файл — один ответственный компонент: ProductCard, Price, Badge. App.tsx только собирает layout и передаёт данные. Имена компонентов с большой буквы, файлы PascalCase.tsx. Default export vs named — в курсе предпочитаем named export для рефакторинга и поиска."
+    },
+    {
+      "type": "heading",
+      "content": "PropsWithChildren"
+    },
+    {
+      "type": "paragraph",
+      "content": "type CardProps = { title: string; children: React.ReactNode }. Layout оборачивает контент: <Card title=\"Итого\">{children}</Card>. spread props осторожно: {...rest} на нативный button — ок для aria; на кастомный компонент — только если тип явно разрешает."
+    }
+  ],
+  "codeExample": "type ProductCardProps = {\n  title: string;\n  price: number;\n  onAdd: () => void;\n};\n\nexport function ProductCard({ title, price, onAdd }: ProductCardProps) {\n  return (\n    <article>\n      <h2>{title}</h2>\n      <p>{price} ₽</p>\n      <button type=\"button\" onClick={onAdd}>В корзину</button>\n    </article>\n  );\n}",
+  "practice": [
+    {
+      "title": "ProductCard + список",
+      "description": "Создай ProductCard.tsx и в App отрендери три карточки из массива products с map и key=id. onAdd пока console.log(title)."
+    },
+    {
+      "title": "Layout с children",
+      "description": "PageLayout({ title, children }) рисует h1 и main. Оберни ProductCard список в PageLayout title=\"Каталог\"."
+    },
+    {
+      "title": "Запрет мутации props",
+      "description": "Попробуй внутри ProductCard присвоить title = 'x' — TS readonly ошибка. Объясни в комментарии, где должно меняться имя товара (state родителя)."
+    }
+  ],
+  "checklist": [
+    "Типизирую props объектом или interface",
+    "Не изменяю props внутри компонента",
+    "Декомпозирую UI на переиспользуемые части",
+    "Передаю колбэки onX для действий вверх"
+  ],
+  "links": [
+    {
+      "title": "React: Passing Props",
+      "url": "https://react.dev/learn/passing-props-to-a-component"
+    },
+    {
+      "title": "React: Composition",
+      "url": "https://react.dev/learn/passing-props-to-a-component#passing-jsx-as-children"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "props",
+      "meaning": "Входные параметры компонента от родителя.",
+      "example": "{ title: string }"
+    },
+    {
+      "term": "children",
+      "meaning": "Вложенный JSX между тегами компонента.",
+      "example": "<Card>...</Card>"
+    },
+    {
+      "term": "composition",
+      "meaning": "Сборка UI из мелких компонентов.",
+      "example": "PageLayout + Card"
+    },
+    {
+      "term": "ReactNode",
+      "meaning": "Тип «что угодно renderable».",
+      "example": "string | JSX | null"
+    }
+  ]
+}

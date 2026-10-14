@@ -1,0 +1,120 @@
+{
+  "id": "js-15",
+  "part": "javascript",
+  "module": "js-dom",
+  "order": 15,
+  "title": "Форма: проверить и показать ошибку",
+  "goal": "Остановишь отправку формы, проверишь поля и выведешь текст ошибки под ними.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Форма без сюрпризов"
+    },
+    {
+      "type": "paragraph",
+      "content": "Считывай значения полей из form.elements или через querySelector. На submit вызывай preventDefault, проверь данные, покажи текст ошибки рядом с полем. HTML-валидация помогает, но сервер всё равно проверит позже."
+    },
+    {
+      "type": "paragraph",
+      "content": "Пустые строки и пробелы ловят через trim. Сообщения пиши по-человечески: «Укажи email», а не «invalid\"."
+    },
+    {
+      "type": "list",
+      "items": [
+        "form.addEventListener(\"submit\", handler)",
+        "event.preventDefault() — не перезагружать страницу.",
+        "form.elements.name — доступ к полю по name.",
+        "input.value — текст. checkbox.checked — галочка.",
+        "new FormData(form) — собрать пары имя/значение.",
+        "Ошибку показывай в соседнем элементе, например <p class=\"error\"></p>."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "После успешной проверки очисти сообщение об ошибке, чтобы не пугать пользователя старым текстом."
+    }
+  ],
+  "codeExample": "<form id=\"reg\">\n  <label>Email <input name=\"email\" type=\"email\" /></label>\n  <p class=\"error\" id=\"emailError\"></p>\n  <label><input name=\"agree\" type=\"checkbox\" /> согласен</label>\n  <p class=\"error\" id=\"agreeError\"></p>\n  <button type=\"submit\">Отправить</button>\n</form>\n\n<script>\nconst form = document.querySelector(\"#reg\");\nform.addEventListener(\"submit\", (event) => {\n  event.preventDefault();\n  const email = form.elements.email.value.trim();\n  const agree = form.elements.agree.checked;\n  document.querySelector(\"#emailError\").textContent = email.includes(\"@\") ? \"\" : \"Нужна почта\";\n  document.querySelector(\"#agreeError\").textContent = agree ? \"\" : \"Нужно согласие\";\n});\n</script>",
+  "practice": [
+    {
+      "title": "email regex простой",
+      "description": "Функция isEmail(s) проверяет наличие @ и точки после. Форма submit: если false — показать #error, preventDefault."
+    },
+    {
+      "title": "min length пароля",
+      "description": "password.length >= 8 иначе сообщение «минимум 8». Успешный submit очищает error."
+    },
+    {
+      "title": "aria-invalid",
+      "description": "При ошибке input.setAttribute('aria-invalid','true'), при успехе 'false'. Проверь в Elements панели."
+    }
+  ],
+  "checklist": [
+    "Ловлю submit и делаю preventDefault",
+    "Читаю value и checked",
+    "Показываю текст ошибки рядом с полем",
+    "Проверяю почту и согласие до «успеха»"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: формы в JS",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Extensions/Forms"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "submit",
+      "meaning": "Событие отправки формы.",
+      "example": "form.addEventListener(\"submit\", fn)"
+    },
+    {
+      "term": "input.value",
+      "meaning": "Текущий текст поля.",
+      "example": "form.elements.email.value"
+    },
+    {
+      "term": "checked",
+      "meaning": "Включена ли галочка.",
+      "example": "agree.checked"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "js-15-q1",
+      "prompt": "Зачем на submit вызывают preventDefault?",
+      "options": [
+        "Чтобы страница не перезагружалась при отправке формы",
+        "Чтобы очистить localStorage",
+        "Чтобы отключить CSS",
+        "Чтобы создать новый DOM-узел"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "js-15-q2",
+      "prompt": "Как обычно читают значение текстового поля формы?",
+      "options": [
+        "input.value или form.elements.name.value",
+        "input.checked для любого поля",
+        "document.cookie только",
+        "window.location.hash"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "js-15-q3",
+      "prompt": "Что поставить при ошибке валидации для a11y?",
+      "options": [
+        "aria-invalid=\"true\" на поле",
+        "display:none на всей форме",
+        "Удалить label",
+        "type=\"hidden\""
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

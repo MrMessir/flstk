@@ -1,0 +1,90 @@
+{
+  "id": "devops-08",
+  "part": "devops",
+  "module": "ops-ci",
+  "order": 8,
+  "title": "Деплой бэкенда и БД",
+  "goal": "Разместишь API на Render/Railway/Fly/VPS.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Платформа для бэкенда"
+    },
+    {
+      "type": "paragraph",
+      "content": "Render, Railway, Fly.io и подобные сервисы запускают твой API из репозитория или Docker-образа. Они сами выдают адрес с HTTPS, перезапускают упавший процесс и дают управляемую базу. Условия простые: приложение должно слушать порт из переменной PORT, а не фиксированное число, и принимать конфиг из окружения."
+    },
+    {
+      "type": "heading",
+      "content": "Проверка здоровья"
+    },
+    {
+      "type": "paragraph",
+      "content": "Добавь endpoint /health, который быстро отвечает 200. Платформа вызывает его, чтобы понять, готов ли новый экземпляр принимать трафик. Бесплатные тарифы часто «засыпают» и стартуют несколько секунд: если проверка здоровья слишком строгая, платформа решит, что деплой неудачный, и будет перезапускать его бесконечно. Увеличь время ожидания в настройках."
+    },
+    {
+      "type": "heading",
+      "content": "Управляемая база данных"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Внутри платформы используй внутренний адрес базы (DATABASE_URL), он быстрее и не публикуется в интернет.",
+        "Включи SSL (sslmode=require), если соединение идёт по сети.",
+        "На боевом тарифе включи автоматические бэкапы и узнай, как восстановиться."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Миграции и CORS"
+    },
+    {
+      "type": "paragraph",
+      "content": "Миграции выполняй при выкладке: отдельной командой релиза (например, prisma migrate deploy) до переключения трафика на новую версию, а не руками. Если миграция упала, новая версия не должна принимать запросы со старой схемой. Ещё одна частая беда: CORS. Укажи адрес боевого фронтенда в списке разрешённых, а не звёздочку для всех, и проверь, что куки работают между доменами (SameSite, Secure). Логи платформы смотри сразу после первого запуска: чаще всего деплой падает из-за забытой переменной окружения или неверного порта, и это видно в первых строках."
+    }
+  ],
+  "codeExample": "const port = Number(process.env.PORT) || 3000;\napp.get('/health', (_req, res) => res.json({ ok: true }));\napp.listen(port, () => console.log(`listening ${port}`));",
+  "practice": [
+    {
+      "title": "Deploy API",
+      "description": "Подними API на Render/Railway с env DATABASE_URL и JWT_SECRET."
+    },
+    {
+      "title": "Health check",
+      "description": "Настрой health path /health в панели — сервис не ready без 200."
+    },
+    {
+      "title": "Связка с фронтом",
+      "description": "Production VITE_API_URL указывает на новый API URL, CORS разрешает frontend origin."
+    }
+  ],
+  "checklist": [
+    "Слушаю process.env.PORT",
+    "Отдаю /health для платформы",
+    "Гоняю migrations при деплое",
+    "Настраиваю CORS под prod frontend URL"
+  ],
+  "links": [
+    {
+      "title": "Render deploy",
+      "url": "https://render.com/docs/deploy-node-express"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "health check",
+      "meaning": "Probe живости сервиса.",
+      "example": "GET /health"
+    },
+    {
+      "term": "managed DB",
+      "meaning": "Postgres от платформы.",
+      "example": "Render PostgreSQL"
+    },
+    {
+      "term": "release command",
+      "meaning": "Скрипт до старта приложения.",
+      "example": "migrate deploy"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "js-22",
+  "part": "javascript",
+  "module": "js-advanced",
+  "order": 22,
+  "title": "Классы и прототипы",
+  "goal": "Опишешь объект через class и покажешь, как методы живут в цепочке прототипов.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Ключевое слово class — это удобный синтаксис над тем, как JavaScript и так устроен: у каждого объекта есть скрытая ссылка на прототип, и свойства ищутся по цепочке. constructor задаёт поля через this, методы записываются коротко без function. new User(\"Аня\") создаёт объект, привязанный к User.prototype, где лежит greet."
+    },
+    {
+      "type": "heading",
+      "content": "extends и super"
+    },
+    {
+      "type": "paragraph",
+      "content": "extends связывает прототипы двух классов: Admin наследует методы User и может добавить свои. В constructor дочернего класса обязателен super(...arguments) до обращения к this — иначе объект ещё не инициализирован. Вызов super.greet() обращается к методу родителя; это пригодится, когда расширяешь базовый компонент или SDK-класс."
+    },
+    {
+      "type": "heading",
+      "content": "Приватные поля и когда class уместен"
+    },
+    {
+      "type": "paragraph",
+      "content": "Префикс # делает поле приватным для экземпляра: снаружи user.#token недоступен, только методы класса могут его читать. На фронте чаще встречаются функции и plain objects, но class — норма в библиотеках (Error, Map, React Component в классовой эре) и в бэкенде на Node. Понимание прототипов помогает читать чужой код и отладить «метод не найден»."
+    }
+  ],
+  "codeExample": "class User {\n  #id;\n  constructor(name, id) {\n    this.name = name;\n    this.#id = id;\n  }\n  greet() {\n    return `Привет, ${this.name}`;\n  }\n  get id() {\n    return this.#id;\n  }\n}\n\nclass Admin extends User {\n  constructor(name, id, role) {\n    super(name, id);\n    this.role = role;\n  }\n  greet() {\n    return `${super.greet()} (${this.role})`;\n  }\n}\n\nconsole.log(new Admin(\"Ada\", 1, \"editor\").greet());",
+  "practice": [
+    {
+      "title": "Класс Product с методом priceWithTax",
+      "description": "В models.js создай class Product с constructor(title, price) и методом priceWithTax(rate), возвращающим price * (1 + rate). В main.js импортируй модуль, создай new Product(\"Книга\", 500) и выведи priceWithTax(0.2) в консоль — ожидай 600."
+    },
+    {
+      "title": "Наследование DiscountProduct",
+      "description": "Добавь class DiscountProduct extends Product с полем discount (0..1). Переопредели priceWithTax так, чтобы сначала применялся discount, потом налог. Проверь: new DiscountProduct(\"Курс\", 1000, 0.1).priceWithTax(0.2) → 1080."
+    },
+    {
+      "title": "Прототип без class",
+      "description": "В proto.js опиши функцию-конструктор Counter и Counter.prototype.inc = function() { ... } без class. Создай два экземпляра, вызови inc у каждого. Убедись в консоли, что Counter.prototype === Object.getPrototypeOf(экземпляра)."
+    }
+  ],
+  "checklist": [
+    "Пишу constructor и методы в class без лишнего function",
+    "Вызываю super в дочернем constructor до this",
+    "Понимаю, что методы класса лежат на prototype",
+    "Отличаю публичное поле от приватного #field"
+  ],
+  "links": [
+    {
+      "title": "MDN: классы",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Classes"
+    },
+    {
+      "title": "MDN: прототипы",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Extensions/Advanced_JavaScript_objects/Object_prototypes"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "class",
+      "meaning": "Синтаксис объявления конструктора и методов поверх прототипов.",
+      "example": "class User { greet() {} }"
+    },
+    {
+      "term": "прототип",
+      "meaning": "Объект-образец, откуда экземпляр наследует свойства.",
+      "example": "User.prototype"
+    },
+    {
+      "term": "extends",
+      "meaning": "Наследование одного класса от другого.",
+      "example": "class Admin extends User"
+    },
+    {
+      "term": "приватное поле #",
+      "meaning": "Поле, доступное только методам этого класса.",
+      "example": "#token"
+    }
+  ]
+}

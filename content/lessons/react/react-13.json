@@ -1,0 +1,83 @@
+{
+  "id": "react-13",
+  "part": "react",
+  "module": "react-ui",
+  "order": 13,
+  "title": "Производительность React",
+  "goal": "Найдёшь лишние render и применишь lazy, memo и виртуализацию по делу.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "React перерисовывает компонент при изменении state или props родителя. Profiler в DevTools записывает commit duration. Частая ошибка — новый объект/функция в props каждый render: onClick={() => ...} ломает memo. useCallback стабилизирует fn, useMemo — дорогой расчёт."
+    },
+    {
+      "type": "heading",
+      "content": "Code splitting"
+    },
+    {
+      "type": "paragraph",
+      "content": "const Admin = lazy(() => import('./Admin')); <Suspense fallback={<p>…</p>}><Admin /></Suspense> — отдельный chunk грузится при первом показе Admin. Route-based splitting с React Router уменьшает initial bundle. list virtualization (react-window) рисует только видимые строки длинного списка."
+    },
+    {
+      "type": "heading",
+      "content": "Когда не оптимизировать"
+    },
+    {
+      "type": "paragraph",
+      "content": "Premature memo усложняет код. Сначала измерь Profiler, потом memo/useMemo. key=index на сортируемом списке — и баги, и лишние remount. State colocation: держи state ближе к месту использования, чтобы не будить всё дерево."
+    }
+  ],
+  "codeExample": "import { lazy, Suspense, memo, useMemo, useState } from \"react\";\n\nconst HeavyChart = lazy(() => import(\"./HeavyChart\"));\n\nconst Row = memo(function Row({ label }: { label: string }) {\n  return <li>{label}</li>;\n});\n\nexport function BigList({ items }: { items: string[] }) {\n  const [q, setQ] = useState(\"\");\n  const filtered = useMemo(() => items.filter((x) => x.includes(q)), [items, q]);\n  return (\n    <>\n      <input value={q} onChange={(e) => setQ(e.target.value)} />\n      <ul>\n        {filtered.map((label) => (\n          <Row key={label} label={label} />\n        ))}\n      </ul>\n      <Suspense fallback={<p>График…</p>}>\n        <HeavyChart />\n      </Suspense>\n    </>\n  );\n}",
+  "practice": [
+    {
+      "title": "Profiler до/после memo",
+      "description": "BigList 500 строк, ввод в filter input. Запиши commit time без memo Row и с memo Row — сравни в комментарии README."
+    },
+    {
+      "title": "lazy route",
+      "description": "Route /admin грузит lazy(() => import('./AdminPage')). Первая навигация показывает fallback, в Network отдельный chunk."
+    },
+    {
+      "title": "useMemo filter",
+      "description": "Убери useMemo — при профилировании filter на 1000 items замедляет ввод. Верни useMemo с deps [items,q]."
+    }
+  ],
+  "checklist": [
+    "Измеряю render Profiler перед оптимизацией",
+    "Применяю React.lazy для редких тяжёлых экранов",
+    "Стабилизирую props для memo-детей",
+    "Не ставлю memo на каждый компонент без причины"
+  ],
+  "links": [
+    {
+      "title": "React: lazy",
+      "url": "https://react.dev/reference/react/lazy"
+    },
+    {
+      "title": "React: Profiler",
+      "url": "https://react.dev/reference/react/Profiler"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "code splitting",
+      "meaning": "Разделение bundle на части по маршрутам/компонентам.",
+      "example": "React.lazy"
+    },
+    {
+      "term": "Suspense",
+      "meaning": "Показ fallback пока lazy грузится.",
+      "example": "<Suspense fallback={...}>"
+    },
+    {
+      "term": "virtualization",
+      "meaning": "Render только видимых элементов списка.",
+      "example": "react-window"
+    },
+    {
+      "term": "Profiler",
+      "meaning": "Инструмент измерения времени commit React.",
+      "example": "React DevTools"
+    }
+  ]
+}

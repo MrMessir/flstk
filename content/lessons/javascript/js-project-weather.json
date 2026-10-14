@@ -1,0 +1,83 @@
+{
+  "id": "js-project-weather",
+  "part": "javascript",
+  "module": "project",
+  "order": 29,
+  "title": "Мини-проект: приложение с погодой",
+  "goal": "Соберёшь поиск города, запрос к Open-Meteo и экраны loading, success и error.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Погодное приложение — классическая тренировка fetch и UI-состояний. Пользователь вводит город, ты геокодируешь название в координаты, затем запрашиваешь текущую температуру. Пока запрос идёт, показываешь «Загрузка…» и блокируешь кнопку. При ошибке сети или пустом городе — отдельное сообщение, скрипт не падает с необработанным reject."
+    },
+    {
+      "type": "heading",
+      "content": "Open-Meteo без ключа"
+    },
+    {
+      "type": "paragraph",
+      "content": "Geocoding API: https://geocoding-api.open-meteo.com/v1/search?name=Казань&count=1 возвращает latitude и longitude. Forecast: https://api.open-meteo.com/v1/forecast?latitude=...&longitude=...&current=temperature_2m. Оба endpoint бесплатны для учебного проекта. Парси response.json(), проверяй results.length — если 0, покажи «Город не найден»."
+    },
+    {
+      "type": "heading",
+      "content": "Структура файлов"
+    },
+    {
+      "type": "paragraph",
+      "content": "api.js экспортирует fetchWeather(city). ui.js переключает data-state на #app: idle | loading | error | success. main.js связывает форму и вызывает api. Не храни API-ключи в коде — здесь они не нужны. Для деплоя достаточно GitHub Pages и статических файлов."
+    }
+  ],
+  "codeExample": "export async function fetchWeather(city) {\n  const geoUrl = new URL(\"https://geocoding-api.open-meteo.com/v1/search\");\n  geoUrl.searchParams.set(\"name\", city);\n  geoUrl.searchParams.set(\"count\", \"1\");\n  const geo = await fetch(geoUrl).then((r) => r.json());\n  if (!geo.results?.length) throw new Error(\"Город не найден\");\n  const { latitude, longitude, name } = geo.results[0];\n  const wxUrl = new URL(\"https://api.open-meteo.com/v1/forecast\");\n  wxUrl.searchParams.set(\"latitude\", latitude);\n  wxUrl.searchParams.set(\"longitude\", longitude);\n  wxUrl.searchParams.set(\"current\", \"temperature_2m\");\n  const wx = await fetch(wxUrl).then((r) => r.json());\n  return { name, temp: wx.current.temperature_2m };\n}",
+  "practice": [
+    {
+      "title": "fetchWeather для «Москва»",
+      "description": "В api.js реализуй fetchWeather. Временный main вызови await fetchWeather(\"Москва\") и выведи { name, temp } в консоль. temp должно быть числом, не undefined."
+    },
+    {
+      "title": "Три состояния на странице",
+      "description": "index.html: input#city, button#search, div#panel. При клике panel показывает loading, затем «В {name} {temp}°C» или текст ошибки. Пустой city — «Введите город» без fetch."
+    },
+    {
+      "title": "README и скрин ошибки",
+      "description": "README: как открыть проект, какие URL API. Скрин успешного города и скрин несуществующего «Zzzzz» с сообщением об ошибке. Репозиторий в сдаче."
+    }
+  ],
+  "checklist": [
+    "Работает поиск по названию города",
+    "Есть отдельные UI для loading и error",
+    "Нет падения на плохом ответе или offline",
+    "Репозиторий с README и скринами"
+  ],
+  "links": [
+    {
+      "title": "Open-Meteo Geocoding",
+      "url": "https://open-meteo.com/en/docs/geocoding-api"
+    },
+    {
+      "title": "MDN: fetch",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/Fetch_API"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "геокодинг",
+      "meaning": "Поиск координат по названию места.",
+      "example": "geocoding-api.open-meteo.com"
+    },
+    {
+      "term": "UI-состояние",
+      "meaning": "Экран idle/loading/error/success.",
+      "example": "data-state=\"loading\""
+    },
+    {
+      "term": "JSON",
+      "meaning": "Текстовый формат ответа API.",
+      "example": "await res.json()"
+    },
+    {
+      "term": "async fetch",
+      "meaning": "Асинхронный HTTP-запрос из браузера.",
+      "example": "await fetch(url)"
+    }
+  ]
+}

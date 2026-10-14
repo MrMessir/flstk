@@ -1,0 +1,83 @@
+{
+  "id": "typescript-10",
+  "part": "typescript",
+  "module": "ts-app",
+  "order": 10,
+  "title": "Сторонние библиотеки и @types",
+  "goal": "Подключишь npm-пакет и типы из @types или встроенных .d.ts.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Многие пакеты пишут на JS, но публикуют типы внутри (\"types\" в package.json) или отдельным @types/lodash. npm install lodash && npm install -D @types/lodash даёт автодополнение для import { debounce } from 'lodash-es'. Если типов нет — declare module 'legacy-lib' в src/legacy-lib.d.ts с минимальным API."
+    },
+    {
+      "type": "heading",
+      "content": "moduleResolution и imports"
+    },
+    {
+      "type": "paragraph",
+      "content": "В tsconfig \"moduleResolution\": \"bundler\" или \"node\" влияет на поиск типов. ESM import axios from 'axios' vs require в CJS — Vite проекты на import. Типы только для devDependencies (@types/*) не попадают в runtime bundle. skipLibCheck: true ускоряет сборку, пропуская проверку .d.ts в node_modules."
+    },
+    {
+      "type": "heading",
+      "content": "Ambient declarations"
+    },
+    {
+      "type": "paragraph",
+      "content": "declare global расширяет Window (analytics.track). declare const __APP_VERSION__: string — переменная от bundler. Минимальный declare module описывает только то, что ты реально вызываешь — не копируй всю библиотеку. При обновлении пакета сверь changelog: типы могут стать встроенными и @types больше не нужен."
+    }
+  ],
+  "codeExample": "// npm i dayjs && npm i -D @types/... не нужен — dayjs с типами\nimport dayjs from \"dayjs\";\n\nconst label = dayjs().format(\"YYYY-MM-DD\");\nconsole.log(label);\n\n// src/vite-env.d.ts\n/// <reference types=\"vite/client\" />",
+  "practice": [
+    {
+      "title": "dayjs или date-fns",
+      "description": "npm install dayjs. В main.ts выведи сегодняшнюю дату format('DD.MM.YYYY'). IDE показывает подсказки методов без any."
+    },
+    {
+      "title": "declare module заглушка",
+      "description": "Создай fake-lib.js с export function hello() { return 'hi'; }. Без типов TS ругается. Добавь fake-lib.d.ts: declare module './fake-lib.js' { export function hello(): string; }. Импорт должен типизироваться."
+    },
+    {
+      "title": "Проверь @types нужен ли",
+      "description": "Выбери пакет lodash-es vs встроенные типы. npm ls @types. Удали лишний @types, если пакет уже ships types — typecheck должен остаться зелёным."
+    }
+  ],
+  "checklist": [
+    "Ставлю @types только когда пакет без типов",
+    "Пишу минимальный declare module для legacy",
+    "Импортирую ESM-пакеты как в доке Vite",
+    "Не коммичу node_modules, только package.json"
+  ],
+  "links": [
+    {
+      "title": "DefinitelyTyped",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped"
+    },
+    {
+      "title": "Handbook: Modules",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/modules.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "@types",
+      "meaning": "Пакет типов для JS-библиотеки.",
+      "example": "@types/node"
+    },
+    {
+      "term": "declare module",
+      "meaning": "Описание типов для модуля без TS.",
+      "example": "declare module 'x'"
+    },
+    {
+      "term": ".d.ts",
+      "meaning": "Файл только с типами, без JS-кода.",
+      "example": "vite-env.d.ts"
+    },
+    {
+      "term": "skipLibCheck",
+      "meaning": "Не проверять типы в node_modules.",
+      "example": "tsconfig option"
+    }
+  ]
+}

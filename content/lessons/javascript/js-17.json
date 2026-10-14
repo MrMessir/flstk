@@ -1,0 +1,85 @@
+{
+  "id": "js-17",
+  "part": "javascript",
+  "module": "js-advanced",
+  "order": 17,
+  "title": "Promises: результат потом",
+  "goal": "Соберёшь цепочку промисов и дождёшься нескольких сразу.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Промис — результат потом"
+    },
+    {
+      "type": "paragraph",
+      "content": "Промис — объект «обещание результата». Он pending, затем fulfilled или rejected. then обрабатывает успех, catch — ошибку. Цепочки then читаются проще вложенных колбэков."
+    },
+    {
+      "type": "paragraph",
+      "content": "Не оставляй rejected без catch: в Console будет Unhandled Promise Rejection. На курсе дальше перейдёшь к async/await — это тот же промис, но удобнее читать."
+    },
+    {
+      "type": "paragraph",
+      "content": "Promise — обещание результата в будущем. Состояния: pending (ждём), fulfilled (успех), rejected (ошибка)."
+    },
+    {
+      "type": "list",
+      "items": [
+        "new Promise((resolve, reject) => { ... })",
+        "then — что делать с успешным результатом.",
+        "catch — что делать с ошибкой.",
+        "finally — в любом случае.",
+        "Promise.all — ждать все. Promise.race — кто первый.",
+        "Promise.allSettled — дождаться всех, даже с ошибками."
+      ]
+    }
+  ],
+  "codeExample": "function wait(ms, value) {\n  return new Promise((resolve) => {\n    setTimeout(() => resolve(value), ms);\n  });\n}\n\nwait(500, \"один\")\n  .then((value) => {\n    console.log(value);\n    return wait(500, \"два\");\n  })\n  .then((value) => console.log(value))\n  .catch((error) => console.error(error));\n\nPromise.all([wait(300, 1), wait(500, 2)]).then((values) => {\n  console.log(values); // [1, 2]\n});",
+  "practice": [
+    {
+      "title": "Promise resolve",
+      "description": "new Promise(res => setTimeout(() => res(7), 100)).then(console.log) — вывод 7."
+    },
+    {
+      "title": "Promise reject catch",
+      "description": "Promise.reject(new Error('fail')).catch(e => console.log(e.message)) — «fail», скрипт не падает."
+    },
+    {
+      "title": "Цепочка then",
+      "description": "Promise.resolve(2).then(n => n * 3).then(n => n + 1).then(console.log) → 7."
+    }
+  ],
+  "checklist": [
+    "Создаю Promise с resolve",
+    "Обрабатываю успех через then",
+    "Ловлю ошибку через catch",
+    "Жду несколько промисов через Promise.all"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: Promise",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Promise",
+      "meaning": "Обещание результата в будущем: успех или ошибка.",
+      "example": "new Promise((resolve) => resolve(\"ok\"))"
+    },
+    {
+      "term": "then / catch",
+      "meaning": "Что делать при успехе / при ошибке.",
+      "example": "wait(500).then(console.log)"
+    },
+    {
+      "term": "Promise.all",
+      "meaning": "Дождаться нескольких промисов сразу.",
+      "example": "Promise.all([p1, p2])"
+    }
+  ]
+}

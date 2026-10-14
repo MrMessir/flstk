@@ -1,0 +1,90 @@
+{
+  "id": "devops-07",
+  "part": "devops",
+  "module": "ops-ci",
+  "order": 7,
+  "title": "Деплой фронтенда",
+  "goal": "Выложишь фронт на Vercel/Netlify с preview PR.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Как работает хостинг фронтенда"
+    },
+    {
+      "type": "paragraph",
+      "content": "Vercel, Netlify и подобные сервисы подключаются к репозиторию и собирают проект на каждый пуш: выполняют build-команду (npm run build) и раздают результат из папки (dist или build) через CDN. Руками ничего загружать не нужно, а старые версии остаются доступными для отката."
+    },
+    {
+      "type": "heading",
+      "content": "Preview-развёртывания"
+    },
+    {
+      "type": "paragraph",
+      "content": "Для каждого pull request создаётся отдельный адрес с этой версией сайта. Тестировщик или дизайнер открывает ссылку и проверяет изменение без локального запуска. Важная деталь: preview должен ходить на тестовый API и тестовые ключи. Проверь, чтобы боевой ключ случайно не попал в preview через общие переменные."
+    },
+    {
+      "type": "heading",
+      "content": "Переменные окружения"
+    },
+    {
+      "type": "paragraph",
+      "content": "Публичные значения для браузера задаются в панели хостинга отдельно для каждого окружения (Production и Preview). Имена с префиксом VITE_ или NEXT_PUBLIC_ попадают в клиентский код и видны всем. Никаких секретов в них не кладут: ключ базы или платёжный секрет в фронтенде — утечка."
+    },
+    {
+      "type": "heading",
+      "content": "Маршруты SPA"
+    },
+    {
+      "type": "paragraph",
+      "content": "В одностраничном приложении адрес /posts/42 обрабатывает JavaScript, а на сервере такого файла нет. Без настройки прямое открытие ссылки или обновление страницы даёт 404. Решение — переписывание всех путей на index.html: в vercel.json через rewrites, в Netlify файл _redirects со строкой /* /index.html 200. Проверь после выкладки: открой глубокую ссылку напрямую и обнови страницу."
+    },
+    {
+      "type": "paragraph",
+      "content": "Дополнительно настрой собственный домен и убедись, что HTTPS включился автоматически, а переменные для production заданы до первого боевого деплоя. После выкладки открой сайт в режиме инкогнито и проверь консоль браузера: ошибки CORS и 404 на файлах здесь видны сразу."
+    }
+  ],
+  "codeExample": "{\n  \"rewrites\": [{ \"source\": \"/(.*)\", \"destination\": \"/index.html\" }]\n}",
+  "practice": [
+    {
+      "title": "Deploy main",
+      "description": "Подключи репо к Vercel/Netlify, deploy production URL."
+    },
+    {
+      "title": "Preview PR",
+      "description": "PR получает preview link в комментарии bot — открой и проверь login."
+    },
+    {
+      "title": "Env preview",
+      "description": "VITE_API_URL на preview указывает на staging API, не localhost."
+    }
+  ],
+  "checklist": [
+    "Деплою фронт из git, не ручным ftp",
+    "Настраиваю public env в панели хостинга",
+    "Проверяю SPA fallback для deep links",
+    "Использую preview deploy на PR"
+  ],
+  "links": [
+    {
+      "title": "Vercel docs",
+      "url": "https://vercel.com/docs"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "preview deploy",
+      "meaning": "Временный URL ветки.",
+      "example": "pr-12.vercel.app"
+    },
+    {
+      "term": "rewrite",
+      "meaning": "Правило маршрутизации на CDN.",
+      "example": "SPA fallback"
+    },
+    {
+      "term": "build command",
+      "meaning": "npm run build на сервере CI.",
+      "example": "vite build"
+    }
+  ]
+}

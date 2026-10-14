@@ -1,0 +1,109 @@
+{
+  "id": "security-05",
+  "part": "security",
+  "module": "sec-tokens",
+  "order": 5,
+  "title": "JWT: access и refresh",
+  "goal": "Выдашь пару JWT и обновишь access по refresh без хранения пароля в токене.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "JWT — три части base64: header.payload.signature. Сервер подписывает HS256 секретом или RS256 приватным ключом. Payload: sub (user id), exp, optional role. Access короткий (15m), refresh длинный (7d) хранится hashed в БД или httpOnly cookie."
+    },
+    {
+      "type": "heading",
+      "content": "Что не класть в JWT"
+    },
+    {
+      "type": "paragraph",
+      "content": "Пароль, payment data, PII лишнее. JWT не revoke мгновенно без blacklist — короткий access снижает риск. Refresh rotation: новый refresh при каждом use, старый invalidate."
+    },
+    {
+      "type": "heading",
+      "content": "Bearer middleware"
+    },
+    {
+      "type": "paragraph",
+      "content": "Authorization: Bearer <access>. jwt.verify(token, secret) → req.user = { id: payload.sub }. 401 при expired или bad signature."
+    }
+  ],
+  "codeExample": "import jwt from \"jsonwebtoken\";\n\nconst ACCESS_TTL = \"15m\";\nconst REFRESH_TTL = \"7d\";\n\nexport function signAccess(user) {\n  return jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_ACCESS_SECRET, {\n    expiresIn: ACCESS_TTL,\n  });\n}\n\nexport function authBearer(req, res, next) {\n  const h = req.headers.authorization;\n  if (!h?.startsWith(\"Bearer \")) return res.status(401).json({ error: \"Unauthorized\" });\n  try {\n    req.user = jwt.verify(h.slice(7), process.env.JWT_ACCESS_SECRET);\n    next();\n  } catch {\n    res.status(401).json({ error: \"Unauthorized\" });\n  }\n}",
+  "practice": [
+    {
+      "title": "Login returns tokens",
+      "description": "После login JSON { accessToken, refreshToken } или access + refresh cookie. Postman test сохраняет accessToken в env."
+    },
+    {
+      "title": "Protected route",
+      "description": "PATCH /posts/:id с Bearer access — 200 для своего поста. Без header — 401. Истёкший token (exp 1s для теста) — 401."
+    },
+    {
+      "title": "POST /auth/refresh",
+      "description": "Принимает refreshToken, verify refresh secret, выдаёт новый access. Invalid refresh — 401."
+    }
+  ],
+  "checklist": [
+    "Отдельные секреты access и refresh в .env",
+    "access короткий TTL",
+    "middleware authBearer на защищённых routes",
+    "refresh endpoint работает в Postman"
+  ],
+  "links": [
+    {
+      "title": "JWT.io",
+      "url": "https://jwt.io/introduction"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "access token",
+      "meaning": "Короткий JWT для API запросов.",
+      "example": "Authorization: Bearer ..."
+    },
+    {
+      "term": "refresh token",
+      "meaning": "Долгий token только для обновления access.",
+      "example": "POST /auth/refresh"
+    },
+    {
+      "term": "exp",
+      "meaning": "Claim время истечения JWT.",
+      "example": "expiresIn: '15m'"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "security-05-q1",
+      "prompt": "Зачем разделяют access и refresh JWT?",
+      "options": [
+        "Короткий access снижает ущерб при утечке; refresh обновляет сессию",
+        "Refresh нужен только для CSS",
+        "Access хранит пароль в открытом виде",
+        "Оба токена обязаны жить вечно"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "security-05-q2",
+      "prompt": "Куда нельзя класть JWT access token?",
+      "options": [
+        "В URL query-параметр (утечёт в логи и Referer)",
+        "В память клиента на время сессии",
+        "В Authorization: Bearer заголовок",
+        "В httpOnly cookie при продуманном CSRF"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "security-05-q3",
+      "prompt": "Что делать со старым refresh при ротации?",
+      "options": [
+        "Инвалидировать (отозвать) после выдачи нового",
+        "Оставить навсегда для удобства",
+        "Записать в git",
+        "Отправить в Discord webhook"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "id": "nodejs-project",
+  "part": "nodejs",
+  "module": "project",
+  "order": 16,
+  "title": "Итог Node: REST API блога",
+  "goal": "Сделаешь CRUD постов, комментариев и категорий с валидацией, слоями и OpenAPI.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Итоговый модуль собирает Express-приложение: ресурсы posts, comments, categories, пагинация list через query page/limit, поиск по title (substring). Данные пока in-memory Map или JSON-файл через repository — БД подключишь в модуле database без переписывания routes."
+    },
+    {
+      "type": "heading",
+      "content": "Критерии готовности"
+    },
+    {
+      "type": "paragraph",
+      "content": "Минимум: zod на create/update, AppError + error middleware, morgan или pino, структура routes/services/repositories, docs/openapi.yaml синхронизирован с реальными путями, Postman-коллекция в docs/postman/."
+    },
+    {
+      "type": "heading",
+      "content": "README и запуск"
+    },
+    {
+      "type": "paragraph",
+      "content": "README: npm install, npm run dev, переменные .env.example, таблица эндпоинтов, скрин Postman или curl. Осознанно отложи: OAuth, загрузка файлов в S3, rate limit — перечисли в разделе «Out of scope»."
+    }
+  ],
+  "codeExample": "GET /posts?page=1&limit=20&q=node\n→ 200 { items, page, limit, total }\n\nPOST /posts\nBody: { \"title\", \"body\", \"categoryIds\": [] }\n→ 201 Post\n\nGET /posts/:id/comments\n→ 200 { items: Comment[] }",
+  "practice": [
+    {
+      "title": "CRUD трёх ресурсов",
+      "description": "Реализуй posts, comments (привязка postId), categories (many-to-many с posts через id массив или join-таблицу in-memory). Каждый ресурс: list с пагинацией, get by id, create, patch, delete где уместно."
+    },
+    {
+      "title": "OpenAPI и Postman",
+      "description": "Обнови docs/openapi.yaml под все реализованные пути. Импортируй в Postman, прогони Runner на 8+ запросов, экспортируй json в репозиторий."
+    },
+    {
+      "title": "Сдача проекта",
+      "description": "Проверь чек-лист урока. Залей репозиторий (или ветку) с README и ссылкой на демо/скрин. В форме сдачи опиши одно архитектурное решение (например, why service layer)."
+    }
+  ],
+  "checklist": [
+    "Работают CRUD posts, comments, categories с валидацией",
+    "Есть пагинация и поиск по title на GET /posts",
+    "OpenAPI и Postman совпадают с кодом",
+    "README объясняет запуск за три команды"
+  ],
+  "links": [
+    {
+      "title": "Express routing guide",
+      "url": "https://expressjs.com/en/guide/routing.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "CRUD",
+      "meaning": "Create, Read, Update, Delete операции над ресурсом.",
+      "example": "POST/GET/PATCH/DELETE /posts"
+    },
+    {
+      "term": "пагинация",
+      "meaning": "Выдача списка частями по page и limit.",
+      "example": "?page=2&limit=10"
+    },
+    {
+      "term": "OpenAPI",
+      "meaning": "Спецификация контракта HTTP API.",
+      "example": "docs/openapi.yaml"
+    },
+    {
+      "term": "repository",
+      "meaning": "Слой хранения, который потом заменишь на Prisma.",
+      "example": "postsRepo.list({ page, limit })"
+    }
+  ]
+}

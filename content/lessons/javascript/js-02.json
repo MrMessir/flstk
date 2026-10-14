@@ -1,0 +1,78 @@
+{
+  "id": "js-02",
+  "part": "javascript",
+  "module": "js-basics",
+  "order": 2,
+  "title": "Переменные: коробки для значений",
+  "goal": "Объявишь переменные через let и const и поменяешь то, что можно менять.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Переменная — имя, к которому прикреплено значение. Как подписать коробку: age = 20."
+    },
+    {
+      "type": "list",
+      "items": [
+        "let age = 20; — можно потом написать age = 21;",
+        "const name = \"Аня\"; — нельзя присвоить другое значение. Для вещей, которые не должны меняться.",
+        "var — старый способ. В новых уроках не используй."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Имя пиши латиницей, без пробелов: userName. Объяви переменную до использования. Область видимости: переменная изнутри фигурных скобок { } снаружи не видна."
+    },
+    {
+      "type": "paragraph",
+      "content": "Hoisting и TDZ — слова «переменная как будто поднимается, но до строки объявления её трогать нельзя». Практический совет: объявляй сверху и не обращайся раньше."
+    }
+  ],
+  "codeExample": "const course = \"Fullstacker\";\nlet step = 1;\n\nconsole.log(course);\nconsole.log(step);\n\nstep = 2;\nconsole.log(step);\n\n// course = \"Другое\"; // так нельзя — будет ошибка",
+  "practice": [
+    {
+      "title": "let counter и const PI",
+      "description": "В variables.js объяви let counter = 0 и const PI = 3.14. Увеличь counter на 1, выведи оба в консоль. Попробуй PI = 2 — зафиксируй TypeError/ SyntaxError в assignment."
+    },
+    {
+      "title": "Переименование let",
+      "description": "let message = \"старт\"; присвой message = \"финиш\"; console.log(message). var old = 1 в том же файле — объясни в комментарии, почему в новом коде берёшь let."
+    },
+    {
+      "title": "Блок и область",
+      "description": "В if (true) { let blockOnly = 42; } попробуй console.log(blockOnly) снаружи — ReferenceError. Вынеси let наверх и повтори успешный вывод."
+    }
+  ],
+  "checklist": [
+    "Объявляю неизменяемое через const",
+    "Меняю то, что должно меняться, через let",
+    "Не использую var в новых файлах",
+    "Смотрю ошибки в консоли, а не игнорирую их"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: переменные",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/Variables"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "let",
+      "meaning": "Переменная, значение которой можно менять.",
+      "example": "let step = 1; step = 2;"
+    },
+    {
+      "term": "const",
+      "meaning": "Имя с постоянной привязкой: новое значение не присвоить.",
+      "example": "const name = \"Аня\";"
+    },
+    {
+      "term": "переменная",
+      "meaning": "Имя, к которому прикреплено значение.",
+      "example": "let age = 20;"
+    }
+  ]
+}

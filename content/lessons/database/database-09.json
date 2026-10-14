@@ -1,0 +1,98 @@
+{
+  "id": "database-09",
+  "part": "database",
+  "module": "db-ops",
+  "order": 9,
+  "title": "Индексы и EXPLAIN",
+  "goal": "Добавишь индекс на posts.author_id и прочитаешь Seq Scan vs Index Scan в EXPLAIN.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Без индекса PostgreSQL читает всю таблицу (Seq Scan). B-tree индекс на author_id ускоряет WHERE author_id = $1. CREATE INDEX CONCURRENTLY на проде без долгой блокировки записи. Индекс на каждый столбец не нужен — замедляет INSERT."
+    },
+    {
+      "type": "heading",
+      "content": "EXPLAIN ANALYZE"
+    },
+    {
+      "type": "paragraph",
+      "content": "EXPLAIN показывает план; EXPLAIN ANALYZE выполняет запрос и даёт реальное время. Смотри actual rows, Index Scan, cost. После seed 10k постов разница заметна; на 5 строках planner может всё равно выбрать Seq Scan."
+    },
+    {
+      "type": "heading",
+      "content": "Составной индекс"
+    },
+    {
+      "type": "paragraph",
+      "content": "INDEX (author_id, created_at DESC) покрывает фильтр по автору и сортировку. Порядок столбцов важен для left-prefix правила."
+    }
+  ],
+  "codeExample": "CREATE INDEX posts_author_id_idx ON posts (author_id);\n\nEXPLAIN ANALYZE\nSELECT id, title FROM posts\nWHERE author_id = '...'\nORDER BY created_at DESC\nLIMIT 20;",
+  "practice": [
+    {
+      "title": "Seed 1000 posts",
+      "description": "Скрипт generate-posts.sql или INSERT SELECT generate_series вставляет ≥1000 posts одному author. Засеки время SELECT без индекса."
+    },
+    {
+      "title": "CREATE INDEX",
+      "description": "Создай posts_author_id_idx. Повтори EXPLAIN ANALYZE — ищи Index Scan. Запиши planning time и execution time до/после."
+    },
+    {
+      "title": "DBeaver plan",
+      "description": "В GUI открой Explain для того же запроса. Скрин плана в docs/explain-posts.png."
+    }
+  ],
+  "checklist": [
+    "Создал индекс на FK author_id",
+    "Запускал EXPLAIN ANALYZE, не только EXPLAIN",
+    "Понимаю компромисс индекс vs INSERT",
+    "Видел Seq Scan и Index Scan на своих данных"
+  ],
+  "links": [
+    {
+      "title": "PostgreSQL: indexes",
+      "url": "https://www.postgresql.org/docs/current/indexes.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Seq Scan",
+      "meaning": "Полное сканирование таблицы.",
+      "example": "нет подходящего индекса"
+    },
+    {
+      "term": "B-tree",
+      "meaning": "Стандартный тип индекса PostgreSQL.",
+      "example": "CREATE INDEX ... ON posts(author_id)"
+    },
+    {
+      "term": "EXPLAIN ANALYZE",
+      "meaning": "План и фактическое выполнение запроса.",
+      "example": "EXPLAIN ANALYZE SELECT ..."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "database-09-q1",
+      "prompt": "Зачем смотреть EXPLAIN (ANALYZE)?",
+      "options": [
+        "Понять план запроса и узкие места (seq scan, cost)",
+        "Удалить все индексы автоматически",
+        "Сгенерировать React-компоненты",
+        "Заменить миграции"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "id": "database-09-q2",
+      "prompt": "Индекс всегда ускоряет запись?",
+      "options": [
+        "Нет: индексы ускоряют чтение, но замедляют INSERT/UPDATE",
+        "Да, всегда и везде",
+        "Индексы нужны только MongoDB",
+        "Индекс удаляет необходимость PRIMARY KEY"
+      ],
+      "correctIndex": 0
+    }
+  ]
+}

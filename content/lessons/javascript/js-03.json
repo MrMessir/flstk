@@ -1,0 +1,100 @@
+{
+  "id": "js-03",
+  "part": "javascript",
+  "module": "js-basics",
+  "order": 3,
+  "title": "Типы данных",
+  "goal": "Определишь тип значения через typeof и приведёшь примеры каждого типа.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Зачем различать типы"
+    },
+    {
+      "type": "paragraph",
+      "content": "В JavaScript значение всегда какого-то типа: число, строка, булево, null, undefined, объект. typeof показывает грубую метку. Путаница типов даёт странные результаты: \"2\" + 2 станет \"22\", а не 4."
+    },
+    {
+      "type": "paragraph",
+      "content": "null — «намеренно пусто». undefined — «ещё не дали значение». Не сравнивай их с == вслепую: лучше явно проверяй == null, если допускаешь оба, или пиши строгие сравнения ===."
+    },
+    {
+      "type": "paragraph",
+      "content": "Значения бывают разных типов. От типа зависит, что с ними можно делать: складывать числа, склеивать текст, включать и выключать флаги."
+    },
+    {
+      "type": "list",
+      "items": [
+        "string — текст в кавычках: \"привет\".",
+        "number — число: 10, 3.14.",
+        "boolean — да/нет: true или false.",
+        "null — специально «пусто».",
+        "undefined — значение ещё не задали.",
+        "object — объект или массив. Массив тоже проверяется как object.",
+        "typeof x — строка с именем типа."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Позже встретятся symbol и bigint. Сейчас достаточно первых типов. Кавычки для текста обязательны. 10 — число, \"10\" — текст."
+    }
+  ],
+  "codeExample": "console.log(typeof \"Аня\"); // string\nconsole.log(typeof 25); // number\nconsole.log(typeof true); // boolean\nconsole.log(typeof undefined); // undefined\nconsole.log(typeof null); // object — историческая странность\nconsole.log(typeof { city: \"Казань\" }); // object\nconsole.log(typeof [1, 2, 3]); // object",
+  "practice": [
+    {
+      "title": "typeof для пяти значений",
+      "description": "В types.js выведи typeof для \"text\", 0, true, undefined и null. Запиши результаты в комментарии. Объясни строку typeof null."
+    },
+    {
+      "title": "Строка против числа",
+      "description": "console.log(\"10\" + 5) и console.log(10 + 5). Добавь Number(\"10\") + 5. Скрин или копия вывода в notes.txt."
+    },
+    {
+      "title": "Объект и массив",
+      "description": "typeof {} и typeof [1,2] — оба object. Проверь Array.isArray([1]) === true и Array.isArray({}) === false в консоли."
+    }
+  ],
+  "checklist": [
+    "Различаю string, number и boolean",
+    "Проверяю тип через typeof",
+    "Понимаю, что \"10\" — не число",
+    "Знаю, что у null typeof показывает object"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: типы данных",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Guide/Data_structures"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "string",
+      "meaning": "Текст в кавычках.",
+      "example": "\"привет\""
+    },
+    {
+      "term": "number",
+      "meaning": "Число.",
+      "example": "25"
+    },
+    {
+      "term": "boolean",
+      "meaning": "Да или нет: true / false.",
+      "example": "true"
+    },
+    {
+      "term": "typeof",
+      "meaning": "Проверка типа значения.",
+      "example": "typeof \"Аня\" // \"string\""
+    },
+    {
+      "term": "null / undefined",
+      "meaning": "Специально пусто / ещё не задали значение.",
+      "example": "let box; // undefined"
+    }
+  ]
+}

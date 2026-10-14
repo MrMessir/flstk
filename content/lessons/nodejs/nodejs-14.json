@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-14",
+  "part": "nodejs",
+  "module": "node-express",
+  "order": 14,
+  "title": "Практика: эндпоинты в Postman",
+  "goal": "Проверишь 5–6 эндпоинтов блога коллекцией Postman с переменными окружения.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Ручной curl на каждый релиз утомляет. Postman Environment хранит baseUrl и token — меняешь localhost на staging одним кликом. Collection Runner прогоняет цепочку: login → сохранить accessToken → создать пост → получить по id. Tests на вкладке Tests (pm.response.to.have.status(201)) ловят регрессии."
+    },
+    {
+      "type": "heading",
+      "content": "Порядок сценария"
+    },
+    {
+      "type": "paragraph",
+      "content": "Сначала health, потом CRUD posts, затем негативные кейсы (404, 400 validation). Сохраняй postId из ответа POST в переменную коллекции: const json = pm.response.json(); pm.collectionVariables.set('postId', json.id)."
+    },
+    {
+      "type": "heading",
+      "content": "Экспорт коллекции"
+    },
+    {
+      "type": "paragraph",
+      "content": "Export collection v2.1 в репозиторий docs/postman/blog-api.json — ревьюер и CI (newman) смогут повторить прогон. Не клади реальные пароли: используй {{testPassword}} из env example."
+    }
+  ],
+  "codeExample": "// Postman Tests (POST /posts)\npm.test(\"created\", () => {\n  pm.response.to.have.status(201);\n  const body = pm.response.json();\n  pm.expect(body.title).to.eql(\"Draft\");\n  pm.collectionVariables.set(\"postId\", body.id);\n});",
+  "practice": [
+    {
+      "title": "Environment local",
+      "description": "Создай Environment «local»: baseUrl = http://localhost:3000. В коллекции URL {{baseUrl}}/health. Send — статус 200."
+    },
+    {
+      "title": "CRUD цепочка",
+      "description": "Добавь запросы: POST /posts (body title, body), GET /posts/{{postId}}, PATCH с новым title, DELETE. После POST добавь Test, сохраняющий postId. Прогони по порядку."
+    },
+    {
+      "title": "Экспорт в репо",
+      "description": "Export коллекцию в docs/postman/blog-api.json. В README напиши: «Import collection + env local». Закоммить json без секретов."
+    }
+  ],
+  "checklist": [
+    "Использую {{baseUrl}} вместо хардкода",
+    "Сохраняю postId между запросами",
+    "Добавил минимум один pm.test на статус",
+    "Экспортировал коллекцию в docs/postman/"
+  ],
+  "links": [
+    {
+      "title": "Postman: variables",
+      "url": "https://learning.postman.com/docs/sending-requests/variables/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Collection Runner",
+      "meaning": "Последовательный прогон запросов Postman.",
+      "example": "Run folder CRUD"
+    },
+    {
+      "term": "environment",
+      "meaning": "Набор переменных для окружения API.",
+      "example": "baseUrl, accessToken"
+    },
+    {
+      "term": "newman",
+      "meaning": "CLI для запуска Postman-коллекций в CI.",
+      "example": "newman run collection.json"
+    }
+  ]
+}

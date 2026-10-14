@@ -1,0 +1,90 @@
+{
+  "id": "devops-04",
+  "part": "devops",
+  "module": "ops-docker",
+  "order": 4,
+  "title": "Docker Compose",
+  "goal": "Поднимешь api + postgres (+ redis) одной командой.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Зачем Compose"
+    },
+    {
+      "type": "paragraph",
+      "content": "Приложению обычно нужны несколько частей: API, база данных, возможно Redis. Запускать их вручную тремя командами неудобно и забывается. Docker Compose описывает всё в одном файле docker-compose.yml, а docker compose up -d поднимает весь стек. Это удобно и для локальной разработки, и для небольших прод-серверов."
+    },
+    {
+      "type": "heading",
+      "content": "Сеть между сервисами"
+    },
+    {
+      "type": "paragraph",
+      "content": "Compose создаёт общую сеть, и контейнеры находят друг друга по имени сервиса. Поэтому API подключается к базе по адресу db:5432, а не localhost: внутри контейнера api localhost означает сам этот контейнер, где базы нет. Наружу пробрасывай только то, что действительно нужно снаружи (порт API); порт базы 5432 публиковать на весь интернет не надо."
+    },
+    {
+      "type": "heading",
+      "content": "Данные должны жить дольше контейнера"
+    },
+    {
+      "type": "paragraph",
+      "content": "Контейнер можно удалить в любой момент, вместе с ним исчезают данные внутри. Для базы подключай именованный том (volume): pgdata:/var/lib/postgresql/data. Команда docker compose down удалит контейнеры, но не тома; docker compose down -v удалит и тома, то есть все данные. Для разработки удобен bind mount, который показывает контейнеру папку с твоего диска (например, ./uploads)."
+    },
+    {
+      "type": "heading",
+      "content": "Порядок запуска"
+    },
+    {
+      "type": "paragraph",
+      "content": "depends_on сам по себе ждёт только запуска контейнера, а не готовности базы. Добавь healthcheck для Postgres (команда pg_isready) и условие service_healthy: тогда API стартует после того, как база принимает соединения, и миграция не упадёт на подключении. Конфигурацию с секретами вынеси в .env файл или секреты, а не пиши пароли в yaml."
+    },
+    {
+      "type": "paragraph",
+      "content": "Полезные команды: docker compose ps, docker compose logs -f api, docker compose exec db psql -U postgres, docker compose up --build."
+    }
+  ],
+  "codeExample": "services:\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_PASSWORD: dev\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n  api:\n    build: .\n    ports: [\"3000:3000\"]\n    depends_on:\n      db:\n        condition: service_healthy",
+  "practice": [
+    {
+      "title": "up -d",
+      "description": "docker compose up -d, docker compose ps — все healthy/running."
+    },
+    {
+      "title": "Миграция в compose",
+      "description": "Команда или entrypoint api ждёт БД и гоняет migrate перед start."
+    },
+    {
+      "title": "down и volume",
+      "description": "compose down без -v сохраняет данные. С -v — чистая БД. Проверь разницу."
+    }
+  ],
+  "checklist": [
+    "Связываю api с postgres по hostname сервиса",
+    "Храню postgres data в volume",
+    "Пробрасываю только нужные порты наружу",
+    "Использую compose для локального full stack"
+  ],
+  "links": [
+    {
+      "title": "Docker Compose",
+      "url": "https://docs.docker.com/compose/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "compose",
+      "meaning": "Оркестрация нескольких контейнеров.",
+      "example": "docker compose up"
+    },
+    {
+      "term": "volume",
+      "meaning": "П persistent storage Docker.",
+      "example": "pgdata"
+    },
+    {
+      "term": "service",
+      "meaning": "Именованный контейнер в compose.",
+      "example": "api:"
+    }
+  ]
+}

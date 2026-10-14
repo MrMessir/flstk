@@ -1,0 +1,90 @@
+{
+  "id": "devops-12",
+  "part": "devops",
+  "module": "ops-prod",
+  "order": 12,
+  "title": "CDN, кэш и стоимость",
+  "goal": "Оценишь кэш/CDN и лимиты бесплатных тарифов.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Как работает CDN"
+    },
+    {
+      "type": "paragraph",
+      "content": "CDN (сеть доставки контента) хранит копии файлов на серверах по всему миру. Пользователь из Европы получает скрипты и картинки с ближайшей точки, а не с твоего одного сервера, и страница открывается быстрее. Кэшировать лучше всего статику: JavaScript, CSS, изображения, шрифты."
+    },
+    {
+      "type": "heading",
+      "content": "Управление кэшем заголовками"
+    },
+    {
+      "type": "paragraph",
+      "content": "Заголовок Cache-Control говорит, сколько хранить файл. Современные сборщики (Vite и другие) добавляют хеш в имя файла (app.3f2a1c.js): при изменении содержимого имя меняется. Поэтому для таких файлов безопасно ставить Cache-Control: public, max-age=31536000, immutable: браузер не будет их даже запрашивать год. А index.html кэшируй коротко или проверяй заново, иначе пользователи долго будут видеть старую версию сайта."
+    },
+    {
+      "type": "heading",
+      "content": "Осторожно с API"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Персональные ответы (профиль, корзина) не кэшируй на CDN: пользователи могут увидеть чужие данные.",
+        "Если кэшируешь GET с вариациями, используй заголовок Vary (например, Authorization или Accept-Language).",
+        "Для публичных данных удобен stale-while-revalidate: быстро отдать старое и обновить в фоне."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Стоимость и лимиты"
+    },
+    {
+      "type": "paragraph",
+      "content": "Бесплатные тарифы ограничены: минуты сборки, количество вызовов серверных функций, исходящий трафик (egress) из базы и хостинга, место для хранения. Узнай лимиты каждого сервиса заранее и поставь уведомление на 80% использования, чтобы счёт не стал неожиданностью. Дешёвые приёмы экономии: сжимать изображения и отдавать их в webp, уменьшать размер образов и сборок, кэшировать тяжёлые публичные ответы. Заведи небольшую таблицу «сервис, лимит, текущее потребление, цена после лимита»."
+    }
+  ],
+  "codeExample": "# nginx static\nlocation /assets/ {\n  add_header Cache-Control \"public, max-age=31536000, immutable\";\n}",
+  "practice": [
+    {
+      "title": "Cache headers",
+      "description": "Проверь в DevTools Network cache-control на index.js vs hashed asset."
+    },
+    {
+      "title": "CDN enable",
+      "description": "Cloudflare orange cloud на static subdomain — TTFB на asset из другого региона (online test)."
+    },
+    {
+      "title": "Cost sheet",
+      "description": "Таблица: хостинг, DB, email, Sentry — free tier лимиты и твой текущий usage."
+    }
+  ],
+  "checklist": [
+    "Отдаю hashed assets с long cache",
+    "Не кэширую authenticated API ответы с CDN по умолчанию",
+    "Знаю лимиты free tier своих сервисов",
+    "Слежу за размером Docker image и egress"
+  ],
+  "links": [
+    {
+      "title": "MDN: Cache-Control",
+      "url": "https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Cache-Control"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "CDN",
+      "meaning": "Сеть кэширующих edge серверов.",
+      "example": "Cloudflare"
+    },
+    {
+      "term": "egress",
+      "meaning": "Исходящий трафик из облака.",
+      "example": "DB export"
+    },
+    {
+      "term": "immutable",
+      "meaning": "Файл с hash не перезапрашивать.",
+      "example": "app.a1b2.js"
+    }
+  ]
+}

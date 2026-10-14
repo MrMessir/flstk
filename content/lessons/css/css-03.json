@@ -1,0 +1,83 @@
+{
+  "id": "css-03",
+  "part": "css",
+  "module": "css-basics",
+  "order": 3,
+  "title": "Почему один стиль побеждает другой",
+  "goal": "Поймёшь, какой стиль сработает, если правил несколько, и починишь конфликт.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Браузер читает все правила и выбирает победителя. Это называется каскад: слои стилей накладываются друг на друга."
+    },
+    {
+      "type": "heading",
+      "content": "Кто сильнее"
+    },
+    {
+      "type": "list",
+      "items": [
+        "style на теге почти всегда сильнее файла.",
+        "#id сильнее .класса.",
+        ".класс сильнее простого имени тега p.",
+        "Если сила одинаковая, побеждает то правило, которое написано ниже."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "!important насильно выигрывает почти у всех. Новичку он мешает: страница становится непредсказуемой. Не используй !important, пока не научишься без него."
+    },
+    {
+      "type": "paragraph",
+      "content": "Если цвет «не применяется», сначала открой файл стилей и проверь: правильно ли написан селектор, сохранился ли файл, нет ли ниже другого правила на тот же элемент."
+    }
+  ],
+  "codeExample": "/* styles.css */\np { color: black; }\n.note { color: green; }\n#warn { color: red; }\n\n/* в HTML */\n<p>Чёрный</p>\n<p class=\"note\">Зелёный — класс сильнее тега</p>\n<p class=\"note\" id=\"warn\">Красный — id сильнее класса</p>\n<p class=\"note\" style=\"color: blue;\">Синий — style на теге сильнее</p>",
+  "practice": [
+    {
+      "title": "Два правила на один p",
+      "description": "Два раза задай p { color: blue; } и p { color: crimson; } в styles.css. F5 — побеждает crimson (ниже в файле). Поменяй блоки местами и проверь снова."
+    },
+    {
+      "title": "Специфичность class vs tag",
+      "description": "p { color: gray; } и .note { color: orange; } на <p class=\"note\">. Абзац orange — класс сильнее тега. Добавь p.note { color: green; } — станет green."
+    },
+    {
+      "title": "Inline побеждает файл",
+      "description": "На том же p добавь style=\"color: purple;\". Purple на экране. Убери inline — вернётся цвет от класса. Зафиксируй порядок: inline > id > class > tag."
+    }
+  ],
+  "checklist": [
+    "Помню порядок силы: тег → класс → id → style на теге",
+    "При равной силе смотрю, какое правило ниже",
+    "Не ставлю !important «на всякий случай»",
+    "Умею найти, почему цвет не применился"
+  ],
+  "links": [
+    {
+      "title": "MDN CSS",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS"
+    },
+    {
+      "title": "MDN: каскад и наследование",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Styling_basics/Cascade_layers"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "каскад",
+      "meaning": "Как браузер выбирает победителя среди нескольких правил.",
+      "example": "класс сильнее тега, id сильнее класса"
+    },
+    {
+      "term": "специфичность",
+      "meaning": "«Сила» селектора: тег < класс < id < style на теге.",
+      "example": "#warn победит .note"
+    },
+    {
+      "term": "!important",
+      "meaning": "Принудительный приоритет. Лучше не злоупотреблять.",
+      "example": "color: red !important;"
+    }
+  ]
+}

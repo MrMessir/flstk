@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-04",
+  "part": "nodejs",
+  "module": "node-basics",
+  "order": 4,
+  "title": "Event loop в Node",
+  "goal": "Объяснишь, почему долгий CPU-код блокирует ответы API, и не будешь считать в обработчике запроса.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Node обрабатывает JavaScript в одном потоке, но не «в одну строку». Event loop забирает колбэки из очередей: таймеры, завершённые I/O, microtasks (Promise.then). Пока выполняется твой синхронный код, новые HTTP-запросы ждут — даже если ты await-ишь базу в других запросах, тяжёлый цикл for в одном handler затормозит всех."
+    },
+    {
+      "type": "heading",
+      "content": "I/O и CPU"
+    },
+    {
+      "type": "paragraph",
+      "content": "Чтение файла и запрос в PostgreSQL — I/O: Node отдаёт работу системе и освобождает поток. Сжатие видео, bcrypt с большим cost или сортировка миллиона объектов в памяти — CPU на том же потоке. Для CPU выносят задачу в worker_threads, очередь (Bull) или отдельный сервис."
+    },
+    {
+      "type": "heading",
+      "content": "setImmediate и process.nextTick"
+    },
+    {
+      "type": "paragraph",
+      "content": "nextTick выполняется раньше следующей фазы loop — злоупотребление им голодит I/O. setImmediate — «после текущего poll». В прикладном API редко нужны; важнее не блокировать handler и использовать лимиты на bcrypt rounds (10–12)."
+    }
+  ],
+  "codeExample": "import express from \"express\";\n\nconst app = express();\n\napp.get(\"/slow-cpu\", (_req, res) => {\n  const start = Date.now();\n  while (Date.now() - start < 3000) {} // блокирует event loop\n  res.json({ blockedMs: 3000 });\n});\n\napp.get(\"/fast\", (_req, res) => res.json({ ok: true }));\n\napp.listen(3000);",
+  "practice": [
+    {
+      "title": "Эксперимент с блокировкой",
+      "description": "Добавь маршруты /slow-cpu и /fast из примера. Запусти сервер. В двух терминалах одновременно: curl http://localhost:3000/slow-cpu и сразу curl http://localhost:3000/fast. Замерь, ждёт ли /fast, пока крутится цикл."
+    },
+    {
+      "title": "Неблокирующая задержка",
+      "description": "Сделай GET /delay: await new Promise(r => setTimeout(r, 2000)); res.json({ done: true }). Повтори параллельные curl — /fast должен отвечать сразу. Запиши в README разницу между while и setTimeout."
+    },
+    {
+      "title": "Наблюдение в логах",
+      "description": "Поставь middleware, который console.log(Date.now(), req.path) на каждый запрос. Прогоняй /slow-cpu и смотри порядок строк — увидишь, что другие запросы встают в очередь за блокирующим кодом."
+    }
+  ],
+  "checklist": [
+    "Объясняю event loop как очередь задач в одном потоке JS",
+    "Не делаю тяжёлые синхронные циклы в route handler",
+    "Проверил блокировку curl-ом на живом сервере",
+    "Знаю, куда девать CPU-работу (worker/очередь)"
+  ],
+  "links": [
+    {
+      "title": "Node.js: event loop",
+      "url": "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "event loop",
+      "meaning": "Механизм выполнения асинхронных колбэков в одном потоке.",
+      "example": "await readFile после I/O"
+    },
+    {
+      "term": "microtask",
+      "meaning": "Задача очереди Promise, выполняется между фазами loop.",
+      "example": "queueMicrotask(() => {})"
+    },
+    {
+      "term": "worker_threads",
+      "meaning": "Отдельные потоки Node для CPU-задач.",
+      "example": "new Worker('./hash.js')"
+    }
+  ]
+}

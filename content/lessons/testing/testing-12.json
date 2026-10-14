@@ -1,0 +1,95 @@
+{
+  "id": "testing-12",
+  "part": "testing",
+  "module": "test-craft",
+  "order": 12,
+  "title": "Отладка и паттерны JS",
+  "goal": "Прочитаешь stack trace и узнаешь частые паттерны.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Как читать stack trace"
+    },
+    {
+      "type": "paragraph",
+      "content": "Стек вызовов показывает цепочку функций, которая привела к ошибке. В JavaScript верхняя строка — место, где ошибка возникла, ниже — кто её вызвал. Ищи первую строку со своим файлом, а не из node_modules: именно там вероятная причина. Сообщение и тип сразу сужают поиск: TypeError: Cannot read properties of undefined (reading 'name') означает, что ты обращаешься к полю у значения, которого нет."
+    },
+    {
+      "type": "heading",
+      "content": "Отладчик вместо console.log"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Поставь breakpoint в редакторе (VS Code, launch.json) или напиши debugger в коде и открой DevTools.",
+        "Смотри Variables (значения), Call Stack (откуда пришли) и Watch (выражения).",
+        "Используй шаги: step over (следующая строка), step into (внутрь вызова), step out (выйти из функции).",
+        "Условный breakpoint останавливается только при нужном значении, например userId === 42."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Для браузерного кода включи source maps: в отладчике будет виден твой исходный TypeScript, а не bundle.js:42."
+    },
+    {
+      "type": "heading",
+      "content": "Поиск причины"
+    },
+    {
+      "type": "paragraph",
+      "content": "Воспроизведи ошибку минимальным примером, затем сужай область делением пополам: закомментируй половину кода или используй git bisect, чтобы найти коммит, сломавший поведение. Различай виды ошибок: TypeError (программная), ошибка валидации (ожидаемая, ZodError) и сетевая. Для каждой своя обработка. Логируй ошибку один раз там, где её обрабатывают, иначе в журнале появляются десять копий одной проблемы."
+    },
+    {
+      "type": "heading",
+      "content": "Паттерны, которые стоит узнавать"
+    },
+    {
+      "type": "paragraph",
+      "content": "Module (изоляция через замыкание или ES-модуль), Observer (подписки и события, на нём построены EventEmitter и многие библиотеки), Factory (функция, создающая объекты нужного вида). На собеседовании приводи пример из своего кода: «в проекте уведомления сделаны по схеме Observer». Не повторяй определение из Википедии."
+    }
+  ],
+  "codeExample": "try {\n  await risky();\n} catch (e) {\n  console.error(e);\n  if (e instanceof ZodError) …\n  throw e;\n}",
+  "practice": [
+    {
+      "title": "Прочитай stack",
+      "description": "Создай ReferenceError в dev, найди файл:строку в trace и исправь."
+    },
+    {
+      "title": "Breakpoint",
+      "description": "Остановись на breakpoint в async handler, шагни через await."
+    },
+    {
+      "title": "Паттерн в коде",
+      "description": "Найди в своём репо Observer или Factory (event emitter, createX). Опиши в 3 предложениях."
+    }
+  ],
+  "checklist": [
+    "Нахожу строку ошибки в stack trace",
+    "Использую breakpoint вместо console.log spam",
+    "Различаю TypeError и ошибку валидации",
+    "Привожу пример паттерна из своего кода"
+  ],
+  "links": [
+    {
+      "title": "MDN: Errors",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Error"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "stack trace",
+      "meaning": "Цепочка вызовов до ошибки.",
+      "example": "at POST handler"
+    },
+    {
+      "term": "breakpoint",
+      "meaning": "Пауза выполнения в debugger.",
+      "example": "F9 в VS Code"
+    },
+    {
+      "term": "Observer",
+      "meaning": "Подписчики на события.",
+      "example": "socket.on"
+    }
+  ]
+}

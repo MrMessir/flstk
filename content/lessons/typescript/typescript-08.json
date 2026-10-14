@@ -1,0 +1,83 @@
+{
+  "id": "typescript-08",
+  "part": "typescript",
+  "module": "ts-app",
+  "order": 8,
+  "title": "Классы в TypeScript",
+  "goal": "Добавишь модификаторы доступа и типы полей в class так же строго, как в interface.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "class в TS типизирует поля и методы: class Account { balance: number; constructor(initial: number) { this.balance = initial; } }. Модификаторы public (по умолчанию), private, protected ограничивают доступ на этапе компиляции — в JS они всё равно станут обычными свойствами, но TS не даст обратиться снаружи к private."
+    },
+    {
+      "type": "heading",
+      "content": "implements и abstract"
+    },
+    {
+      "type": "paragraph",
+      "content": "class HttpClient implements FetchLike { get(url: string): Promise<Response> { ... } } — класс обязан выполнить контракт interface. abstract class BaseStore { abstract load(): Promise<void>; } нельзя инстанцировать напрямую, только наследники. readonly поле задаётся один раз в constructor или при объявлении."
+    },
+    {
+      "type": "heading",
+      "content": "Parameter properties"
+    },
+    {
+      "type": "paragraph",
+      "content": "constructor(private name: string) автоматически создаёт поле this.name — сокращение для DI-сервисов. В React-коде классы реже, но они остаются в Node, NestJS и некоторых SDK. Для plain data чаще interface + функции, для инкапсуляции с методами — class с private."
+    }
+  ],
+  "codeExample": "interface Clock {\n  now(): Date;\n}\n\nclass SystemClock implements Clock {\n  now(): Date {\n    return new Date();\n  }\n}\n\nclass Counter {\n  #value = 0;\n  inc(by: number = 1): number {\n    this.#value += by;\n    return this.#value;\n  }\n  get value(): number {\n    return this.#value;\n  }\n}\n\nconst c = new Counter();\nc.inc(2);",
+  "practice": [
+    {
+      "title": "BankAccount private",
+      "description": "class BankAccount { private balance: number; deposit(amount: number): void; getBalance(): number }. deposit отрицательный amount игнорирует или throw. Снаружи account.balance — ошибка TS."
+    },
+    {
+      "title": "implements Logger",
+      "description": "interface Logger { log(msg: string): void }. class ConsoleLogger implements Logger. class SilentLogger implements Logger с пустым log. Массив Logger[] принимает оба класса."
+    },
+    {
+      "title": "Parameter property",
+      "description": "class UserService { constructor(private baseUrl: string) {} url(path: string) { return this.baseUrl + path; } }. Вызов new UserService('https://api').url('/users') без объявления поля вручную."
+    }
+  ],
+  "checklist": [
+    "Типизирую поля класса явно или через constructor",
+    "Использую private для инкапсуляции",
+    "implements связываю класс с interface",
+    "Понимаю, что private проверяется только TS"
+  ],
+  "links": [
+    {
+      "title": "Handbook: Classes",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/classes.html"
+    },
+    {
+      "title": "MDN: private fields",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Classes/Private_properties"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "private",
+      "meaning": "Доступ только внутри класса (проверка TS).",
+      "example": "private id: string"
+    },
+    {
+      "term": "implements",
+      "meaning": "Класс выполняет контракт interface.",
+      "example": "implements Logger"
+    },
+    {
+      "term": "abstract",
+      "meaning": "Базовый класс без прямого new.",
+      "example": "abstract load()"
+    },
+    {
+      "term": "parameter property",
+      "meaning": "Параметр constructor как поле класса.",
+      "example": "constructor(private url: string)"
+    }
+  ]
+}

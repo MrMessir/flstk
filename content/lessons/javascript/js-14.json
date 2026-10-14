@@ -1,0 +1,91 @@
+{
+  "id": "js-14",
+  "part": "javascript",
+  "module": "js-dom",
+  "order": 14,
+  "title": "События: клик и ввод",
+  "goal": "Повесишь обработчики клика и ввода и сделаешь счётчик нажатий.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "События — ответ на действие"
+    },
+    {
+      "type": "paragraph",
+      "content": "addEventListener(\"click\", handler) подписывает функцию на действие. В handler приходит event: target — кто кликнул, preventDefault отменяет переход по ссылке или отправку формы."
+    },
+    {
+      "type": "paragraph",
+      "content": "Не вешай сотни слушателей на каждый пункт списка — лучше один на родителя (делегирование). Так проще добавлять элементы динамически."
+    },
+    {
+      "type": "paragraph",
+      "content": "Событие — что случилось: клик, ввод, отправка формы. Слушают через addEventListener."
+    },
+    {
+      "type": "list",
+      "items": [
+        "click — клик.",
+        "input — каждое изменение поля.",
+        "change — изменение после выхода из поля или выбор.",
+        "submit — отправка формы.",
+        "keydown — нажатие клавиши.",
+        "event.preventDefault() — отменить действие по умолчанию, например перезагрузку формы.",
+        "Делегирование: слушатель на родителе, внутри проверяешь event.target."
+      ]
+    }
+  ],
+  "codeExample": "<button id=\"plus\">+1</button>\n<p id=\"out\">0</p>\n\n<script>\nlet count = 0;\nconst out = document.querySelector(\"#out\");\n\ndocument.querySelector(\"#plus\").addEventListener(\"click\", () => {\n  count += 1;\n  out.textContent = String(count);\n});\n</script>",
+  "practice": [
+    {
+      "title": "click счётчик",
+      "description": "let clicks = 0; button click → clicks++, span#count показывает число. Без перезагрузки."
+    },
+    {
+      "title": "input live",
+      "description": "input#name, p#preview. Слушатель input обновляет preview textContent текущим value."
+    },
+    {
+      "title": "keydown Enter",
+      "description": "На input keydown: если e.key === \"Enter\", preventDefault и console.log value. Не отправляет форму."
+    }
+  ],
+  "checklist": [
+    "Вешаю обработчик addEventListener",
+    "Реагирую на click и input",
+    "Меняю текст на странице из обработчика",
+    "При необходимости вызываю preventDefault"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: события",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/Events"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "addEventListener",
+      "meaning": "Подписаться на событие: клик, ввод и т.д.",
+      "example": "button.addEventListener(\"click\", fn)"
+    },
+    {
+      "term": "click",
+      "meaning": "Событие клика мышью.",
+      "example": "\"click\""
+    },
+    {
+      "term": "input",
+      "meaning": "Событие при каждом изменении поля.",
+      "example": "field.addEventListener(\"input\", fn)"
+    },
+    {
+      "term": "preventDefault",
+      "meaning": "Отменить действие браузера по умолчанию.",
+      "example": "event.preventDefault()"
+    }
+  ]
+}

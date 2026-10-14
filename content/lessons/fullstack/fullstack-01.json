@@ -1,0 +1,105 @@
+{
+  "id": "fullstack-01",
+  "part": "fullstack",
+  "module": "fs-connect",
+  "order": 1,
+  "title": "Архитектура full-stack приложения",
+  "goal": "Соберёшь монорепо или linked packages с общими типами.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Один продукт из двух частей"
+    },
+    {
+      "type": "paragraph",
+      "content": "В full-stack приложении React рисует экран, а Node отдаёт данные и применяет правила. Главная сложность не в каждой части, а на их стыке: клиент ждёт одни поля, сервер присылает другие, и ошибка всплывает уже у пользователя. Монорепозиторий (один git-репозиторий с несколькими пакетами) уменьшает риск: изменил тип ответа, и компилятор сразу показал, где сломался клиент."
+    },
+    {
+      "type": "heading",
+      "content": "Структура монорепо"
+    },
+    {
+      "type": "list",
+      "items": [
+        "apps/web — фронтенд (Vite или Next).",
+        "apps/api — сервер (Express).",
+        "packages/shared — типы и схемы, общие для обеих сторон.",
+        "В корневом package.json: \"workspaces\": [\"apps/*\", \"packages/*\"]. Команда npm install один раз ставит зависимости и связывает пакеты ссылками, без публикации в npm."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Пакет shared подключается как обычная зависимость (@repo/shared). Его собирают отдельно или импортируют исходники напрямую, если сборщик это позволяет."
+    },
+    {
+      "type": "heading",
+      "content": "Контракт: одна правда о полях"
+    },
+    {
+      "type": "paragraph",
+      "content": "Опиши ответ API один раз: type PostDto = { id: string; title: string; body: string }. Сервер возвращает объект этого типа (res.json(post satisfies PostDto)), клиент импортирует тот же тип. Но помни о важном ограничении: типы TypeScript существуют только при компиляции и исчезают в рантайме. Реальную проверку приходящих данных делает валидатор (zod, урок 5), а типы выводятся из его схем."
+    },
+    {
+      "type": "heading",
+      "content": "Правила склейки"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Клиент не знает про SQL: только HTTP-контракт (пути, поля, коды ошибок).",
+        "Ошибки API показываются пользователю понятным текстом, подробности остаются в логах сервера.",
+        "После изменения данных инвалидируй кэш запросов (React Query), а не копируй состояние вручную.",
+        "Переменные для браузера (VITE_ или NEXT_PUBLIC_) и серверные секреты документируй в README раздельно: первые видны всем."
+      ]
+    }
+  ],
+  "codeExample": "// packages/shared/src/post.ts\nexport type PostDto = { id: string; title: string; body: string };\n\n// apps/api — res.json(post satisfies PostDto)\n// apps/web — const data: PostDto = await api('/posts/1')",
+  "practice": [
+    {
+      "title": "Набросай дерево монорепо",
+      "description": "На листе или в README нарисуй apps/web, apps/api, packages/shared и стрелки, кто кого импортирует. Подпиши, какой файл в shared будет первым общим типом для твоего проекта."
+    },
+    {
+      "title": "Подключи workspaces",
+      "description": "В учебном репо добавь workspaces и пакет shared с одним типом User. Импортируй User в клиенте и в одном route API — убедись, что tsc проходит."
+    },
+    {
+      "title": "Сломай тип намеренно",
+      "description": "Переименуй поле в PostDto только на сервере, запусти сборку клиента. Запиши текст ошибки TypeScript и верни имя поля обратно."
+    }
+  ],
+  "checklist": [
+    "Объясняю, зачем держать web и api в одном репо",
+    "Настраиваю workspaces без дублирования node_modules в shared",
+    "Выношу DTO в packages/shared и импортирую с обеих сторон",
+    "Вижу рассинхрон контракта по ошибкам компиляции, а не в проде"
+  ],
+  "links": [
+    {
+      "title": "npm workspaces",
+      "url": "https://docs.npmjs.com/cli/v10/using-npm/workspaces"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "монорепозиторий",
+      "meaning": "Несколько приложений и библиотек в одном git-репо.",
+      "example": "apps/web + apps/api"
+    },
+    {
+      "term": "workspace",
+      "meaning": "Связь локальных пакетов через корневой package.json.",
+      "example": "packages/shared"
+    },
+    {
+      "term": "DTO",
+      "meaning": "Форма данных, которую API отдаёт клиенту.",
+      "example": "PostDto"
+    },
+    {
+      "term": "контракт API",
+      "meaning": "Согласованные поля запроса и ответа.",
+      "example": "общий PostDto"
+    }
+  ]
+}

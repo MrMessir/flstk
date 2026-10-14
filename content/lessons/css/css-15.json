@@ -1,0 +1,87 @@
+{
+  "id": "css-15",
+  "part": "css",
+  "module": "css-modern",
+  "order": 15,
+  "title": "CSS-переменные, БЭМ и структура файлов",
+  "goal": "Организуешь стили через custom properties и понятные имена классов.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Custom properties"
+    },
+    {
+      "type": "paragraph",
+      "content": "CSS-переменная объявляется с двумя дефисами: --accent: #0f766e. Используется через var(--accent). Одно изменение в :root перекрашивает кнопки, ссылки и фон — не ищешь #0f766e по десяти файлам."
+    },
+    {
+      "type": "paragraph",
+      "content": "Глобальные токены кладут в :root { … }. Для тёмной темы переопределяют переменные на [data-theme=\"dark\"] или .theme-dark без дублирования каждого правила color."
+    },
+    {
+      "type": "heading",
+      "content": "БЭМ и файлы"
+    },
+    {
+      "type": "paragraph",
+      "content": "БЭМ: блок__элемент--модификатор. card — блок, card__title — элемент, card__title--large — модификатор. Имя говорит, где искать в HTML и CSS, в отличие от .blue-text на всём сайте."
+    },
+    {
+      "type": "paragraph",
+      "content": "Дели стили по смыслу: tokens.css (переменные), base.css (сброс, body), components/card.css. На маленьком лендинге хватит tokens + styles.css, но привычка именования остаётся."
+    }
+  ],
+  "codeExample": "/* tokens.css */\n:root {\n  --accent: #0f766e;\n  --radius: 8px;\n  --space: 16px;\n}\n\n/* components/button.css */\n.button {\n  padding: var(--space);\n  background: var(--accent);\n  border-radius: var(--radius);\n}\n.button--ghost {\n  background: transparent;\n  color: var(--accent);\n}",
+  "practice": [
+    {
+      "title": "Вынеси цвета в :root",
+      "description": "В styles.css объяви --ink, --paper, --accent в :root. Замени три захардкоженных color/background на var(...). Обнови страницу — вид не должен измениться. Поменяй --accent на другой hex и проверь, что кнопки перекрасились разом."
+    },
+    {
+      "title": "Переименуй класс по БЭМ",
+      "description": "Найди класс вроде .big-title или .cardTitle. Переименуй в hero__title и hero__title--accent (если нужен модификатор). Обнови HTML и CSS, сохрани, F5 — стили те же, имена читаемые."
+    },
+    {
+      "title": "Разбей на два файла",
+      "description": "Создай tokens.css с :root и перенеси туда переменные. В index.html добавь <link rel=\"stylesheet\" href=\"tokens.css\" /> перед styles.css. Убедись в Network, что оба файла грузятся со статусом 200."
+    }
+  ],
+  "checklist": [
+    "Объявляю переменные в :root и использую var()",
+    "Именую классы блок__элемент--модификатор",
+    "Держу цвета и отступы в tokens, не в каждом селекторе",
+    "Подключаю несколько CSS-файлов через link"
+  ],
+  "links": [
+    {
+      "title": "MDN: using CSS custom properties",
+      "url": "https://developer.mozilla.org/ru/docs/Web/CSS/Using_CSS_custom_properties"
+    },
+    {
+      "title": "БЭМ: naming",
+      "url": "https://en.bem.info/methodology/naming-convention/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "custom property",
+      "meaning": "CSS-переменная --name: value.",
+      "example": "--gap: 1rem"
+    },
+    {
+      "term": "БЭМ",
+      "meaning": "Блок__элемент--модификатор в именах классов.",
+      "example": "menu__link--active"
+    },
+    {
+      "term": ":root",
+      "meaning": "Корень документа для глобальных переменных.",
+      "example": ":root { --bg: #fff; }"
+    },
+    {
+      "term": "design token",
+      "meaning": "Именованное значение дизайна в CSS.",
+      "example": "--radius: 8px"
+    }
+  ]
+}

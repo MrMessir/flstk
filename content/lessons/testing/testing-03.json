@@ -1,0 +1,94 @@
+{
+  "id": "testing-03",
+  "part": "testing",
+  "module": "test-unit",
+  "order": 3,
+  "title": "Тесты сервисов бэкенда",
+  "goal": "Покроешь сервисный слой без HTTP.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Зачем сервисный слой"
+    },
+    {
+      "type": "paragraph",
+      "content": "Controller принимает запрос и возвращает ответ, repository общается с базой, а бизнес-правила лежат в сервисе: «удалять пост может только автор», «нельзя оформить пустой заказ». Тестируя сервис, ты не поднимаешь HTTP и базу, поэтому проверки быстрые и точные."
+    },
+    {
+      "type": "heading",
+      "content": "Мок репозитория"
+    },
+    {
+      "type": "paragraph",
+      "content": "В конструктор сервиса передаётся репозиторий, и в тесте это обычный объект с vi.fn(). Тогда можно задать, что вернёт база: repo.findById.mockResolvedValue({ id: '1', authorId: 'u1' }). Проверь и успешный путь, и отказ: пользователь u2 удаляет чужой пост — ожидаем ошибку Forbidden, а repo.delete не вызван (expect(repo.delete).not.toHaveBeenCalled())."
+    },
+    {
+      "type": "list",
+      "items": [
+        "Проверяй результат или ошибку, а не внутренности реализации.",
+        "Ожидаемые ошибки описывай доменными классами (DomainError, NotFoundError): так тесты не привязаны к HTTP-кодам.",
+        "Асинхронные ошибки проверяй через await expect(promise).rejects.toThrow()."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Фабрики данных"
+    },
+    {
+      "type": "paragraph",
+      "content": "Не копируй огромный объект пользователя в каждый тест. Сделай функцию makeUser(overrides) с разумными значениями по умолчанию: makeUser({ role: 'admin' }) сразу показывает, что важно именно в этом сценарии. Так тесты короче, а при изменении схемы правится одно место."
+    },
+    {
+      "type": "heading",
+      "content": "Где проходит граница"
+    },
+    {
+      "type": "paragraph",
+      "content": "Если для проверки правила приходится поднимать Express, логика, скорее всего, лежит в controller. Перенеси её в сервис и тестируй как обычную функцию. Отображение ошибок сервиса в HTTP-коды (404, 409) — отдельная небольшая проверка на уровне controller или integration-теста. Правило для себя: один сценарий — один тест, и хотя бы один тест на каждое «нельзя», которое есть в бизнес-правилах."
+    }
+  ],
+  "codeExample": "const repo = { findById: vi.fn() };\nconst svc = new PostsService(repo);\nrepo.findById.mockResolvedValue({ id: '1', authorId: 'u1' });\nawait expect(svc.delete('1', { id: 'u2' })).rejects.toThrow('Forbidden');",
+  "practice": [
+    {
+      "title": "Тест запрета",
+      "description": "Сервис deletePost бросает, если authorId !== user.id. Два it: свой пост и чужой."
+    },
+    {
+      "title": "Мок repo",
+      "description": "repo.create не вызывается, если zod parse упал — проверь через expect(repo.create).not.toHaveBeenCalled()."
+    },
+    {
+      "title": "Покрыть happy path",
+      "description": "Успешное create возвращает DTO с id. repo.save получил правильные поля."
+    }
+  ],
+  "checklist": [
+    "Тестирую service без supertest и listen",
+    "Мокаю repository, а не реальную БД в unit",
+    "Проверяю и success, и forbidden/validation",
+    "Держу controller тонким — логика в service"
+  ],
+  "links": [
+    {
+      "title": "Testing Library (принципы)",
+      "url": "https://testing-library.com/docs/guiding-principles/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "service layer",
+      "meaning": "Бизнес-логика приложения.",
+      "example": "PostsService"
+    },
+    {
+      "term": "repository",
+      "meaning": "Доступ к БД за интерфейсом.",
+      "example": "findById"
+    },
+    {
+      "term": "fixture",
+      "meaning": "Готовые тестовые данные.",
+      "example": "userFactory()"
+    }
+  ]
+}

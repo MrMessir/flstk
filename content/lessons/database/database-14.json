@@ -1,0 +1,74 @@
+{
+  "id": "database-14",
+  "part": "database",
+  "module": "db-ops",
+  "order": 14,
+  "title": "Бэкапы и безопасная работа с данными",
+  "goal": "Сделаешь pg_dump учебной БД и настроишь .gitignore, чтобы prod-данные не утекли в git.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "pg_dump -Fc blog > backup.dump — сжатый custom format. pg_restore -d blog_new backup.dump на другой инстанс. Для dev достаточно plain SQL: pg_dump -U blog blog > seed.sql без паролей пользователей prod."
+    },
+    {
+      "type": "heading",
+      "content": "Секреты и дампы"
+    },
+    {
+      "type": "paragraph",
+      "content": ".env, *.dump, seed с реальными email — в .gitignore. В репозиторий — только anonymized fixture или prisma db seed с faker. GDPR: не копируй prod на ноутбук без маскирования."
+    },
+    {
+      "type": "heading",
+      "content": "Ротация и PITR"
+    },
+    {
+      "type": "paragraph",
+      "content": "Облака (RDS, Supabase) делают автоматические бэкапы. Point-in-time recovery — восстановление на момент до ошибочного DELETE. На локальном Docker достаточно weekly dump в безопасное место."
+    }
+  ],
+  "codeExample": "docker compose exec -T db pg_dump -U blog blog > backups/blog-$(date +%F).sql\n\n# restore (осторожно, перезапишет)\ndocker compose exec -T db psql -U blog -d blog < backups/blog-2025-01-01.sql",
+  "practice": [
+    {
+      "title": "Папка backups/",
+      "description": "Создай backups/ и добавь в .gitignore. pg_dump SQL файл после seed. ls -la backups — файл есть, git status его не показывает."
+    },
+    {
+      "title": "Restore на чистую БД",
+      "description": "docker compose down -v && up -d. Восстанови dump. \\dt — таблицы и данные на месте."
+    },
+    {
+      "title": "Политика данных",
+      "description": "В README раздел Data: что не коммитим, как anonymize email в seed (example.com)."
+    }
+  ],
+  "checklist": [
+    "Делаю pg_dump учебной БД",
+    "backups/ и .env в gitignore",
+    "Восстановил dump на чистый volume",
+    "Не храню prod дампы в репозитории"
+  ],
+  "links": [
+    {
+      "title": "PostgreSQL: backup",
+      "url": "https://www.postgresql.org/docs/current/backup.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "pg_dump",
+      "meaning": "Утилита резервного копирования PostgreSQL.",
+      "example": "pg_dump -U blog blog > file.sql"
+    },
+    {
+      "term": "pg_restore",
+      "meaning": "Восстановление из custom-format дампа.",
+      "example": "pg_restore -d blog backup.dump"
+    },
+    {
+      "term": "anonymization",
+      "meaning": "Замена реальных PII тестовыми данными.",
+      "example": "user@test.example"
+    }
+  ]
+}

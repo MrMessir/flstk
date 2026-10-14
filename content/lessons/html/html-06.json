@@ -1,0 +1,84 @@
+{
+  "id": "html-06",
+  "part": "html",
+  "module": "elements",
+  "order": 6,
+  "title": "Картинки и видео",
+  "goal": "Поставишь на страницу картинку с подписью и ролик с кнопкой воспроизведения.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Картинку вставляют тегом <img>. Он одиночный: закрывать его не нужно. src — адрес картинки. Это может быть ссылка в интернете или имя файла, который лежит рядом с index.html, например src=\"cat.jpg\"."
+    },
+    {
+      "type": "paragraph",
+      "content": "alt — запасной текст. Его увидит человек, если картинка не загрузилась. Пиши, что на картинке: «Рыжий кот на стуле», а не «картинка1». Если картинка чисто декоративная и без неё смысл не теряется, оставь alt=\"\"."
+    },
+    {
+      "type": "heading",
+      "content": "Подпись под картинкой"
+    },
+    {
+      "type": "paragraph",
+      "content": "Чтобы подпись не уехала от картинки, оберни их вместе. <figure> — рамка вокруг картинки и подписи. <figcaption> — сама подпись. width и height — ширина и высота в пикселях. Поставь хотя бы примерные числа, чтобы страница не прыгала, пока картинка грузится."
+    },
+    {
+      "type": "paragraph",
+      "content": "Для фото обычно хватает файла .jpg или .png. Видео вставляют тегом <video controls>. controls показывает кнопки «играть» и «пауза». Без этого слова ролик будет на странице, но нажать будет не на что. Внутри video кладут <source src=\"адрес-ролика.mp4\" type=\"video/mp4\" />."
+    }
+  ],
+  "codeExample": "<figure>\n  <img\n    src=\"https://placehold.co/400x250/png\"\n    alt=\"Серый прямоугольник-заглушка\"\n    width=\"400\"\n    height=\"250\"\n  />\n  <figcaption>Пока нет своей фотографии — стоит заглушка.</figcaption>\n</figure>\n\n<video controls width=\"400\">\n  <source\n    src=\"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4\"\n    type=\"video/mp4\"\n  />\n  Это видео не открылось.\n</video>",
+  "practice": [
+    {
+      "title": "Одна картинка с подписью",
+      "description": "Скопируй figure из примера в свой body. Сохрани и обнови страницу. Должен появиться серый прямоугольник и строка подписи под ним. Если прямоугольника нет — проверь интернет: картинка берётся по ссылке."
+    },
+    {
+      "title": "Поменяй alt и подпись",
+      "description": "В alt напиши своими словами, что это за картинка. В figcaption напиши свою подпись, не из примера. Обнови страницу. Подпись под картинкой должна быть твоей."
+    },
+    {
+      "title": "Добавь видео и нажми play",
+      "description": "Под картинкой вставь video из примера. Обнови страницу. Нажми кнопку воспроизведения. Потом временно сотри слово controls, обнови и убедись, что кнопки пропали. Верни controls."
+    }
+  ],
+  "checklist": [
+    "Ставлю картинке src и понятный alt",
+    "Держу подпись в figcaption рядом с картинкой",
+    "Указываю width и height хотя бы примерно",
+    "Добавляю video только вместе со словом controls"
+  ],
+  "links": [
+    {
+      "title": "MDN: картинки в HTML",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Structuring_content/HTML_images"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "<img>",
+      "meaning": "Картинка. Одиночный тег.",
+      "example": "<img src=\"cat.jpg\" alt=\"Кот\" />"
+    },
+    {
+      "term": "src",
+      "meaning": "Адрес файла картинки или видео.",
+      "example": "src=\"photo.jpg\""
+    },
+    {
+      "term": "alt",
+      "meaning": "Текст, если картинка не загрузилась; описание для доступности.",
+      "example": "alt=\"Рыжий кот\""
+    },
+    {
+      "term": "<figure> / <figcaption>",
+      "meaning": "Картинка вместе с подписью.",
+      "example": "<figure><img ... /><figcaption>Подпись</figcaption></figure>"
+    },
+    {
+      "term": "<video controls>",
+      "meaning": "Видео с кнопками play/pause.",
+      "example": "<video controls><source src=\"clip.mp4\" type=\"video/mp4\" /></video>"
+    }
+  ]
+}

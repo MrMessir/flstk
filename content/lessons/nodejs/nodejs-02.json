@@ -1,0 +1,78 @@
+{
+  "id": "nodejs-02",
+  "part": "nodejs",
+  "module": "node-basics",
+  "order": 2,
+  "title": "Встроенные модули и потоки",
+  "goal": "Прочитаешь файл через fs/promises и поймёшь, когда нужен stream вместо readFile.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Node поставляется с модулями node:fs, node:path, node:http и другими — их не ставят через npm. Для учебного API чаще всего нужны работа с файлами и путями: конфиг, загрузки, seed-данные. Асинхронный API на промисах (fs/promises) удобнее колбэков: await readFile вместо вложенных функций."
+    },
+    {
+      "type": "heading",
+      "content": "Пути без сюрпризов"
+    },
+    {
+      "type": "paragraph",
+      "content": "path.join склеивает сегменты с правильным разделителем ОС. path.resolve от текущей директории или __dirname (в CommonJS) даёт абсолютный путь. Никогда не склеивай пути строкой \"data/\" + name — на Windows сломается."
+    },
+    {
+      "type": "heading",
+      "content": "Потоки для больших файлов"
+    },
+    {
+      "type": "paragraph",
+      "content": "readFile загружает весь файл в память. Для логов на гигабайты используй createReadStream и pipe в ответ или другой поток. Поток обрабатывает куски данных; event loop между чанками успевает принимать новые запросы."
+    }
+  ],
+  "codeExample": "import { readFile, writeFile } from \"node:fs/promises\";\nimport { createReadStream } from \"node:fs\";\nimport path from \"node:path\";\n\nconst file = path.join(process.cwd(), \"data\", \"posts.json\");\nconst raw = await readFile(file, \"utf8\");\nconst posts = JSON.parse(raw);\n\n// большой файл — stream\nconst stream = createReadStream(file);\nstream.pipe(process.stdout);",
+  "practice": [
+    {
+      "title": "Seed-файл posts.json",
+      "description": "В blog-api-node создай папку data и файл data/posts.json с массивом из двух объектов { \"id\": 1, \"title\": \"Hello\" }. Напиши scripts/load-posts.mjs: readFile, JSON.parse, console.log длины массива. Запусти node scripts/load-posts.mjs."
+    },
+    {
+      "title": "Запись через writeFile",
+      "description": "Добавь в скрипт функцию: принимает новый пост, читает файл, push в массив, writeFile обратно с JSON.stringify(..., null, 2). Добавь пост с id 3 и проверь содержимое файла в редакторе."
+    },
+    {
+      "title": "Stream на маленьком логе",
+      "description": "Создай data/access.log из 50 строк текста. Напиши stream-copy.mjs: createReadStream → createWriteStream в data/access-copy.log. Сравни размеры ls -l data/access*.log."
+    }
+  ],
+  "checklist": [
+    "Импортирую из node:fs/promises и node:path с префиксом node:",
+    "Собираю пути через join или resolve, не конкатенацией",
+    "Понимаю, когда readFile опасен по памяти",
+    "Запустил свой скрипт чтения/записи JSON без ошибок"
+  ],
+  "links": [
+    {
+      "title": "Node.js: fs",
+      "url": "https://nodejs.org/api/fs.html"
+    },
+    {
+      "title": "Node.js: stream",
+      "url": "https://nodejs.org/api/stream.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "fs/promises",
+      "meaning": "Promise-версия файловых операций Node.",
+      "example": "await readFile(\"config.json\", \"utf8\")"
+    },
+    {
+      "term": "stream",
+      "meaning": "Поток данных по частям, без загрузки всего файла.",
+      "example": "createReadStream(\"big.log\")"
+    },
+    {
+      "term": "path.join",
+      "meaning": "Безопасная склейка сегментов пути.",
+      "example": "path.join(\"data\", \"users.json\")"
+    }
+  ]
+}

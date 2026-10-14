@@ -1,0 +1,88 @@
+{
+  "id": "typescript-project",
+  "part": "typescript",
+  "module": "project",
+  "order": 12,
+  "title": "Итог TS: todo или погода на TypeScript",
+  "goal": "Перенесёшь todo или погоду на Vite+TS с типами, zod и npm run typecheck.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Итог TypeScript-модуля — тот же функционал, что в JS-проектах, но с типами на границах: модели данных, API, функции storage. Выбери todo со списком Task { id, title, done } или погоду с типизированным ответом Open-Meteo. strict: true и скрипт typecheck обязательны в package.json."
+    },
+    {
+      "type": "heading",
+      "content": "Структура src/"
+    },
+    {
+      "type": "paragraph",
+      "content": "types.ts или schemas.ts — интерфейсы и zod. api.ts — fetch с safeParse. ui.ts или компоненты — работа с DOM. Не смешивай unknown JSON и render: после parse работай только с Post или WeatherDTO. localStorage сериализуй через JSON и проверяй массив z.array(TaskSchema) при load."
+    },
+    {
+      "type": "heading",
+      "content": "Критерии сдачи"
+    },
+    {
+      "type": "list",
+      "items": [
+        "npm run build и npm run typecheck без ошибок.",
+        "Минимум одна zod-схема для внешних данных (API или load).",
+        "README: команды, скрин, что типизировано.",
+        "Репозиторий GitHub."
+      ]
+    }
+  ],
+  "codeExample": "import { z } from \"zod\";\n\nexport const TaskSchema = z.object({\n  id: z.string(),\n  title: z.string().min(1),\n  done: z.boolean(),\n});\n\nexport type Task = z.infer<typeof TaskSchema>;\n\nexport function loadTasks(): Task[] {\n  const raw = localStorage.getItem(\"tasks\");\n  if (!raw) return [];\n  const parsed = z.array(TaskSchema).safeParse(JSON.parse(raw));\n  return parsed.success ? parsed.data : [];\n}",
+  "practice": [
+    {
+      "title": "Scaffold vite-ts",
+      "description": "npm create vite@latest ts-final -- --template vanilla-ts. Добавь zod, typecheck script. Скопируй идею todo-js или weather в src/ с расширением .ts."
+    },
+    {
+      "title": "Zod на load и API",
+      "description": "Реализуй loadTasks или fetchWeather с safeParse. Намеренно положи в localStorage битый JSON — приложение стартует с [] или показывает error, не падает."
+    },
+    {
+      "title": "README и CI-локально",
+      "description": "README с npm run build && npm run typecheck. Скрин UI. Ссылка на репо в сдаче."
+    }
+  ],
+  "checklist": [
+    "typecheck и build проходят на чистом клоне",
+    "Есть zod или строгие типы на JSON снаружи",
+    "Нет any в src без комментария-оправдания",
+    "README объясняет запуск за 3 команды"
+  ],
+  "links": [
+    {
+      "title": "Vite: TypeScript",
+      "url": "https://vitejs.dev/guide/features.html#typescript"
+    },
+    {
+      "title": "Zod",
+      "url": "https://zod.dev/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "typecheck",
+      "meaning": "Проверка типов без emit JS.",
+      "example": "tsc --noEmit"
+    },
+    {
+      "term": "DTO",
+      "meaning": "Тип данных приложения после parse.",
+      "example": "Task[]"
+    },
+    {
+      "term": "граница системы",
+      "meaning": "Место, где данные входят из API/storage.",
+      "example": "safeParse после fetch"
+    },
+    {
+      "term": "strict",
+      "meaning": "Максимально строгие проверки TS.",
+      "example": "strict: true"
+    }
+  ]
+}

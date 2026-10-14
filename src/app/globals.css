@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #0b1220;
+  --ink-soft: #1a2438;
+  --paper: #eef2f7;
+  --paper-elevated: #f7f9fc;
+  --line: #d5dde8;
+  --muted: #5b6b82;
+  --signal: #b8f000;
+  --signal-ink: #1a2e05;
+  --accent: #0f8a8a;
+  --accent-soft: #d7f3f1;
+  --warn: #c47a14;
+  --code-bg: #0d1524;
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-paper-elevated: var(--paper-elevated);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-signal: var(--signal);
+  --color-signal-ink: var(--signal-ink);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-warn: var(--warn);
+  --color-code-bg: var(--code-bg);
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+body {
+  font-family: var(--font-manrope), sans-serif;
+  background-color: var(--paper);
+  color: var(--ink);
+}
+
+code,
+pre {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+.surface-grid {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(rgba(11, 18, 32, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 18, 32, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.hero-glow {
+  background:
+    radial-gradient(ellipse 70% 50% at 70% 20%, rgba(184, 240, 0, 0.18), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 15% 80%, rgba(15, 138, 138, 0.16), transparent 50%),
+    linear-gradient(160deg, #0b1220 0%, #152038 55%, #0f1a2c 100%);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-rise {
+  animation: rise-in 0.55s ease-out both;
+}
+
+.animate-rise-delay-1 {
+  animation: rise-in 0.55s ease-out 0.08s both;
+}
+
+.animate-rise-delay-2 {
+  animation: rise-in 0.55s ease-out 0.16s both;
+}
+
+.animate-caret {
+  animation: caret-blink 1.1s step-end infinite;
+}
+
+.animate-bar-fill {
+  transform-origin: left center;
+  animation: bar-fill 0.8s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-rise-delay-1,
+  .animate-rise-delay-2,
+  .animate-caret,
+  .animate-bar-fill {
+    animation: none;
+  }
+}

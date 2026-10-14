@@ -1,0 +1,83 @@
+{
+  "id": "react-15",
+  "part": "react",
+  "module": "react-ui",
+  "order": 15,
+  "title": "Обзор Next.js",
+  "goal": "Поймёшь файловый роутинг App Router и отличие SSR от чистого Vite SPA.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Next.js — фреймворк на React с маршрутизацией, SSR и API routes. App Router (папка app/) использует layout.tsx, page.tsx, loading.tsx. Файловая система = URL: app/blog/[slug]/page.tsx. Server Components по умолчанию — async компонент может fetch на сервере без useEffect."
+    },
+    {
+      "type": "heading",
+      "content": "SSR, SSG, CSR"
+    },
+    {
+      "type": "paragraph",
+      "content": "SSR — HTML генерируется на запрос. SSG — HTML на build. CSR (Vite SPA) — пустой shell и fetch в браузере. SEO и первый байт часто лучше у SSR/SSG; интерактивность всё равно гидратируется React на клиенте. 'use client' в начале файла — компонент с hooks в App Router."
+    },
+    {
+      "type": "heading",
+      "content": "Когда Next vs Vite"
+    },
+    {
+      "type": "paragraph",
+      "content": "Next — сайты с SEO, маркетинг, e-commerce catalog, dashboard с auth на server. Vite SPA — админки за login, tools, прототипы. npx create-next-app@latest с TypeScript и App Router — старт для эксперимента; деплой на Vercel один git push."
+    }
+  ],
+  "codeExample": "// app/page.tsx (Server Component)\nexport default async function HomePage() {\n  const res = await fetch(\"https://jsonplaceholder.typicode.com/posts/1\", {\n    next: { revalidate: 60 },\n  });\n  const post = await res.json();\n  return (\n    <main>\n      <h1>{post.title}</h1>\n    </main>\n  );\n}\n\n// app/components/Counter.tsx\n\"use client\";\nimport { useState } from \"react\";\nexport function Counter() {\n  const [n, setN] = useState(0);\n  return <button type=\"button\" onClick={() => setN(n + 1)}>{n}</button>;\n}",
+  "practice": [
+    {
+      "title": "create-next-app",
+      "description": "npx create-next-app@latest next-demo --typescript --eslint --app --src-dir --turbopack --yes. npm run dev, открой /. Измени app/page.tsx — страница обновилась."
+    },
+    {
+      "title": "Server fetch title",
+      "description": "На главной async page fetch post 1 и выведи title без useEffect. View Source в браузере — title в HTML (SSR)."
+    },
+    {
+      "title": "Client Counter",
+      "description": "Добавь 'use client' Counter на ту же страницу. Клики работают, fetch остаётся на server component части."
+    }
+  ],
+  "checklist": [
+    "Понимаю разницу SPA Vite и Next App Router",
+    "Знаю, зачем директива use client",
+    "Вижу server fetch в исходном HTML",
+    "Могу создать next-app с TypeScript"
+  ],
+  "links": [
+    {
+      "title": "Next.js: App Router",
+      "url": "https://nextjs.org/docs/app"
+    },
+    {
+      "title": "Next.js: Server Components",
+      "url": "https://nextjs.org/docs/app/building-your-application/rendering/server-components"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "SSR",
+      "meaning": "Server-Side Rendering HTML на запрос.",
+      "example": "Next page.tsx async"
+    },
+    {
+      "term": "App Router",
+      "meaning": "Маршрутизация через папку app/ в Next 13+.",
+      "example": "app/page.tsx"
+    },
+    {
+      "term": "Server Component",
+      "meaning": "Компонент, выполняющийся на сервере без hooks.",
+      "example": "async function Page()"
+    },
+    {
+      "term": "hydration",
+      "meaning": "Подключение React к server HTML на клиенте.",
+      "example": "после SSR"
+    }
+  ]
+}

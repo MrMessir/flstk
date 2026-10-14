@@ -1,0 +1,90 @@
+{
+  "id": "js-08",
+  "part": "javascript",
+  "module": "js-data",
+  "order": 8,
+  "title": "Массив: список дел",
+  "goal": "Соберёшь список, добавишь и удалишь элементы методами массива.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Массив — список по порядку"
+    },
+    {
+      "type": "paragraph",
+      "content": "Массив хранит элементы под индексами с нуля. push/pop работают с концом, shift/unshift — с началом (shift медленнее на длинных списках). length показывает длину и меняется при добавлении."
+    },
+    {
+      "type": "paragraph",
+      "content": "Не мутируй массив «как попало» в середине чужой функции: либо документируй мутацию, либо возвращай новый массив. Так проще искать баги в todo и фильтрах."
+    },
+    {
+      "type": "paragraph",
+      "content": "Массив — список значений в квадратных скобках. Нумерация с нуля: первый элемент list[0]."
+    },
+    {
+      "type": "list",
+      "items": [
+        "push — добавить в конец. pop — убрать с конца.",
+        "unshift — добавить в начало. shift — убрать с начала.",
+        "length — сколько элементов.",
+        "slice — копия куска, исходный не трогает.",
+        "splice — вырезать/вставить на месте. Меняет массив.",
+        "concat — склеить массивы. join — собрать в строку через разделитель."
+      ]
+    }
+  ],
+  "codeExample": "const list = [\"хлеб\", \"молоко\"];\nlist.push(\"яйца\");\nconsole.log(list);\nconsole.log(list[0]);\nconsole.log(list.length);\n\nlist.pop();\nconsole.log(list.join(\", \"));",
+  "practice": [
+    {
+      "title": "Массив todos",
+      "description": "const todos = [\"HTML\", \"CSS\", \"JS\"]; console.log(todos[0], todos.length). todos.push(\"Git\") — длина 4."
+    },
+    {
+      "title": "for...of список",
+      "description": "Напечатай каждый todo с номером: 1. HTML. Используй for...of и счётчик или entries()."
+    },
+    {
+      "title": "includes и indexOf",
+      "description": "Проверь todos.includes(\"CSS\") и indexOf(\"JS\"). Удали элемент через filter без mutating исходного массива — новый массив на 3 элемента."
+    }
+  ],
+  "checklist": [
+    "Создаю массив и читаю элемент по индексу",
+    "Добавляю через push",
+    "Удаляю через pop",
+    "Собираю строку через join"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: массивы",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/Arrays"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "массив",
+      "meaning": "Список значений в квадратных скобках.",
+      "example": "[\"хлеб\", \"молоко\"]"
+    },
+    {
+      "term": "push / pop",
+      "meaning": "Добавить / убрать элемент в конце.",
+      "example": "list.push(\"яйца\")"
+    },
+    {
+      "term": "length",
+      "meaning": "Сколько элементов в массиве.",
+      "example": "list.length"
+    },
+    {
+      "term": "join",
+      "meaning": "Собрать массив в одну строку.",
+      "example": "list.join(\", \")"
+    }
+  ]
+}

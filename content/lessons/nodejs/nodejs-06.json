@@ -1,0 +1,74 @@
+{
+  "id": "nodejs-06",
+  "part": "nodejs",
+  "module": "node-express",
+  "order": 6,
+  "title": "Маршрутизация и структура",
+  "goal": "Разобьёшь роуты по файлам и будешь читать params, query и body в одном стиле.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Один файл app.js на двадцать маршрутов быстро превращается в лабиринт. Express.Router() даёт мини-приложение: routes/posts.js монтируется на /posts. Параметры пути :id попадают в req.params, строка запроса — в req.query (всегда строки, числа парси сам)."
+    },
+    {
+      "type": "heading",
+      "content": "REST-пути для блога"
+    },
+    {
+      "type": "paragraph",
+      "content": "Коллекция: GET /posts, POST /posts. Элемент: GET /posts/:id, PATCH /posts/:id, DELETE /posts/:id. Вложенность: GET /posts/:postId/comments. Имена ресурсов во множественном числе, глаголы — HTTP-методы, не /getPost."
+    },
+    {
+      "type": "heading",
+      "content": "Монтирование роутеров"
+    },
+    {
+      "type": "paragraph",
+      "content": "В index.js: import postsRouter from './routes/posts.js'; app.use('/posts', postsRouter). Внутри роутера пути без префикса: router.get('/:id', ...). Так проще тестировать модуль и переиспользовать префикс версии /v1/posts."
+    }
+  ],
+  "codeExample": "import { Router } from \"express\";\n\nexport const postsRouter = Router();\n\npostsRouter.get(\"/\", (req, res) => {\n  const page = Number(req.query.page ?? 1);\n  res.json({ page, items: [] });\n});\n\npostsRouter.get(\"/:id\", (req, res) => {\n  res.json({ id: req.params.id });\n});\n\n// app.js\n// app.use(\"/posts\", postsRouter);",
+  "practice": [
+    {
+      "title": "Файл routes/posts.js",
+      "description": "Создай routes/posts.js с Router: GET / возвращает { items: [] }, GET /:id — { id: req.params.id }. Подключи в src/index.js через app.use('/posts', postsRouter). Проверь curl http://localhost:3000/posts/42."
+    },
+    {
+      "title": "Query page и limit",
+      "description": "На GET /posts читай req.query.page и limit с дефолтами 1 и 20. Ответ: { page, limit, items }. В Postman добавь Params page=2&limit=5 и убедись, что сервер их видит."
+    },
+    {
+      "title": "routes/comments.js",
+      "description": "Создай routes/comments.js с GET /?postId=1 (фильтр в query). Смонтируй на /comments. Документируй в README таблицу: метод, путь, назначение — минимум 4 строки."
+    }
+  ],
+  "checklist": [
+    "Вынес маршруты в Router и отдельные файлы",
+    "Различаю req.params и req.query",
+    "Использую множественное число в URL ресурсов",
+    "Проверил вложенный id через curl или Postman"
+  ],
+  "links": [
+    {
+      "title": "Express: Router",
+      "url": "https://expressjs.com/en/guide/routing.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "req.params",
+      "meaning": "Параметры из пути маршрута.",
+      "example": "/posts/:id → req.params.id"
+    },
+    {
+      "term": "req.query",
+      "meaning": "Query-string после ? в URL.",
+      "example": "?page=2"
+    },
+    {
+      "term": "Router",
+      "meaning": "Изолированный набор маршрутов Express.",
+      "example": "export const router = Router()"
+    }
+  ]
+}

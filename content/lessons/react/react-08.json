@@ -1,0 +1,83 @@
+{
+  "id": "react-08",
+  "part": "react",
+  "module": "react-hooks",
+  "order": 8,
+  "title": "Кастомные хуки",
+  "goal": "Вынесешь повторяющуюся логику в useX hook с правилами хуков.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Custom hook — функция useSomething(), внутри которой другие хуки. Она не создаёт новый тип компонента, а переиспользует логику: useLocalStorage, useFetch, useToggle. Имя обязательно с use. Хуки нельзя вызывать в if/циклах — только на верхнем уровне hook или компонента."
+    },
+    {
+      "type": "heading",
+      "content": "useLocalStorage пример"
+    },
+    {
+      "type": "paragraph",
+      "content": "function useLocalStorage<T>(key: string, initial: T) { const [value, setValue] = useState(() => read(key) ?? initial); useEffect(() => write(key, value), [key, value]); return [value, setValue] as const; } — синхронизация state и localStorage. Возвращай tuple или объект { data, setData, loading }."
+    },
+    {
+      "type": "heading",
+      "content": "Тестируемость"
+    },
+    {
+      "type": "paragraph",
+      "content": "Логику fetch в useUser(id) проще покрыть тестом через renderHook из @testing-library/react, чем монтировать целый UserCard. Хук не должен знать про конкретную вёрстку — только data/error/reload."
+    }
+  ],
+  "codeExample": "import { useCallback, useEffect, useState } from \"react\";\n\nexport function useFetchJson<T>(url: string) {\n  const [data, setData] = useState<T | null>(null);\n  const [error, setError] = useState<string | null>(null);\n  const [loading, setLoading] = useState(true);\n\n  const reload = useCallback(() => {\n    setLoading(true);\n    setError(null);\n    fetch(url)\n      .then((r) => r.json())\n      .then((json: T) => setData(json))\n      .catch(() => setError(\"Ошибка\"))\n      .finally(() => setLoading(false));\n  }, [url]);\n\n  useEffect(() => {\n    reload();\n  }, [reload]);\n\n  return { data, error, loading, reload };\n}",
+  "practice": [
+    {
+      "title": "useFetchJson для /users/1",
+      "description": "Хук useFetchJson<{ name: string }> с jsonplaceholder. Компонент UserBadge показывает loading/error/name. Кнопка reload вызывает reload()."
+    },
+    {
+      "title": "useToggle",
+      "description": "useToggle(initial) → { on, toggle, setOn }. Используй для показа/скрытия панели фильтров в каталоге."
+    },
+    {
+      "title": "useLocalStorage theme",
+      "description": "useLocalStorage<'light'|'dark'>('theme','light'). Кнопка toggle меняет тему; F5 сохраняет выбор (class на document.documentElement optional)."
+    }
+  ],
+  "checklist": [
+    "Именую хуки с префикса use",
+    "Не нарушаю правила хуков внутри custom hook",
+    "Возвращаю стабильный API { data, actions }",
+    "Отделяю логику от JSX компонента"
+  ],
+  "links": [
+    {
+      "title": "React: Reusing Logic with Hooks",
+      "url": "https://react.dev/learn/reusing-logic-with-custom-hooks"
+    },
+    {
+      "title": "Rules of Hooks",
+      "url": "https://react.dev/reference/rules/rules-of-hooks"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "custom hook",
+      "meaning": "Функция use* с переиспользуемой логикой хуков.",
+      "example": "useFetchJson"
+    },
+    {
+      "term": "rules of hooks",
+      "meaning": "Хуки только на верхнем уровне и из React-функций.",
+      "example": "не в if"
+    },
+    {
+      "term": "as const",
+      "meaning": "Tuple с readonly для return хука.",
+      "example": "return [v, setV] as const"
+    },
+    {
+      "term": "reload",
+      "meaning": "Повторный запрос данных по действию пользователя.",
+      "example": "reload() в useFetch"
+    }
+  ]
+}

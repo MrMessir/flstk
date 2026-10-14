@@ -1,0 +1,87 @@
+{
+  "id": "tools-06",
+  "part": "tools",
+  "module": "setup",
+  "order": 6,
+  "title": "Терминал: базовые команды",
+  "goal": "Свободно перейдёшь по папкам и создашь файлы из терминала.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Где ты и что вокруг"
+    },
+    {
+      "type": "paragraph",
+      "content": "pwd (print working directory) показывает текущую папку. ls — список файлов; ls -la добавляет скрытые файлы и права. cd имя заходит в каталог, cd .. поднимается на уровень выше, cd ~ — домашняя директория."
+    },
+    {
+      "type": "paragraph",
+      "content": "Пути с пробелами бери в кавычки: cd \"Рабочий стол\". Таб дополняет имя файла или папки — меньше опечаток."
+    },
+    {
+      "type": "heading",
+      "content": "Создание и просмотр"
+    },
+    {
+      "type": "paragraph",
+      "content": "mkdir demo создаёт папку. touch hello.txt — пустой файл на Linux/macOS; на Windows можно echo. > file.txt. cat hello.txt выводит содержимое в терминал."
+    },
+    {
+      "type": "paragraph",
+      "content": "rm удаляет файл, rm -r — папку целиком. Не запускай rm -rf в домашней директории «на пробу». clear или Ctrl+L очищает экран."
+    }
+  ],
+  "codeExample": "pwd\nls\nmkdir demo && cd demo\ntouch hello.txt\necho 'Привет' > hello.txt\ncat hello.txt\ncd ..",
+  "practice": [
+    {
+      "title": "Собери папку урока",
+      "description": "В терминале cd в course-workspace. Выполни mkdir terminal-demo && cd terminal-demo. pwd должен показать путь, заканчивающийся на terminal-demo."
+    },
+    {
+      "title": "Создай README через echo",
+      "description": "В terminal-demo выполни echo '# Мой первый терминал' > README.md. Затем cat README.md — текст должен совпасть. Открой README.md в VS Code из той же папки."
+    },
+    {
+      "title": "Обойди дерево и вернись",
+      "description": "mkdir src, cd src, touch app.txt, cd .., ls. В списке должны быть README.md и папка src. cd .. вернёт в course-workspace — проверь pwd."
+    }
+  ],
+  "checklist": [
+    "Пользуюсь pwd, ls и cd без шпаргалки",
+    "Создаю папки mkdir и файлы touch или echo",
+    "Читаю файл через cat",
+    "Не удаляю rm -r без проверки пути"
+  ],
+  "links": [
+    {
+      "title": "MDN: командная строка",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Getting_started/Environment_setup/Command_line"
+    },
+    {
+      "title": "GNU Coreutils: ls",
+      "url": "https://www.gnu.org/software/coreutils/manual/html_node/ls-invocation.html"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "cd",
+      "meaning": "Сменить текущую директорию.",
+      "example": "cd projects"
+    },
+    {
+      "term": "ls",
+      "meaning": "Показать содержимое папки.",
+      "example": "ls -la"
+    },
+    {
+      "term": "mkdir",
+      "meaning": "Создать каталог.",
+      "example": "mkdir demo"
+    },
+    {
+      "term": "pwd",
+      "meaning": "Текущий путь в файловой системе.",
+      "example": "/home/user/demo"
+    }
+  ]
+}

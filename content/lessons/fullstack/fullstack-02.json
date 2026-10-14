@@ -1,0 +1,91 @@
+{
+  "id": "fullstack-02",
+  "part": "fullstack",
+  "module": "fs-connect",
+  "order": 2,
+  "title": "Клиент к своему API",
+  "goal": "Сделаешь fetch/axios обёртку с env и интерцепторами.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Почему нужна обёртка вокруг fetch"
+    },
+    {
+      "type": "paragraph",
+      "content": "Если в каждом компоненте писать fetch самому, быстро накопится копипаста: базовый адрес, заголовки, разбор JSON, обработка ошибок. Одна функция api<T>(path, init) собирает всё в одном месте и возвращает типизированный результат. Меняется адрес или схема авторизации, и правишь один файл."
+    },
+    {
+      "type": "heading",
+      "content": "Адрес из окружения"
+    },
+    {
+      "type": "paragraph",
+      "content": "Базовый URL не пишут в код. В Vite переменные для браузера начинаются с VITE_ (import.meta.env.VITE_API_URL), в Next — с NEXT_PUBLIC_. Значение подставляется при сборке, поэтому для staging и prod нужна отдельная сборка или публикация. Файл .env в git не кладут, в репозитории лежит .env.example."
+    },
+    {
+      "type": "heading",
+      "content": "Ошибки и ответы"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Проверяй res.ok до res.json(): статус 500 или 404 часто приходит с HTML или пустым телом.",
+        "Заводи свой класс ApiError(status, message, details), чтобы интерфейс различал 401, 403, 404, 422 и сеть.",
+        "Ставь таймаут через AbortController: бесконечный запрос блокирует интерфейс.",
+        "Для cookie-сессий передавай credentials: 'include' и настрой CORS на сервере с конкретным адресом и Access-Control-Allow-Credentials."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "401 и обновление токена"
+    },
+    {
+      "type": "paragraph",
+      "content": "Если сервер ответил 401 (срок действия access-токена истёк), один раз пробуй обновить сессию через refresh и повтори исходный запрос. Важная деталь: если одновременно упали пять запросов, refresh должен выполниться один раз, остальные ждут его результат (общий promise). Иначе несколько refresh подряд сбросят друг другу токены. Если refresh не удался, очисти состояние и отправь на вход, а не показывай бесконечные ошибки."
+    }
+  ],
+  "codeExample": "const base = import.meta.env.VITE_API_URL;\n\nexport async function api<T>(path: string, init?: RequestInit): Promise<T> {\n  const res = await fetch(`${base}${path}`, {\n    ...init,\n    headers: {\n      \"Content-Type\": \"application/json\",\n      ...(init?.headers ?? {}),\n    },\n    credentials: \"include\",\n  });\n  if (!res.ok) throw new Error(await res.text());\n  return res.json() as Promise<T>;\n}",
+  "practice": [
+    {
+      "title": "Вынеси api() в lib/api.ts",
+      "description": "Создай модуль с функцией api<T>. Замени один прямой fetch в компоненте на api<PostDto>('/posts'). Проверь в Network, что URL собирается из VITE_API_URL."
+    },
+    {
+      "title": "Добавь .env.example",
+      "description": "Запиши VITE_API_URL=http://localhost:3000 в .env.example. Убедись, что .env в .gitignore, а локальный .env у тебя на машине."
+    },
+    {
+      "title": "Симулируй ошибку сервера",
+      "description": "Временно укажи неверный порт в .env, вызови api('/health'). Покажи пользователю понятное сообщение из catch, а не пустой экран."
+    }
+  ],
+  "checklist": [
+    "Читаю базовый URL API из env, а не хардкожу localhost",
+    "Оборачиваю fetch в одну типизированную функцию",
+    "Пробрасываю credentials или Bearer там, где нужна сессия",
+    "Обрабатываю !res.ok до парсинга JSON"
+  ],
+  "links": [
+    {
+      "title": "MDN: Fetch API",
+      "url": "https://developer.mozilla.org/ru/docs/Web/API/Fetch_API"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "интерцептор",
+      "meaning": "Код до/после запроса: заголовки, refresh.",
+      "example": "добавить Authorization"
+    },
+    {
+      "term": "VITE_API_URL",
+      "meaning": "Публичная база API для клиента Vite.",
+      "example": "http://localhost:3000"
+    },
+    {
+      "term": "credentials",
+      "meaning": "Отправка cookie с cross-origin запросом.",
+      "example": "credentials: 'include'"
+    }
+  ]
+}

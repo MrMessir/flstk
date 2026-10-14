@@ -1,0 +1,78 @@
+{
+  "id": "tools-project",
+  "part": "tools",
+  "module": "project",
+  "order": 11,
+  "title": "Итог: репозиторий-визитка на GitHub",
+  "goal": "Опубликуешь репозиторий с README о себе и историей из осмысленных коммитов.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Что должно быть в репозитории"
+    },
+    {
+      "type": "paragraph",
+      "content": "Публичный репозиторий about-me (или своё имя): README на русском или английском — кто ты, зачем учишься, стек курса, ссылка на профиль GitHub. Не меньше пяти коммитов с понятными сообщениями, не один «initial commit» на всё."
+    },
+    {
+      "type": "paragraph",
+      "content": "Файл .gitignore с node_modules/ и .env. Хотя бы одна feature-ветка и merged pull request — можно в свой же репозиторий, чтобы привыкнуть к flow GitHub."
+    },
+    {
+      "type": "heading",
+      "content": "Как проверить себя"
+    },
+    {
+      "type": "paragraph",
+      "content": "Открой репозиторий в режиме инкогнито или попроси друга: понятно ли из README, чем ты занимаешься, без устных пояснений? git log --oneline — видна ли история шагов, а не один коммит."
+    }
+  ],
+  "codeExample": "# README.md — минимальный каркас\n# Привет, я …\n\nУчусь fullstack на курсе Fullstacker.\n\n## Стек модуля tools\nGit, GitHub, DevTools, терминал.\n\n## Контакты\n- GitHub: @username",
+  "practice": [
+    {
+      "title": "Собери README по секциям",
+      "description": "В about-me создай README.md: заголовок с именем, абзац «зачем учусь», список из 3 навыков после модуля tools, блок «Как связаться». Сделай отдельный commit docs: profile readme."
+    },
+    {
+      "title": "Пять коммитов и .gitignore",
+      "description": "Добавь learning-log.md или notes/, .gitignore, правки README — так, чтобы git log --oneline показал ≥5 коммитов. Сообщения в стиле docs:, chore:, feat:."
+    },
+    {
+      "title": "Merged PR и ссылка для сдачи",
+      "description": "Ветка docs/badges или feature/links → push → Pull Request → Merge на GitHub. В форме сдачи урока вставь URL репозитория и скрин git log --oneline --graph из терминала."
+    }
+  ],
+  "checklist": [
+    "Репозиторий публичный и открывается без логина",
+    "README понятен человеку без контекста курса",
+    "Есть .gitignore и не меньше пяти коммитов",
+    "Есть merge через pull request на GitHub"
+  ],
+  "links": [
+    {
+      "title": "GitHub Docs: README",
+      "url": "https://docs.github.com/ru/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes"
+    },
+    {
+      "title": "Conventional Commits",
+      "url": "https://www.conventionalcommits.org/ru/v1.0.0/"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "README",
+      "meaning": "Главное описание репозитория на GitHub.",
+      "example": "# About me"
+    },
+    {
+      "term": "public repo",
+      "meaning": "Репозиторий, видимый всем по ссылке.",
+      "example": "Settings → Change visibility"
+    },
+    {
+      "term": "conventional commit",
+      "meaning": "Префикс типа в сообщении коммита.",
+      "example": "docs: add learning goals"
+    }
+  ]
+}

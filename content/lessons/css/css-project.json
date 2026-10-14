@@ -1,0 +1,89 @@
+{
+  "id": "css-project",
+  "part": "css",
+  "module": "project",
+  "order": 17,
+  "title": "Итог CSS: лендинг-портфолио",
+  "goal": "Сверстаешь адаптивный лендинг: шапка, hero, карточки проектов и подвал на Flexbox и Grid.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "Берёшь простую HTML-структуру портфолио и делаешь её читаемой и адаптивной. На телефоне — одна колонка, на широком экране — сетка карточек. CSS в отдельном файле, цвета через переменные в :root."
+    },
+    {
+      "type": "heading",
+      "content": "Минимум секций"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Липкая шапка: display flex, space-between, position sticky.",
+        "Hero: заголовок, подзаголовок, кнопка-ссылка.",
+        "Сетка проектов: grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)).",
+        "Footer с ссылками или годом.",
+        "meta viewport и реальное изменение вида на узком окне (DevTools Toggle device toolbar)."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "Критерии готовности"
+    },
+    {
+      "type": "paragraph",
+      "content": "Два файла index.html и styles.css в репозитории css-portfolio. Нет inline-стилей на каждом теге. Lighthouse Performance необязателен, но текст не должен вылезать за экран на 375px ширины."
+    }
+  ],
+  "codeExample": ":root {\n  --ink: #0b1220;\n  --accent: #0f8a8a;\n  --paper: #f4f7fb;\n}\n* { box-sizing: border-box; }\nbody { margin: 0; font-family: system-ui, sans-serif; color: var(--ink); background: var(--paper); }\n.header { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #fff; }\n.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; padding: 20px; }",
+  "practice": [
+    {
+      "title": "Скелет HTML + link на CSS",
+      "description": "Создай папку css-portfolio с index.html (header, main с .hero и .cards, footer) и пустым styles.css. В head: meta viewport и link rel=\"stylesheet\" href=\"styles.css\". Live Server — страница без стилей, но структура видна."
+    },
+    {
+      "title": "Sticky header и grid карточек",
+      "description": "Скопируй базовые правила из codeExample. Добавь три .card в .cards с заголовком и текстом. Прокрути страницу — шапка липнет. Сожми окно до ~400px — карточки в одну колонку."
+    },
+    {
+      "title": "README и push",
+      "description": "git init, commit, push в GitHub css-portfolio. README: скрин на desktop и mobile (DevTools iPhone SE), как открыть (Live Server или двойной клик). В сдаче урока — URL repo."
+    }
+  ],
+  "checklist": [
+    "Сделал sticky-шапку на flex и hero-блок",
+    "Карточки на CSS Grid с auto-fit/minmax",
+    "Страница читаема на ~375px без горизонтального скролла",
+    "Стили только в styles.css, цвета в :root"
+  ],
+  "links": [
+    {
+      "title": "MDN: Flexbox",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/CSS_layout/Flexbox"
+    },
+    {
+      "title": "MDN: Grid",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/CSS_layout/Grids"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "лендинг",
+      "meaning": "Одна страница с секциями портфолио.",
+      "example": "hero + projects + footer"
+    },
+    {
+      "term": "auto-fit",
+      "meaning": "Grid сам подбирает число колонок.",
+      "example": "repeat(auto-fit, minmax(220px, 1fr))"
+    },
+    {
+      "term": "sticky",
+      "meaning": "Элемент липнет при прокрутке.",
+      "example": "position: sticky; top: 0;"
+    },
+    {
+      "term": "viewport",
+      "meaning": "meta-тег для корректного масштаба на телефоне.",
+      "example": "width=device-width, initial-scale=1"
+    }
+  ]
+}

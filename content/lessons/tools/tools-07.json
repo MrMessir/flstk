@@ -1,0 +1,87 @@
+{
+  "id": "tools-07",
+  "part": "tools",
+  "module": "git",
+  "order": 7,
+  "title": "Git, часть 1: коммиты",
+  "goal": "Создашь репозиторий и сделаешь осмысленные коммиты.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "История вместо копий"
+    },
+    {
+      "type": "paragraph",
+      "content": "Git хранит снимки проекта — коммиты — с сообщением и автором. Можно откатиться, сравнить версии и не бояться «сломать всё»: всегда есть история. Репозиторий — обычная папка плюс скрытая .git с базой Git."
+    },
+    {
+      "type": "paragraph",
+      "content": "Рабочая копия — файлы, которые ты правишь. Индекс (staging) — что попадёт в следующий коммит. git add переносит изменения в индекс, git commit фиксирует снимок."
+    },
+    {
+      "type": "heading",
+      "content": "Базовый цикл"
+    },
+    {
+      "type": "paragraph",
+      "content": "git init создаёт репозиторий. После правок git status показывает изменённые файлы. git add файл или git add . — в индекс. git commit -m \"сообщение\" — сохранить. git log — список коммитов."
+    },
+    {
+      "type": "paragraph",
+      "content": "Файл .gitignore перечисляет, что Git не отслеживает: node_modules, .env, dist. Секреты и тяжёлые зависимости туда кладут с первого дня."
+    }
+  ],
+  "codeExample": "git init\ngit status\necho '# Demo' > README.md\ngit add README.md\ngit commit -m \"docs: add readme\"\ngit log --oneline",
+  "practice": [
+    {
+      "title": "Инициализируй репозиторий",
+      "description": "В course-workspace/terminal-demo выполни git init. git status должен написать, что репо пустой или перечислить неотслеживаемые файлы."
+    },
+    {
+      "title": "Два коммита с разными сообщениями",
+      "description": "git add README.md, git commit -m \"docs: add readme\". Измени README (добавь строку), git add, git commit -m \"docs: describe terminal lesson\". git log --oneline — два коммита сверху."
+    },
+    {
+      "title": "Добавь .gitignore",
+      "description": "Создай .gitignore с строкой node_modules/. Сделай git add .gitignore и commit -m \"chore: ignore node_modules\". git status не должен предлагать коммитить node_modules, если такая папка появится позже."
+    }
+  ],
+  "checklist": [
+    "Создаю репозиторий через git init",
+    "Читаю git status перед коммитом",
+    "Делаю add и commit с понятным сообщением",
+    "Добавляю .gitignore для node_modules и .env"
+  ],
+  "links": [
+    {
+      "title": "Pro Git: основы",
+      "url": "https://git-scm.com/book/ru/v2/Введение-Основы-Git"
+    },
+    {
+      "title": "GitHub Docs: gitignore",
+      "url": "https://docs.github.com/ru/get-started/git-basics/ignoring-files"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "репозиторий",
+      "meaning": "Проект с историей Git в .git.",
+      "example": "git init"
+    },
+    {
+      "term": "commit",
+      "meaning": "Зафиксированный снимок изменений.",
+      "example": "git commit -m \"fix: typo\""
+    },
+    {
+      "term": "staging",
+      "meaning": "Индекс: что войдёт в следующий коммит.",
+      "example": "git add README.md"
+    },
+    {
+      "term": ".gitignore",
+      "meaning": "Список путей, которые Git игнорирует.",
+      "example": "node_modules/"
+    }
+  ]
+}

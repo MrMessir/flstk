@@ -1,0 +1,89 @@
+{
+  "id": "js-10",
+  "part": "javascript",
+  "module": "js-data",
+  "order": 10,
+  "title": "Объекты: данные с полями",
+  "goal": "Опишешь пользователя объектом, прочитаешь поля и превратишь объект в JSON-строку.",
+  "theory": [
+    {
+      "type": "heading",
+      "content": "Объект — данные с именами"
+    },
+    {
+      "type": "paragraph",
+      "content": "Объект собирает поля: имя, цена, флаги. Доставай через точка или [ключ]. Вложенность нормальна, но optional chaining ?. спасает от падения, когда середины нет. Object.keys/values/entries помогают обойти поля."
+    },
+    {
+      "type": "paragraph",
+      "content": "Копирование: поверхностное через { ...obj } или Object.assign. Вложенные объекты при этом делят ссылку — для глубокой копии нужен structuredClone или аккуратный ручной разбор."
+    },
+    {
+      "type": "paragraph",
+      "content": "Объект хранит данные под именами полей. { name: \"Аня\", age: 20 }."
+    },
+    {
+      "type": "list",
+      "items": [
+        "Доступ: user.name или user[\"name\"].",
+        "Метод — функция внутри объекта.",
+        "const { name, age } = user; — достать поля в переменные.",
+        "...user — скопировать поля в новый объект.",
+        "Object.keys / values / entries — списки ключей и значений.",
+        "JSON.stringify(user) — объект в текст. JSON.parse(text) — обратно."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "this внутри метода указывает на сам объект, если вызывать как user.sayHi()."
+    }
+  ],
+  "codeExample": "const user = {\n  name: \"Аня\",\n  age: 20,\n  sayHi() {\n    return \"Привет, я \" + this.name;\n  },\n};\n\nconsole.log(user.name);\nconsole.log(user.sayHi());\n\nconst json = JSON.stringify(user);\nconsole.log(json);\nconsole.log(JSON.parse(json));",
+  "practice": [
+    {
+      "title": "Объект user",
+      "description": "const user = { name: \"Аня\", city: \"Казань\", age: 20 }; выведи user.city и user[\"name\"]."
+    },
+    {
+      "title": "Метод describe",
+      "description": "Добавь method describe() { return `${this.name}, ${this.city}`; }. Вызов user.describe() в консоли."
+    },
+    {
+      "title": "Spread копия",
+      "description": "const updated = { ...user, city: \"Москва\" }; user.city не меняется, updated.city === \"Москва\"."
+    }
+  ],
+  "checklist": [
+    "Создаю объект с полями",
+    "Читаю поле через точку",
+    "Пишу простой метод",
+    "Превращаю объект в JSON и обратно"
+  ],
+  "links": [
+    {
+      "title": "MDN JavaScript",
+      "url": "https://developer.mozilla.org/ru/docs/Web/JavaScript"
+    },
+    {
+      "title": "MDN: объекты",
+      "url": "https://developer.mozilla.org/ru/docs/Learn_web_development/Core/Scripting/Object_basics"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "объект",
+      "meaning": "Данные с именованными полями.",
+      "example": "{ name: \"Аня\", age: 20 }"
+    },
+    {
+      "term": "метод",
+      "meaning": "Функция внутри объекта.",
+      "example": "user.sayHi()"
+    },
+    {
+      "term": "JSON.stringify / parse",
+      "meaning": "Объект ↔ текстовая JSON-строка.",
+      "example": "JSON.stringify(user)"
+    }
+  ]
+}

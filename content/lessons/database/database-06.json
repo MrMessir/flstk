@@ -1,0 +1,74 @@
+{
+  "id": "database-06",
+  "part": "database",
+  "module": "db-design",
+  "order": 6,
+  "title": "Связи и внешние ключи",
+  "goal": "Спроектируешь 1:1, 1:N и M:N для блога с таблицей post_tags.",
+  "theory": [
+    {
+      "type": "paragraph",
+      "content": "One-to-many: у user много posts — foreign key author_id в posts. One-to-one реже: profile user_id UNIQUE REFERENCES users. Many-to-many: posts и tags через junction post_tags (post_id, tag_id) с составным PRIMARY KEY."
+    },
+    {
+      "type": "heading",
+      "content": "ON DELETE"
+    },
+    {
+      "type": "paragraph",
+      "content": "ON DELETE CASCADE удалит комментарии при удалении поста — удобно, но опасно без soft delete. ON DELETE SET NULL для optional связи. RESTRICT запретит DELETE post, пока есть comments — явная ошибка."
+    },
+    {
+      "type": "heading",
+      "content": "comments и tags"
+    },
+    {
+      "type": "paragraph",
+      "content": "comments: post_id, author_id, body. tags: id, name UNIQUE. post_tags только пары id без дублирования имён тегов в каждом посте."
+    }
+  ],
+  "codeExample": "CREATE TABLE tags (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text UNIQUE NOT NULL\n);\n\nCREATE TABLE post_tags (\n  post_id uuid REFERENCES posts(id) ON DELETE CASCADE,\n  tag_id uuid REFERENCES tags(id) ON DELETE CASCADE,\n  PRIMARY KEY (post_id, tag_id)\n);",
+  "practice": [
+    {
+      "title": "Таблицы comments и tags",
+      "description": "Допиши db/schema.sql: comments, tags, post_tags. Примени миграцию на dev БД. \\d comments в psql показывает FK."
+    },
+    {
+      "title": "CASCADE: эксперимент",
+      "description": "INSERT post + 2 comments. DELETE post. SELECT из comments — строки исчезли. Запиши в README поведение CASCADE."
+    },
+    {
+      "title": "M:N insert",
+      "description": "Создай tag node и sql. Привяжи оба к одному post через post_tags. SELECT с JOIN tags покажет два имени."
+    }
+  ],
+  "checklist": [
+    "Реализовал M:N через post_tags",
+    "Выбрал осмысленный ON DELETE",
+    "comments ссылается на post и user",
+    "Проверил CASCADE на тестовых данных"
+  ],
+  "links": [
+    {
+      "title": "PostgreSQL: foreign keys",
+      "url": "https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-FK"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "junction table",
+      "meaning": "Связующая таблица для M:N.",
+      "example": "post_tags"
+    },
+    {
+      "term": "CASCADE",
+      "meaning": "Каскадное действие при удалении родителя.",
+      "example": "ON DELETE CASCADE"
+    },
+    {
+      "term": "foreign key",
+      "meaning": "Столбец, ссылающийся на PK другой таблицы.",
+      "example": "author_id REFERENCES users(id)"
+    }
+  ]
+}

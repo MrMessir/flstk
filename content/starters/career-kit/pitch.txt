@@ -1,0 +1,3 @@
+30-секундный питч:
+Я junior full-stack на TypeScript. Сделал … с auth, Postgres и деплоем.
+Ищу команду, где могу закрывать фичи end-to-end.

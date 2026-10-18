@@ -7,24 +7,36 @@
   "goal": "Подключишь Tailwind к Vite и соберёшь кнопку и карточку utility-классами.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Utility-first CSS"
+    },
+    {
       "type": "paragraph",
-      "content": "Tailwind — utility-first CSS: className=\"flex gap-2 p-4 rounded-lg bg-slate-900 text-white\" вместо отдельного .card в CSS файле. PostCSS плагин tailwindcss сканирует src на классы и генерирует минимальный bundle. @tailwind base/components/utilities в index.css — точка входа."
+      "content": "Tailwind предлагает готовые маленькие классы вместо отдельного файла стилей: className=\"flex gap-2 p-4 rounded-lg bg-slate-900 text-white\". Каждый класс делает одно: flex включает flexbox, p-4 задаёт отступ, text-white цвет текста. Преимущество в том, что стиль и разметка рядом, имена придумывать не нужно, а итоговый CSS-файл содержит только реально использованные классы. Минус: длинные строки классов, поэтому повторяющееся выносят в компоненты."
     },
     {
       "type": "heading",
-      "content": "Компонентный подход"
+      "content": "Подключение к Vite"
     },
     {
-      "type": "paragraph",
-      "content": "Повторяющиеся наборы классов выносят в компонент Button variant=\"primary\" или через clsx/cn: cn('px-4 py-2', disabled && 'opacity-50'). shadcn/ui — копируемые компоненты на Tailwind + Radix, не black-box npm. Design tokens: theme.extend.colors в tailwind.config."
+      "type": "list",
+      "items": [
+        "Установи tailwindcss и плагин для Vite по инструкции актуальной версии: способ подключения менялся между версиями.",
+        "В главный CSS-файл добавь директиву подключения Tailwind (способ зависит от версии, сверяйся с документацией).",
+        "Tailwind сканирует исходники и генерирует только найденные классы: не собирай имена классов из частей строки (`bg-${color}-500`), иначе он их не увидит."
+      ]
     },
     {
       "type": "heading",
-      "content": "CSS modules альтернатива"
+      "content": "Компоненты вместо копирования классов"
     },
     {
       "type": "paragraph",
-      "content": "import styles from './Card.module.css' и className={styles.card} изолирует имена. Tailwind быстрее для прототипа; modules — когда нужны сложные анимации отдельно от разметки. Не смешивай inline style и tailwind без причины."
+      "content": "Не копируй один и тот же набор из двадцати классов на каждую кнопку. Сделай компонент Button с вариантами: variant=\"primary\" или \"ghost\" выбирает набор классов, остальное передаётся через ...props. Для объединения условных классов используют clsx или cn: cn('px-4 py-2', variant === 'primary' && 'bg-blue-600 text-white'). Если классы конфликтуют (p-2 и p-4), пригодится tailwind-merge."
+    },
+    {
+      "type": "paragraph",
+      "content": "Адаптивность делают префиксами: md:flex-row включает горизонтальную раскладку от среднего экрана, а тёмная тема — dark:bg-slate-900. Следи за доступностью: достаточный контраст текста и видимый фокус (focus-visible:ring), на них часто забывают."
     }
   ],
   "codeExample": "type ButtonProps = {\n  children: React.ReactNode;\n  variant?: \"primary\" | \"ghost\";\n} & React.ButtonHTMLAttributes<HTMLButtonElement>;\n\nconst variants = {\n  primary: \"bg-indigo-600 hover:bg-indigo-500 text-white\",\n  ghost: \"bg-transparent hover:bg-slate-800 text-slate-100\",\n};\n\nexport function Button({ children, variant = \"primary\", className = \"\", ...rest }: ButtonProps) {\n  return (\n    <button\n      type=\"button\"\n      className={`rounded-md px-4 py-2 font-medium ${variants[variant]} ${className}`}\n      {...rest}\n    >\n      {children}\n    </button>\n  );\n}",
@@ -78,6 +90,68 @@
       "term": "cn/clsx",
       "meaning": "Склеивание className по условию.",
       "example": "cn('a', active && 'b')"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-12-q1",
+      "prompt": "Что такое utility-first CSS в Tailwind?",
+      "options": [
+        "Один большой файл стилей",
+        "Только JavaScript стили",
+        "Только готовые темы",
+        "Маленькие готовые классы, каждый делает одно"
+      ],
+      "correctIndex": 3,
+      "explanation": "className=\"flex gap-2 p-4\"."
+    },
+    {
+      "id": "react-12-q2",
+      "prompt": "Почему нельзя собирать имя класса из частей, например bg-${color}-500?",
+      "options": [
+        "Это медленно",
+        "Класс не существует",
+        "Это запрещено JS",
+        "Tailwind сканирует исходники и не увидит такой класс"
+      ],
+      "correctIndex": 3,
+      "explanation": "Используй полные имена."
+    },
+    {
+      "id": "react-12-q3",
+      "prompt": "Как избежать копирования десятков классов?",
+      "options": [
+        "Вынести в компонент с вариантами, например Button",
+        "Удалить стили",
+        "Использовать !important",
+        "Копировать везде"
+      ],
+      "correctIndex": 0,
+      "explanation": "variant выбирает набор классов."
+    },
+    {
+      "id": "react-12-q4",
+      "prompt": "Для чего служит cn или clsx?",
+      "options": [
+        "Создают компоненты",
+        "Делают запросы",
+        "Объединяют условные классы",
+        "Запускают эффекты"
+      ],
+      "correctIndex": 2,
+      "explanation": "Например, активный вариант кнопки."
+    },
+    {
+      "id": "react-12-q5",
+      "prompt": "Как включить горизонтальную раскладку от среднего экрана?",
+      "options": [
+        "media в JS",
+        "Через два файла",
+        "С префиксом md: например md:flex-row",
+        "Нельзя"
+      ],
+      "correctIndex": 2,
+      "explanation": "Префиксы дают адаптивность."
     }
   ]
 }

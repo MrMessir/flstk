@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fullstacker — курс fullstack</title>
+<meta name="description" content="Курс fullstack с нуля: 14 модулей — HTML, CSS, JavaScript, TypeScript, React, Node.js, SQL, auth, тесты, деплой. С проектом в портфолио." />
+<meta property="og:title" content="Fullstacker — курс fullstack" />
+<meta property="og:description" content="14 модулей от HTML до деплоя. Практика на реальном проекте." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://flstk-3w3n.vercel.app/" />
+
+<style>
+  :root{
+    --bg:#0e1013;
+    --surface:#171a20;
+    --surface-2:#1c2027;
+    --ink:#e9eaec;
+    --muted:#9aa0aa;
+    --line:#262a32;
+    --line-strong:#343a44;
+    --accent:#6f8cff;
+    --accent-soft:#1b2440;
+    --ok:#4fd18b;
+    --ok-soft:#13291f;
+    --acid:#c8ff2e;
+    --acid-ink:#0e1013;
+    --acid-soft:rgba(200,255,46,.14);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.5);
+    --shadow-md:0 2px 6px rgba(0,0,0,.45), 0 20px 40px -20px rgba(0,0,0,.8);
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    background:var(--bg);
+    overflow-x:hidden;
+  }
+
+  /* ===== Пузыри на фоне ===== */
+  .bg{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    pointer-events:none;
+  }
+  /* Базовое затемнение снизу — чтобы низ не был плоским */
+  .bg::after{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(to bottom, rgba(14,16,19,0) 0%, rgba(14,16,19,.45) 65%, var(--bg) 100%);
+  }
+
+  .blob{
+    position:absolute;
+    will-change:transform;
+    filter:blur(0px); /* размытие на внутреннем слое, чтобы форма читалась */
+  }
+  /* Внутренний SVG-слой — здесь форма и размытие */
+  .blob svg{
+    display:block;
+    width:100%;height:100%;
+    filter:blur(18px);
+  }
+
+  /* Позиции и размеры — правый/нижний край, вне текстового блока */
+  .blob--1{
+    top:-8%; right:-10%;
+    width:620px;height:620px;
+    opacity:.55;
+    animation:drift1 26s ease-in-out infinite alternate;
+  }
+  .blob--1 svg{ filter:blur(28px); }
+
+  .blob--2{
+    bottom:-18%; right:8%;
+    width:520px;height:760px;   /* вытянутая «капля» */
+    opacity:.42;
+    animation:drift2 32s ease-in-out infinite alternate;
+  }
+  .blob--2 svg{ filter:blur(34px); }
+
+  .blob--3{
+    bottom:6%; left:-12%;
+    width:440px;height:440px;
+    opacity:.32;
+    animation:drift3 38s ease-in-out infinite alternate;
+  }
+  .blob--3 svg{ filter:blur(30px); }
+
+  .blob--4{
+    top:34%; right:34%;
+    width:260px;height:380px;
+    opacity:.28;
+    animation:drift4 24s ease-in-out infinite alternate;
+  }
+  .blob--4 svg{ filter:blur(22px); }
+
+  /* Кислотный пузырь — один, маленький, в углу под 3D */
+  .blob--acid{
+    bottom:2%; right:22%;
+    width:220px;height:300px;
+    opacity:.5;
+    animation:drift2 30s ease-in-out infinite alternate-reverse;
+  }
+  .blob--acid svg{ filter:blur(26px); }
+
+  /* Дрейф — очень медленный, без резких движений */
+  @keyframes drift1{
+    from{ transform:translate3d(0,0,0) rotate(0deg) scale(1); }
+    to  { transform:translate3d(-24px,18px,0) rotate(6deg) scale(1.04); }
+  }
+  @keyframes drift2{
+    from{ transform:translate3d(0,0,0) rotate(0deg) scale(1); }
+    to  { transform:translate3d(18px,-26px,0) rotate(-5deg) scale(1.03); }
+  }
+  @keyframes drift3{
+    from{ transform:translate3d(0,0,0) rotate(0deg) scale(1); }
+    to  { transform:translate3d(26px,14px,0) rotate(4deg) scale(1.05); }
+  }
+  @keyframes drift4{
+    from{ transform:translate3d(0,0,0) rotate(0deg) scale(1); }
+    to  { transform:translate3d(-14px,-18px,0) rotate(-7deg) scale(1.06); }
+  }
+
+  /* Контент над пузырями */
+  .hero{
+    position:relative;z-index:1;
+    max-width:1180px;margin:0 auto;
+    padding:28px 24px 64px;
+  }
+
+  /* Шапка */
+  .nav{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:14px 0 18px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:34px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:-.01em}
+  .brand__mark{
+    width:28px;height:28px;border-radius:8px;
+    background:linear-gradient(180deg,#2a2f38,#1c2027);
+    border:1px solid var(--line-strong);
+    display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700;
+    position:relative;
+  }
+  .brand__mark::after{
+    content:"";
+    position:absolute;top:-3px;right:-3px;
+    width:8px;height:8px;border-radius:50%;
+    background:var(--acid);
+    box-shadow:0 0 0 2px var(--bg);
+  }
+  .nav__links{display:flex;gap:22px;font-size:14px;color:var(--muted)}
+  .nav__links a{text-decoration:none}
+  .nav__links a:hover{color:var(--ink)}
+  @media (max-width:720px){ .nav__links{display:none} }
+
+  .hero__grid{
+    display:grid;
+    grid-template-columns: minmax(0,1.02fr) minmax(0,.98fr);
+    gap:52px;align-items:center;
+  }
+  @media (max-width:900px){ .hero__grid{grid-template-columns:1fr;gap:40px} }
+
+  /* Текст */
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:13px;color:var(--muted);
+    border:1px solid var(--line);background:var(--surface);
+    padding:6px 11px;border-radius:999px;margin-bottom:20px;
+    box-shadow:var(--shadow-sm);
+  }
+  .eyebrow__dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--acid);
+    box-shadow:0 0 0 3px var(--acid-soft);
+  }
+
+  h1{
+    margin:0 0 18px;
+    font-size:clamp(30px,4.3vw,50px);
+    line-height:1.07;letter-spacing:-.026em;font-weight:680;
+  }
+  h1 .accent{
+    color:var(--ink);
+    background:linear-gradient(transparent 58%, var(--acid-soft) 58%);
+    box-shadow:inset 0 -2px 0 var(--acid);
+    padding:0 3px;
+  }
+
+  .lede{
+    margin:0 0 22px;font-size:clamp(15px,1.5vw,17.5px);
+    color:var(--muted);max-width:47ch;
+  }
+
+  /* Бейдж технологий */
+  .tech{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px}
+  .tech__chip{
+    font-family:var(--mono);font-size:12px;color:var(--ink);
+    background:var(--surface);border:1px solid var(--line-strong);
+    padding:4px 9px;border-radius:7px;box-shadow:var(--shadow-sm);
+  }
+  .tech__chip--more{color:var(--muted);background:var(--surface-2)}
+  .tech__chip--hot{
+    color:var(--acid-ink);
+    background:var(--acid);
+    border-color:var(--acid);
+    font-weight:700;
+  }
+
+  .actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    height:46px;padding:0 20px;border-radius:10px;
+    font-size:15px;font-weight:600;text-decoration:none;
+    border:1px solid transparent;cursor:pointer;
+    transition:transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn--primary{
+    background:var(--acid);color:var(--acid-ink);
+    box-shadow:0 10px 28px -14px rgba(200,255,46,.45);
+  }
+  .btn--primary:hover{background:#d6ff5c}
+  .btn--ghost{background:var(--surface);color:var(--ink);border-color:var(--line-strong)}
+  .btn--ghost:hover{border-color:#4a515c;background:var(--surface-2)}
+
+  /* Строка доверия */
+  .trust{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    font-size:13px;color:var(--muted);margin-bottom:26px;
+  }
+  .trust__pill{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--ok-soft);color:var(--ok);
+    border:1px solid rgba(79,209,139,.28);border-radius:999px;
+    padding:3px 10px;font-weight:600;font-size:12.5px;
+  }
+  .trust__dot{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+  .trust__sep{color:var(--line-strong)}
+
+  .facts{
+    display:flex;flex-wrap:wrap;gap:10px 22px;
+    padding-top:22px;border-top:1px solid var(--line);
+    font-size:14px;color:var(--muted);
+  }
+  .facts b{color:var(--ink);font-weight:650}
+
+  /* ===== 3D ===== */
+  .scene{
+    position:relative;height:480px;
+    display:grid;place-items:center;
+    perspective:1400px;perspective-origin:50% 42%;
+  }
+  @media (max-width:900px){ .scene{height:410px} }
+
+  .stack{
+    --spin:-26deg;
+    position:relative;width:280px;height:280px;
+    transform-style:preserve-3d;
+    transform:rotateX(58deg) rotateZ(var(--spin));
+    transition:transform .3s ease-out;
+    will-change:transform;
+    animation:stackIn 1s cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes stackIn{
+    from{opacity:0; transform:rotateX(58deg) rotateZ(var(--spin)) translateY(24px)}
+    to{opacity:1; transform:rotateX(58deg) rotateZ(var(--spin)) translateY(0)}
+  }
+
+  .layer{
+    position:absolute;inset:0;
+    transform-style:preserve-3d;
+    border-radius:16px;
+    background:var(--surface);
+    border:1px solid var(--line-strong);
+    box-shadow:var(--shadow-md);
+    overflow:hidden;
+  }
+  .layer__inner{
+    position:absolute;inset:0;padding:14px;
+    transform: rotateZ(calc(-1 * var(--spin))) rotateX(-58deg) translateZ(1px);
+    transform-origin:center;
+    display:flex;flex-direction:column;gap:10px;
+    background:linear-gradient(180deg, var(--surface), var(--surface-2));
+  }
+  .layer__top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .layer__name{font-size:13px;font-weight:650;letter-spacing:.01em}
+  .layer__tag{
+    font-family:var(--mono);font-size:11px;color:var(--accent);
+    background:var(--accent-soft);padding:2px 8px;border-radius:999px;white-space:nowrap;
+  }
+  .layer--front .layer__tag{
+    color:var(--acid-ink);
+    background:var(--acid);
+  }
+  .layer__body{flex:1;display:flex;flex-direction:column;gap:6px;justify-content:center}
+  .code-line{
+    font-family:var(--mono);font-size:11px;line-height:1.5;
+    color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .code-line b{color:var(--ink);font-weight:600}
+  .code-line i{color:var(--accent);font-style:normal}
+
+  .flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .chip{
+    font-family:var(--mono);font-size:10.5px;color:var(--ink);
+    border:1px solid var(--line-strong);border-radius:6px;
+    padding:3px 7px;background:var(--surface-2);white-space:nowrap;
+  }
+  .arrow{color:var(--muted);font-size:11px}
+
+  .table{border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;font-family:var(--mono);font-size:10.5px}
+  .table__row{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .table__row > span{padding:4px 8px;border-bottom:1px solid var(--line)}
+  .table__row:last-child > span{border-bottom:0}
+  .table__row--head > span{background:var(--surface-2);color:var(--muted);font-weight:600}
+  .table__row > span + span{border-left:1px solid var(--line)}
+
+  .layer--front{transform:translateZ(84px)}
+  .layer--back {transform:translateZ(0)}
+  .layer--db   {transform:translateZ(-84px)}
+
+  .stack::before,.stack::after{
+    content:"";position:absolute;
+    width:1px;height:168px;background:var(--line-strong);
+    left:50%;top:50%;transform-origin:top center;opacity:.8;
+  }
+  .stack::before{transform:translate(-120px,-84px) translateZ(0) rotateX(90deg)}
+  .stack::after {transform:translate(120px,-84px) translateZ(0) rotateX(90deg)}
+
+  .scene::after{
+    content:"";position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+    width:340px;height:70px;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,.55), rgba(0,0,0,0) 70%);
+    filter:blur(6px);pointer-events:none;
+  }
+
+  /* Плавающая карточка прогресса */
+  .float-card{
+    position:absolute;right:6%;top:14%;
+    background:var(--surface);border:1px solid var(--line-strong);
+    border-radius:12px;padding:11px 13px;min-width:150px;
+    box-shadow:var(--shadow-md);
+    z-index:3;
+    animation:floatIn .9s .25s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .float-card__label{font-size:11.5px;color:var(--muted);margin-bottom:7px}
+  .float-card__row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}
+  .float-card__num{font-size:18px;font-weight:680;letter-spacing:-.02em}
+  .float-card__num span{font-size:12px;color:var(--muted);font-weight:500}
+  .float-card__num em{font-style:normal;color:var(--acid)}
+  .bar{height:6px;border-radius:999px;background:#23272f;overflow:hidden}
+  .bar__fill{
+    height:100%;width:34%;border-radius:999px;
+    background:var(--acid);
+    box-shadow:0 0 10px rgba(200,255,46,.35);
+  }
+  @keyframes floatIn{
+    from{opacity:0; transform:translateY(10px) scale(.98)}
+    to{opacity:1; transform:translateY(0) scale(1)}
+  }
+
+  /* Чип деплоя */
+  .float-chip{
+    position:absolute;left:2%;bottom:20%;
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--acid);color:var(--acid-ink);
+    font-size:12.5px;font-weight:700;
+    padding:8px 12px;border-radius:999px;
+    box-shadow:0 10px 24px -14px rgba(200,255,46,.45);
+    z-index:3;
+    animation:floatIn .9s .4s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .float-chip__dot{
+    width:7px;height:7px;border-radius:50%;background:var(--acid-ink);
+    box-shadow:0 0 0 3px rgba(14,16,19,.18);
+  }
+
+  @media (max-width:520px){
+    .float-card{right:0;top:8%;min-width:132px}
+    .float-chip{left:0;bottom:12%}
+  }
+
+  /* Шкала модулей */
+  .modules{margin-top:56px;border-top:1px solid var(--line);padding-top:22px}
+  .modules__head{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    margin-bottom:12px;font-size:13px;color:var(--muted);
+  }
+  .modules__title{color:var(--ink);font-weight:650;font-size:14px}
+  .modules__track{display:grid;grid-template-columns:repeat(14,1fr);gap:4px}
+  .seg{height:8px;border-radius:3px;background:#23272f}
+  .seg--base{background:#4a515c}
+  .seg--front{background:#3f5299}
+  .seg--back{background:#566fd6}
+  .seg--full{background:var(--accent)}
+  .seg--project{background:var(--acid)}
+  .modules__legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;font-size:12.5px;color:var(--muted)}
+  .legend{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+
+  @media (prefers-reduced-motion: reduce){
+    .blob{animation:none !important}
+    .stack,.float-card,.float-chip{transition:none;animation:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Фон: органические «пузыри» ===== -->
+<div class="bg" aria-hidden="true">
+  <!-- 1. Большая мягкая капля справа сверху (нейтрально-синяя) -->
+  <div class="blob blob--1">
+    <svg viewBox="0 0 200 200" preserveAspectRatio="none">
+      <path fill="rgba(111,140,255,.22)" d="M42,-62C58,-48,79,-41,86,-27C93,-13,86,8,73,24C60,40,41,51,24,58C7,65,-8,68,-25,63C-42,58,-61,45,-70,27C-79,9,-78,-13,-69,-31C-60,-49,-43,-63,-24,-74C-5,-85,15,-93,30,-87C45,-81,26,-76,42,-62Z" transform="translate(100 100)"/>
+    </svg>
+  </div>
+
+  <!-- 2. Вытянутая «капля» справа снизу (тянется вниз) -->
+  <div class="blob blob--2">
+    <svg viewBox="0 0 160 240" preserveAspectRatio="none">
+      <path fill="rgba(111,140,255,.20)" d="M80,10 C120,10 150,50 150,100 C150,160 120,220 80,230 C40,220 10,160 10,100 C10,50 40,10 80,10 Z" transform="translate(0 0)"/>
+    </svg>
+  </div>
+
+  <!-- 3. Круглый-ish слева снизу (самый слабый) -->
+  <div class="blob blob--3">
+    <svg viewBox="0 0 200 200" preserveAspectRatio="none">
+      <path fill="rgba(160,170,190,.16)" d="M45,-58C60,-46,74,-32,79,-15C84,2,80,21,69,37C58,53,40,66,21,71C2,76,-18,73,-35,62C-52,51,-66,32,-71,11C-76,-10,-72,-33,-59,-49C-46,-65,-23,-74,-2,-75C19,-76,30,-70,45,-58Z" transform="translate(100 100)"/>
+    </svg>
+  </div>
+
+  <!-- 4. Малый «затянутый» пузырь в середине-справа -->
+  <div class="blob blob--4">
+    <svg viewBox="0 0 160 220" preserveAspectRatio="none">
+      <path fill="rgba(111,140,255,.18)" d="M70,12 C100,18 125,48 130,90 C135,140 110,190 78,205 C50,218 25,192 20,150 C15,108 28,70 44,44 C54,28 60,10 70,12 Z"/>
+    </svg>
+  </div>
+
+  <!-- 5. Кислотный — один, маленький, в правом нижнем углу под 3D -->
+  <div class="blob blob--acid">
+    <svg viewBox="0 0 160 220" preserveAspectRatio="none">
+      <path fill="rgba(200,255,46,.20)" d="M80,8 C112,8 138,42 140,84 C142,132 120,186 84,204 C50,220 22,190 18,148 C14,106 30,62 52,36 C62,24 70,8 80,8 Z"/>
+    </svg>
+  </div>
+</div>
+
+<main class="hero">
+  <header class="nav">
+    <div class="brand">
+      <div class="brand__mark">F</div>
+      Fullstacker
+    </div>
+    <nav class="nav__links" aria-label="Основная навигация">
+      <a href="#program">Программа</a>
+      <a href="#how">Как учимся</a>
+      <a href="#author">Кто ведёт</a>
+    </nav>
+  </header>
+
+  <div class="hero__grid">
+    <div class="hero__copy">
+      <div class="eyebrow">
+        <span class="eyebrow__dot" aria-hidden="true"></span>
+        14 модулей · от HTML до деплоя
+      </div>
+
+      <h1>Курс fullstack:<br>с нуля до <span class="accent">junior</span> с проектом в портфолио</h1>
+
+      <p class="lede">
+        HTML, CSS, JavaScript, TypeScript, React, Node.js, SQL, авторизация, тесты и деплой.
+        Программа разбита на 14 модулей — идёшь в своём темпе, проект собираешь по ходу.
+      </p>
+
+      <div class="tech" aria-label="Технологии курса">
+        <span class="tech__chip">HTML</span>
+        <span class="tech__chip">CSS</span>
+        <span class="tech__chip">JavaScript</span>
+        <span class="tech__chip tech__chip--hot">TypeScript</span>
+        <span class="tech__chip">React</span>
+        <span class="tech__chip">Node.js</span>
+        <span class="tech__chip">SQL</span>
+        <span class="tech__chip tech__chip--more">+ auth, тесты, деплой</span>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn--primary" href="#start">Начать обучение</a>
+        <a class="btn btn--ghost" href="#program">Смотреть программу</a>
+      </div>
+
+      <div class="trust">
+        <span class="trust__pill"><span class="trust__dot"></span>Возврат 7 дней</span>
+        <span class="trust__sep">·</span>
+        <span>Курс новый — без фейковых отзывов</span>
+        <span class="trust__sep">·</span>
+        <span>Доступ навсегда</span>
+      </div>
+
+      <div class="facts">
+        <div><b>14</b> модулей</div>
+        <div><b>213</b> уроков</div>
+        <div><b>1</b> сквозной проект</div>
+        <div>HTML/CSS можно пропустить, если уже верстаешь</div>
+      </div>
+    </div>
+
+    <div class="scene">
+      <div class="stack" id="stack" aria-hidden="true">
+
+        <div class="layer layer--front">
+          <div class="layer__inner">
+            <div class="layer__top">
+              <div class="layer__name">Frontend</div>
+              <div class="layer__tag">React · TS</div>
+            </div>
+            <div class="layer__body">
+              <div class="code-line"><i>const</i> <b>App</b> = () =&gt; (</div>
+              <div class="code-line">&nbsp;&nbsp;&lt;Course <b>level</b>="junior" /&gt;</div>
+              <div class="code-line">)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer layer--back">
+          <div class="layer__inner">
+            <div class="layer__top">
+              <div class="layer__name">Backend</div>
+              <div class="layer__tag">Node · API</div>
+            </div>
+            <div class="layer__body">
+              <div class="flow">
+                <span class="chip">GET /course</span>
+                <span class="arrow">→</span>
+                <span class="chip">auth</span>
+              </div>
+              <div class="flow">
+                <span class="chip">POST /progress</span>
+                <span class="arrow">→</span>
+                <span class="chip">db</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer layer--db">
+          <div class="layer__inner">
+            <div class="layer__top">
+              <div class="layer__name">Database</div>
+              <div class="layer__tag">SQL</div>
+            </div>
+            <div class="layer__body">
+              <div class="table">
+                <div class="table__row table__row--head">
+                  <span>id</span><span>progress</span>
+                </div>
+                <div class="table__row">
+                  <span>1</span><span>0/213</span>
+                </div>
+                <div class="table__row">
+                  <span>2</span><span>12/213</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="float-card" aria-hidden="true">
+        <div class="float-card__label">Твой прогресс</div>
+        <div class="float-card__row">
+          <div class="float-card__num"><em>34%</em><span> / 14 модулей</span></div>
+        </div>
+        <div class="bar"><div class="bar__fill"></div></div>
+      </div>
+
+      <div class="float-chip" aria-hidden="true">
+        <span class="float-chip__dot"></span>
+        деплой → модуль 12
+      </div>
+    </div>
+  </div>
+
+  <section class="modules" aria-label="Карта курса">
+    <div class="modules__head">
+      <div class="modules__title">Карта курса</div>
+      <div>14 модулей · 4 этапа + проект</div>
+    </div>
+    <div class="modules__track" role="img" aria-label="14 модулей курса">
+      <div class="seg seg--base"></div>
+      <div class="seg seg--base"></div>
+      <div class="seg seg--base"></div>
+      <div class="seg seg--front"></div>
+      <div class="seg seg--front"></div>
+      <div class="seg seg--front"></div>
+      <div class="seg seg--back"></div>
+      <div class="seg seg--back"></div>
+      <div class="seg seg--back"></div>
+      <div class="seg seg--full"></div>
+      <div class="seg seg--full"></div>
+      <div class="seg seg--full"></div>
+      <div class="seg seg--project"></div>
+      <div class="seg seg--project"></div>
+    </div>
+    <div class="modules__legend">
+      <span class="legend"><i class="seg--base"></i>1–3 Основы · Git, HTML, CSS</span>
+      <span class="legend"><i class="seg--front"></i>4–6 Frontend</span>
+      <span class="legend"><i class="seg--back"></i>7–9 Backend</span>
+      <span class="legend"><i class="seg--full"></i>10–12 Fullstack</span>
+      <span class="legend"><i class="seg--project"></i>13–14 Проект</span>
+    </div>
+  </section>
+</main>
+
+<script>
+  (function () {
+    const stack = document.getElementById('stack');
+    if (!stack) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reduce.matches) return;
+
+    const base = { x: 58, z: -26 };
+    let raf = null;
+
+    function onMove(e) {
+      const rect = stack.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) / rect.width;
+      const dy = (e.clientY - cy) / rect.height;
+
+      const rx = base.x + dy * 9;
+      const rz = base.z + dx * 11;
+
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        stack.style.transform =
+          `rotateX(${rx.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg)`;
+      });
+    }
+    function reset() {
+      if (raf) cancelAnimationFrame(raf);
+      stack.style.transform =
+        `rotateX(${base.x}deg) rotateZ(${base.z}deg)`;
+    }
+    const scene = stack.closest('.scene');
+    scene.addEventListener('mousemove', onMove);
+    scene.addEventListener('mouseleave', reset);
+  })();
+</script>
+</body>
+</html>

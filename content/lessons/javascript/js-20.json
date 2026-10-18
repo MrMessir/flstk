@@ -8,32 +8,32 @@
   "theory": [
     {
       "type": "heading",
-      "content": "Модули и память браузера"
+      "content": "Разбить код на файлы"
     },
     {
       "type": "paragraph",
-      "content": "import/export делят код на файлы. В type=\"module\" пути обычно относительные с .js. localStorage хранит строки между визитами: JSON.stringify перед записью объектов и JSON.parse при чтении."
+      "content": "Когда скрипт вырос до нескольких сотен строк, его делят на модули. export делает функцию или значение доступным снаружи, import подключает его в другом файле: import { loadTasks } from \"./storage.js\". Чтобы браузер понимал import, скрипт подключают с type=\"module\". Пути в модулях относительные и содержат расширение .js. Модули выполняются один раз, у каждого своя область видимости: переменные не «текут» в глобальную, и это защищает от конфликтов имён."
     },
     {
-      "type": "paragraph",
-      "content": "sessionStorage живёт до закрытия вкладки. cookies для учебного todo не нужны — хватит localStorage. Не храни пароли в storage."
+      "type": "heading",
+      "content": "localStorage"
     },
     {
       "type": "list",
       "items": [
-        "export function save() {} — отдать наружу.",
-        "import { save } from \"./storage.js\"; — взять.",
-        "export default — один главный экспорт файла.",
-        "Подключение модуля: <script type=\"module\" src=\"main.js\"></script>.",
-        "localStorage.setItem(\"key\", \"value\") — сохранить строку.",
-        "getItem / removeItem — прочитать / удалить.",
-        "Для объектов: JSON.stringify при записи, JSON.parse при чтении.",
-        "sessionStorage — то же, но живёт до закрытия вкладки."
+        "localStorage хранит строки между визитами и закрытием браузера; sessionStorage живёт до закрытия вкладки.",
+        "Объекты и массивы сохраняют через JSON.stringify и читают через JSON.parse.",
+        "Чтение оборачивай в try/catch: в хранилище может оказаться битая строка, а в приватном режиме доступ к нему бывает запрещён.",
+        "Лимит около нескольких мегабайт на сайт; хранилище синхронное, большие объёмы замедляют страницу."
       ]
     },
     {
+      "type": "heading",
+      "content": "Что в него класть нельзя"
+    },
+    {
       "type": "paragraph",
-      "content": "Проверь в Application → Local Storage, что ключ появился после сохранения и исчез после removeItem."
+      "content": "Данные в localStorage читает любой скрипт на странице, поэтому пароли, токены доступа и личные данные там хранить нельзя: при XSS-атаке они утекут. Для учебного списка дел оно подходит идеально. Схема приложения: модуль storage.js отвечает за загрузку и сохранение, main.js — за интерфейс; состояние (массив задач) меняется функциями, после каждого изменения вызывается saveTasks и render. Практика: раздели список дел на два файла, сохраняй после каждого добавления и удаления и проверь, что после обновления страницы (F5) данные на месте; посмотри содержимое хранилища на вкладке Application в DevTools."
     }
   ],
   "codeExample": "// storage.js\nexport function loadTasks() {\n  const raw = localStorage.getItem(\"tasks\");\n  return raw ? JSON.parse(raw) : [];\n}\n\nexport function saveTasks(tasks) {\n  localStorage.setItem(\"tasks\", JSON.stringify(tasks));\n}\n\n// main.js\nimport { loadTasks, saveTasks } from \"./storage.js\";\n\nconst tasks = loadTasks();\ntasks.push(\"Выучить модули\");\nsaveTasks(tasks);\nconsole.log(loadTasks());",
@@ -86,6 +86,68 @@
       "term": "localStorage",
       "meaning": "Хранилище строк в браузере между визитами.",
       "example": "localStorage.setItem(\"key\", \"value\")"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "js-20-q1",
+      "prompt": "Что нужно, чтобы браузер понимал import?",
+      "options": [
+        "Переименовать файл в .mjs всегда",
+        "Ничего",
+        "Добавить defer",
+        "Подключить скрипт с type=\"module\""
+      ],
+      "correctIndex": 3,
+      "explanation": "Пути с расширением .js."
+    },
+    {
+      "id": "js-20-q2",
+      "prompt": "Что хранит localStorage?",
+      "options": [
+        "Файлы любого размера",
+        "Строки между визитами и закрытием браузера",
+        "Cookie сервера",
+        "Только числа"
+      ],
+      "correctIndex": 1,
+      "explanation": "Объекты через JSON.stringify."
+    },
+    {
+      "id": "js-20-q3",
+      "prompt": "Почему чтение localStorage оборачивают в try/catch?",
+      "options": [
+        "Это быстрее",
+        "Там может оказаться битая строка, а доступ иногда запрещён",
+        "Так требует JSON",
+        "Иначе не сохранится"
+      ],
+      "correctIndex": 1,
+      "explanation": "JSON.parse упадёт на мусоре."
+    },
+    {
+      "id": "js-20-q4",
+      "prompt": "Что нельзя хранить в localStorage?",
+      "options": [
+        "Пароли и токены доступа: при XSS они утекут",
+        "Список дел",
+        "Настройки интерфейса",
+        "Тему оформления"
+      ],
+      "correctIndex": 0,
+      "explanation": "Данные читает любой скрипт страницы."
+    },
+    {
+      "id": "js-20-q5",
+      "prompt": "Чем sessionStorage отличается от localStorage?",
+      "options": [
+        "Хранит файлы",
+        "Не хранит строки",
+        "Живёт до закрытия вкладки",
+        "Работает на сервере"
+      ],
+      "correctIndex": 2,
+      "explanation": "localStorage сохраняется между визитами."
     }
   ]
 }

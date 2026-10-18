@@ -3,7 +3,8 @@ import { apiError } from "@/lib/security/api-guard";
 import { z } from "zod";
 import { requireApiUser } from "@/lib/auth/api";
 import { createServiceClient } from "@/lib/supabase/admin";
-import { getLessonMetas } from "@/lib/lessons/load-lessons";
+import { getLessonById, getLessonMetas } from "@/lib/lessons/load-lessons";
+import { getQuizQuestions } from "@/lib/quiz/grade";
 import {
   getServerProgressState,
   isLessonUnlockedForState,
@@ -56,6 +57,25 @@ export async function POST(request: Request) {
         { error: "Сначала закрой предыдущий обязательный модуль" },
         { status: 403 },
       );
+    }
+
+    // Урок с тестом засчитывается только после успешной сдачи теста на сервере.
+    const lesson = await getLessonById(body.lessonId);
+    if (lesson && getQuizQuestions(lesson).length > 0) {
+      const { data: passedRows, error: quizError } = await service
+        .from("quiz_attempts")
+        .select("id")
+        .eq("user_id", auth.profile.id)
+        .eq("lesson_id", body.lessonId)
+        .eq("passed", true)
+        .limit(1);
+      if (quizError) return apiError(quizError, "progress/complete");
+      if (!passedRows || passedRows.length === 0) {
+        return NextResponse.json(
+          { error: "Сначала пройди тест урока" },
+          { status: 403 },
+        );
+      }
     }
 
     const { error } = await service.from("lesson_progress").upsert(

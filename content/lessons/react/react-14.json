@@ -7,24 +7,37 @@
   "goal": "Типизируешь props, children и события в react-ts без any.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Типы props"
+    },
+    {
       "type": "paragraph",
-      "content": "react-ts шаблон Vite уже настроен. Props типизируй interface или type; для компонента React.FC сегодня не обязателен — function Component(props: Props). children: React.ReactNode. События: React.ChangeEvent<HTMLInputElement>, FormEvent, MouseEvent<HTMLButtonElement>."
+      "content": "Шаблон react-ts уже настроен на TypeScript. Props описывают type или interface: type ButtonProps = { label: string; onClick: () => void; disabled?: boolean }. Знак вопроса делает поле необязательным. React.FC сегодня не обязателен, достаточно обычной функции: function Button(props: ButtonProps). Для children используют тип ReactNode или обёртку PropsWithChildren<Props>."
     },
     {
       "type": "heading",
-      "content": "PropsWithChildren и generics"
+      "content": "События и элементы"
     },
     {
-      "type": "paragraph",
-      "content": "type CardProps = PropsWithChildren<{ title: string }>. Generic list: function List<T>({ items, render }: { items: T[]; render: (item: T) => ReactNode }). ref forwardRef<HTMLInputElement, Props> для библиотечных input. defaultProps заменяют default parameters в destructuring."
+      "type": "list",
+      "items": [
+        "Поле ввода: React.ChangeEvent<HTMLInputElement>, значение в e.target.value.",
+        "Форма: React.FormEvent<HTMLFormElement>.",
+        "Кнопка: React.MouseEvent<HTMLButtonElement>.",
+        "Чтобы получить все атрибуты нативной кнопки, расширяй тип: React.ButtonHTMLAttributes<HTMLButtonElement>."
+      ]
     },
     {
       "type": "heading",
-      "content": "Строгая типизация hooks"
+      "content": "Дженерики и ограничение значений"
     },
     {
       "type": "paragraph",
-      "content": "useState<User | null>(null). useReducer с union Action. useRef<HTMLDialogElement>(null). Константы as const для variants. Типы из zod: type Form = z.infer<typeof Schema> в формах с react-hook-form — обзор связки."
+      "content": "Компонент Select, который работает с набором значений, типизируют дженериком: function Select<T extends string>(props: { value: T; options: readonly T[]; onChange: (v: T) => void }). Тогда onChange получает не просто string, а конкретное значение из объединения, например 'asc' | 'desc'. Это ловит опечатки при компиляции. Для ref на DOM-элемент: useRef<HTMLInputElement>(null). В React 19 ref можно передавать как обычный prop; в более старых версиях для этого нужен forwardRef."
+    },
+    {
+      "type": "paragraph",
+      "content": "Избегай any и приведения as: они отключают проверку. Если не знаешь тип, начни с unknown и сузь. Состояние с несколькими формами описывай объединением с полем-признаком (discriminated union): { status: 'loading' } | { status: 'ok'; data: Post[] }; тогда TypeScript не даст обратиться к data в состоянии loading. Проверь результат командой tsc --noEmit: в проекте не должно остаться ни одного any, а ошибки типов должны показываться ещё в редакторе."
     }
   ],
   "codeExample": "import type { PropsWithChildren, ReactNode } from \"react\";\n\ntype SelectProps<T extends string> = {\n  value: T;\n  options: readonly T[];\n  onChange: (value: T) => void;\n};\n\nexport function Select<T extends string>({ value, options, onChange }: SelectProps<T>) {\n  return (\n    <select value={value} onChange={(e) => onChange(e.target.value as T)}>\n      {options.map((o) => (\n        <option key={o} value={o}>{o}</option>\n      ))}\n    </select>\n  );\n}\n\nexport function Panel({ title, children }: PropsWithChildren<{ title: string }>) {\n  return (\n    <section aria-labelledby=\"t\">\n      <h2 id=\"t\">{title}</h2>\n      {children}\n    </section>\n  );\n}",
@@ -78,6 +91,68 @@
       "term": "ChangeEvent",
       "meaning": "Тип события input/select.",
       "example": "ChangeEvent<HTMLInputElement>"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-14-q1",
+      "prompt": "Нужен ли React.FC для компонента?",
+      "options": [
+        "Обязателен",
+        "Только для классов",
+        "Запрещён",
+        "Не обязателен, достаточно обычной функции с типом props"
+      ],
+      "correctIndex": 3,
+      "explanation": "Props описывают type или interface."
+    },
+    {
+      "id": "react-14-q2",
+      "prompt": "Что значит знак вопроса в типе поля disabled?: boolean?",
+      "options": [
+        "Поле запрещено",
+        "Поле обязательное",
+        "Поле необязательное",
+        "Поле строковое"
+      ],
+      "correctIndex": 2,
+      "explanation": "Можно не передавать."
+    },
+    {
+      "id": "react-14-q3",
+      "prompt": "Для чего дженерик в Select<T extends string>?",
+      "options": [
+        "Для запросов",
+        "Для скорости",
+        "onChange получает конкретное значение из набора, а не просто string",
+        "Для стилей"
+      ],
+      "correctIndex": 2,
+      "explanation": "Опечатки ловятся при компиляции."
+    },
+    {
+      "id": "react-14-q4",
+      "prompt": "Чем discriminated union полезен для состояния загрузки?",
+      "options": [
+        "Он хранит данные",
+        "Он ускоряет приложение",
+        "TypeScript не даст обратиться к data в состоянии loading",
+        "Он заменяет React Query"
+      ],
+      "correctIndex": 2,
+      "explanation": "Поле status — признак."
+    },
+    {
+      "id": "react-14-q5",
+      "prompt": "Чем опасен as и any?",
+      "options": [
+        "Улучшают типы",
+        "Ничем",
+        "Они отключают проверку типов",
+        "Ускоряют сборку"
+      ],
+      "correctIndex": 2,
+      "explanation": "Если тип неизвестен, начни с unknown."
     }
   ]
 }

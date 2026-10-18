@@ -7,24 +7,40 @@
   "goal": "Посчитаешь COUNT и AVG по постам автора с GROUP BY и фильтром HAVING.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Агрегатные функции"
+    },
+    {
       "type": "paragraph",
-      "content": "Агрегатные функции сжимают множество строк в одно значение: COUNT(*), SUM, AVG, MIN, MAX. GROUP BY author_id даёт по строке на автора. WHERE отфильтровывает строки до группировки, HAVING — группы после (например, авторы с count > 5)."
+      "content": "Агрегатные функции сжимают набор строк в одно значение: COUNT, SUM, AVG, MIN, MAX. GROUP BY author_id делит строки на группы и возвращает по одной строке на автора. В SELECT можно выбирать только столбцы из GROUP BY и агрегаты: если выбрать лишний столбец, база не поймёт, какое из значений группы показывать, и вернёт ошибку."
     },
     {
       "type": "heading",
-      "content": "COUNT(*) vs COUNT(column)"
+      "content": "WHERE и HAVING"
     },
     {
       "type": "paragraph",
-      "content": "COUNT(*) считает все строки группы. COUNT(comment_id) игнорирует NULL — полезно для «постов с хотя бы одним комментом». DISTINCT внутри COUNT(DISTINCT tag_id) считает уникальные теги на пост."
+      "content": "Оба фильтруют, но на разных этапах. WHERE работает со строками до группировки (например, только опубликованные посты), HAVING работает с готовыми группами после агрегации (например, авторы, у которых больше 5 постов). Условие по агрегату в WHERE написать нельзя, потому что на этом этапе группы ещё нет."
     },
     {
       "type": "heading",
-      "content": "ORDER BY на агрегате"
+      "content": "COUNT(*) и COUNT(столбец)"
+    },
+    {
+      "type": "list",
+      "items": [
+        "COUNT(*) считает все строки группы.",
+        "COUNT(comment_id) пропускает значения NULL; вместе с LEFT JOIN так считают «сколько комментариев у поста», получая 0 вместо пропажи поста.",
+        "COUNT(DISTINCT tag_id) считает уникальные значения, например различные теги на пост."
+      ]
+    },
+    {
+      "type": "heading",
+      "content": "LEFT JOIN, чтобы нули не пропали"
     },
     {
       "type": "paragraph",
-      "content": "SELECT author_id, COUNT(*) AS posts FROM posts GROUP BY author_id ORDER BY posts DESC LIMIT 10 — топ авторов. Псевдоним posts можно использовать в ORDER BY в PostgreSQL."
+      "content": "Если посчитать посты через INNER JOIN, авторы без постов исчезнут из результата, хотя нужна строка с нулём. LEFT JOIN сохраняет всех авторов, а COUNT(p.id) для них даст 0. Псевдоним столбца (AS post_count) можно использовать в ORDER BY. Топ авторов: GROUP BY, ORDER BY post_count DESC и LIMIT 10. Сохрани рабочие запросы в stats.sql в репозитории: это и документ, и быстрый тест схемы. Типичная ошибка: попытка вывести в SELECT поле, которого нет в GROUP BY, и в этом случае сообщение базы прямо называет столбец, который нужно добавить или агрегировать."
     }
   ],
   "codeExample": "SELECT u.email, COUNT(p.id) AS post_count\nFROM users u\nLEFT JOIN posts p ON p.author_id = u.id\nGROUP BY u.id, u.email\nHAVING COUNT(p.id) >= 1\nORDER BY post_count DESC;",
@@ -69,6 +85,68 @@
       "term": "LEFT JOIN",
       "meaning": "Join с сохранением всех строк левой таблицы.",
       "example": "users LEFT JOIN posts"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "database-05-q1",
+      "prompt": "Чем HAVING отличается от WHERE?",
+      "options": [
+        "Это одно и то же",
+        "HAVING работает до WHERE",
+        "WHERE фильтрует строки до группировки, HAVING группы после",
+        "WHERE фильтрует группы"
+      ],
+      "correctIndex": 2,
+      "explanation": "Условие по агрегату пишут в HAVING."
+    },
+    {
+      "id": "database-05-q2",
+      "prompt": "Чем COUNT(*) отличается от COUNT(столбец)?",
+      "options": [
+        "COUNT(столбец) пропускает NULL",
+        "COUNT(столбец) считает только строки",
+        "COUNT(*) пропускает NULL",
+        "Они одинаковы"
+      ],
+      "correctIndex": 0,
+      "explanation": "С LEFT JOIN так считают комментарии, получая 0."
+    },
+    {
+      "id": "database-05-q3",
+      "prompt": "Что нужно, чтобы авторы без постов не пропали из результата?",
+      "options": [
+        "LEFT JOIN вместо INNER JOIN",
+        "Больше индексов",
+        "DISTINCT",
+        "LIMIT"
+      ],
+      "correctIndex": 0,
+      "explanation": "LEFT JOIN сохраняет все строки слева."
+    },
+    {
+      "id": "database-05-q4",
+      "prompt": "Что нельзя выбирать в SELECT вместе с GROUP BY?",
+      "options": [
+        "Псевдоним",
+        "Столбец из GROUP BY",
+        "Столбец, которого нет в GROUP BY и не агрегированного",
+        "Агрегатную функцию"
+      ],
+      "correctIndex": 2,
+      "explanation": "База не поймёт, какое значение показывать."
+    },
+    {
+      "id": "database-05-q5",
+      "prompt": "Что считает COUNT(DISTINCT tag_id)?",
+      "options": [
+        "Только NULL",
+        "Сумму tag_id",
+        "Все строки",
+        "Количество уникальных тегов"
+      ],
+      "correctIndex": 3,
+      "explanation": "DISTINCT убирает повторы."
     }
   ]
 }

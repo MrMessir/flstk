@@ -7,24 +7,39 @@
   "goal": "Подключишь Postgres к API блога: users, posts, comments, tags с миграциями и пагинацией.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что нужно сделать"
+    },
+    {
       "type": "paragraph",
-      "content": "Замени in-memory repository на Prisma: те же routes и services, новый postsRepo. Docker Postgres + DATABASE_URL. Миграции в git. Seed: prisma db seed с demo user и постами."
+      "content": "Итог модуля: заменить хранилище в памяти из модуля про Node.js на PostgreSQL с Prisma. Маршруты и сервисы остаются, меняется только слой данных, а именно repository. Схема содержит users, posts, comments, tags и связь постов с тегами. Всё поднимается тремя командами из README: docker compose up -d, prisma migrate deploy и npm run dev."
     },
     {
       "type": "heading",
-      "content": "Согласованность с Node-модулем"
+      "content": "Обязательный набор"
     },
     {
-      "type": "paragraph",
-      "content": "OpenAPI и Postman-коллекция остаются; меняется только слой данных. Транзакция при create post + tags. Индекс на author_id и published если фильтруешь черновики."
+      "type": "list",
+      "items": [
+        "Docker Compose с PostgreSQL и переменная DATABASE_URL в .env (в репозитории только .env.example).",
+        "Схема Prisma: внешние ключи, осмысленные правила ON DELETE, уникальные ограничения (email, имя тега).",
+        "Миграции лежат в git; раскатка на чистую базу работает одной командой.",
+        "CRUD постов, комментариев и тегов через API; создание поста вместе с тегами выполняется в одной транзакции.",
+        "Список с пагинацией (page и limit или cursor) и поиском по заголовку; индексы на author_id и, если нужно, на published.",
+        "Seed: prisma db seed с демо-пользователем и постами; в репозитории нет реальных паролей и дампов."
+      ]
     },
     {
       "type": "heading",
-      "content": "Критерии сдачи"
+      "content": "Что проверить перед сдачей"
     },
     {
       "type": "paragraph",
-      "content": "compose up + migrate deploy + npm run dev — три команды в README. CRUD через БД, поиск q, page/limit. Нет сырого пароля в git."
+      "content": "Удали том базы (docker compose down -v), выполни три команды из README и убедись, что проект поднялся с нуля. Проверь Postman-коллекцию: она должна продолжать работать без изменений, ведь контракт API остался прежним. Открой план EXPLAIN для главного списка и убедись, что запрос использует индекс. В README опиши схему базы картинкой или списком таблиц, политику бэкапов и как восстановиться из дампа."
+    },
+    {
+      "type": "paragraph",
+      "content": "Типичные ошибки: забытая миграция, не добавленная в git; Prisma Client, создаваемый в каждом запросе; N+1 в списке постов с авторами; секрет базы в репозитории."
     }
   ],
   "codeExample": "model Post {\n  id        String   @id @default(uuid())\n  title     String\n  body      String\n  published Boolean  @default(false)\n  authorId  String\n  author    User     @relation(fields: [authorId], references: [id])\n  comments  Comment[]\n  tags      Tag[]    @relation(\"PostTags\")\n}",

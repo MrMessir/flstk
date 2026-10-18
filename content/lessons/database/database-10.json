@@ -7,24 +7,40 @@
   "goal": "Обернёшь создание поста и первого комментария в BEGIN/COMMIT с откатом при ошибке.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что делает транзакция"
+    },
+    {
       "type": "paragraph",
-      "content": "BEGIN открывает транзакцию. COMMIT фиксирует изменения. ROLLBACK отменяет всё с BEGIN. В Node pg: client.query('BEGIN'), несколько query, COMMIT или ROLLBACK в catch. Prisma: $transaction([...]) или interactive transaction."
+      "content": "Транзакция объединяет несколько операций в одну неделимую. BEGIN открывает её, COMMIT фиксирует все изменения, ROLLBACK отменяет всё сделанное с начала. Пример: создаём пост и первый комментарий. Если вторая вставка упала, без транзакции пост остался бы без комментария, а с транзакцией не останется ничего. Транзакции — это буква A в ACID."
     },
     {
       "type": "heading",
-      "content": "Isolation levels"
+      "content": "В коде приложения"
     },
     {
-      "type": "paragraph",
-      "content": "PostgreSQL default READ COMMITTED — каждый statement видит committed snapshot. REPEATABLE READ для отчётов в одной транзакции. Serializable реже, дороже. Для учебного CRUD достаточно default."
+      "type": "list",
+      "items": [
+        "Node pg: client.query('BEGIN'), нужные запросы, затем COMMIT; в блоке catch обязательно ROLLBACK, а в finally освободить соединение.",
+        "Prisma: prisma.$transaction([...]) для набора независимых операций или interactive transaction, если следующий шаг зависит от результата предыдущего.",
+        "Держи транзакции короткими и не вызывай внутри них внешние сервисы (почту, платёжный шлюз): пока транзакция открыта, она держит блокировки."
+      ]
     },
     {
       "type": "heading",
-      "content": "Deadlock"
+      "content": "Уровни изоляции"
     },
     {
       "type": "paragraph",
-      "content": "Две транзакции блокируют строки в разном порядке — Postgres убивает одну. Лечение: один порядок обновления таблиц, короткие транзакции."
+      "content": "По умолчанию PostgreSQL использует READ COMMITTED: каждый запрос внутри транзакции видит данные, зафиксированные к его началу. REPEATABLE READ даёт один и тот же снимок на всю транзакцию, это полезно для отчётов. SERIALIZABLE самый строгий и дорогой, при конфликте база отменяет транзакцию, и приложение должно повторить её. Для учебного CRUD хватает значения по умолчанию."
+    },
+    {
+      "type": "heading",
+      "content": "Взаимная блокировка"
+    },
+    {
+      "type": "paragraph",
+      "content": "Deadlock возникает, когда две транзакции блокируют строки в разном порядке и ждут друг друга: PostgreSQL прерывает одну из них с ошибкой. Лечение: обновлять таблицы и строки в одном и том же порядке везде, держать транзакции короткими и быть готовым повторить транзакцию при такой ошибке. Для учебной проверки открой два окна psql и намеренно получи блокировку: так ты увидишь, как транзакции ждут друг друга."
     }
   ],
   "codeExample": "BEGIN;\n\nINSERT INTO posts (author_id, title, body)\nVALUES ($1, 'Draft', 'text') RETURNING id;\n\nINSERT INTO comments (post_id, author_id, body)\nVALUES ($post_id, $1, 'First!');\n\nCOMMIT;\n-- при ошибке: ROLLBACK;",
@@ -69,6 +85,68 @@
       "term": "isolation",
       "meaning": "Степень видимости чужих незакоммиченных изменений.",
       "example": "READ COMMITTED"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "database-10-q1",
+      "prompt": "Что делает ROLLBACK?",
+      "options": [
+        "Фиксирует изменения",
+        "Удаляет таблицу",
+        "Создаёт копию",
+        "Отменяет всё, сделанное с начала транзакции"
+      ],
+      "correctIndex": 3,
+      "explanation": "Половина операций не остаётся."
+    },
+    {
+      "id": "database-10-q2",
+      "prompt": "Что нужно сделать в блоке catch при ошибке в транзакции в Node pg?",
+      "options": [
+        "Ничего",
+        "ROLLBACK, а в finally освободить соединение",
+        "COMMIT",
+        "Перезапустить сервер"
+      ],
+      "correctIndex": 1,
+      "explanation": "Иначе соединение остаётся занятым."
+    },
+    {
+      "id": "database-10-q3",
+      "prompt": "Какой уровень изоляции в PostgreSQL по умолчанию?",
+      "options": [
+        "READ COMMITTED",
+        "READ UNCOMMITTED",
+        "REPEATABLE READ",
+        "SERIALIZABLE"
+      ],
+      "correctIndex": 0,
+      "explanation": "Для учебного CRUD достаточно."
+    },
+    {
+      "id": "database-10-q4",
+      "prompt": "Что такое deadlock?",
+      "options": [
+        "Ошибка индекса",
+        "Две транзакции блокируют строки в разном порядке и ждут друг друга",
+        "Потеря соединения",
+        "Переполнение диска"
+      ],
+      "correctIndex": 1,
+      "explanation": "PostgreSQL прервёт одну из них."
+    },
+    {
+      "id": "database-10-q5",
+      "prompt": "Почему транзакции держат короткими?",
+      "options": [
+        "Так требует Prisma",
+        "Чтобы экономить память экрана",
+        "Пока она открыта, она держит блокировки",
+        "Транзакции платные"
+      ],
+      "correctIndex": 2,
+      "explanation": "Не вызывай внутри внешние сервисы."
     }
   ]
 }

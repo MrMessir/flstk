@@ -46,6 +46,9 @@ export type QuizQuestion = {
   explanation?: string;
 };
 
+/** То, что видит браузер: без правильного ответа и пояснений. */
+export type PublicQuizQuestion = Pick<QuizQuestion, "id" | "prompt" | "options">;
+
 export type LessonStepType = "theory" | "quiz" | "practice" | "project";
 
 export type TheoryStep = {
@@ -58,7 +61,8 @@ export type TheoryStep = {
 export type QuizStep = {
   type: "quiz";
   title: string;
-  questions: QuizQuestion[];
+  /** На сервере здесь полные вопросы, в браузер уходят только PublicQuizQuestion. */
+  questions: PublicQuizQuestion[];
 };
 
 export type PracticeStep = {

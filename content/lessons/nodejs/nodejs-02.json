@@ -7,8 +7,12 @@
   "goal": "Прочитаешь файл через fs/promises и поймёшь, когда нужен stream вместо readFile.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Встроенные модули"
+    },
+    {
       "type": "paragraph",
-      "content": "Node поставляется с модулями node:fs, node:path, node:http и другими — их не ставят через npm. Для учебного API чаще всего нужны работа с файлами и путями: конфиг, загрузки, seed-данные. Асинхронный API на промисах (fs/promises) удобнее колбэков: await readFile вместо вложенных функций."
+      "content": "Node поставляется с готовыми модулями: node:fs (файлы), node:path (пути), node:http, node:crypto, node:os и другими. Ставить их через npm не нужно. Для учебного API чаще всего нужны файлы и пути: чтение конфига, загрузки, seed-данные. Используй промисную версию fs/promises: const text = await readFile(file, 'utf8') намного читаемее колбэков и вложенных функций."
     },
     {
       "type": "heading",
@@ -16,15 +20,24 @@
     },
     {
       "type": "paragraph",
-      "content": "path.join склеивает сегменты с правильным разделителем ОС. path.resolve от текущей директории или __dirname (в CommonJS) даёт абсолютный путь. Никогда не склеивай пути строкой \"data/\" + name — на Windows сломается."
+      "content": "Не склеивай пути строками: на Windows разделитель другой, и легко получить лишний или недостающий слэш. path.join('data', 'posts.json') делает это правильно, path.resolve даёт абсолютный путь, path.extname — расширение. В ES-модулях нет переменной __dirname; её заменяют import.meta.dirname (в современных версиях Node) или конструкцией на import.meta.url и fileURLToPath. Относительный путь вида './data/posts.json' считается от папки, откуда запущен процесс, а не от файла со скриптом, и это частая причина «файл не найден»."
     },
     {
       "type": "heading",
-      "content": "Потоки для больших файлов"
+      "content": "readFile и stream"
+    },
+    {
+      "type": "list",
+      "items": [
+        "readFile загружает весь файл в память: для маленьких JSON и конфигов это удобно.",
+        "Для больших файлов (лог на гигабайт, загрузка видео) используют потоки: createReadStream читает кусками по несколько десятков килобайт, память не растёт.",
+        "Потоки соединяют через pipeline из node:stream/promises: он сам закрывает все потоки и передаёт ошибку, поэтому лучше ручного .pipe().",
+        "Поток можно подключить прямо к ответу: pipeline(createReadStream(file), res)."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "readFile загружает весь файл в память. Для логов на гигабайты используй createReadStream и pipe в ответ или другой поток. Поток обрабатывает куски данных; event loop между чанками успевает принимать новые запросы."
+      "content": "Запись: writeFile перезаписывает файл целиком. Если два запроса пишут в один JSON одновременно, данные потеряются: это одна из причин, по которой потом нужна база. Всегда обрабатывай ошибки: ENOENT (нет файла), EACCES (нет прав)."
     }
   ],
   "codeExample": "import { readFile, writeFile } from \"node:fs/promises\";\nimport { createReadStream } from \"node:fs\";\nimport path from \"node:path\";\n\nconst file = path.join(process.cwd(), \"data\", \"posts.json\");\nconst raw = await readFile(file, \"utf8\");\nconst posts = JSON.parse(raw);\n\n// большой файл — stream\nconst stream = createReadStream(file);\nstream.pipe(process.stdout);",
@@ -73,6 +86,68 @@
       "term": "path.join",
       "meaning": "Безопасная склейка сегментов пути.",
       "example": "path.join(\"data\", \"users.json\")"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-02-q1",
+      "prompt": "Почему путь лучше собирать path.join, а не строкой?",
+      "options": [
+        "Он создаёт файл",
+        "Он учитывает разделители системы и не оставляет лишних слэшей",
+        "Он шифрует путь",
+        "Он быстрее"
+      ],
+      "correctIndex": 1,
+      "explanation": "На Windows и Linux разделители разные."
+    },
+    {
+      "id": "nodejs-02-q2",
+      "prompt": "Когда вместо readFile нужен stream?",
+      "options": [
+        "Для паролей",
+        "Для больших файлов, чтобы не загружать их целиком в память",
+        "Для переменных окружения",
+        "Для маленьких JSON"
+      ],
+      "correctIndex": 1,
+      "explanation": "Поток читает кусками."
+    },
+    {
+      "id": "nodejs-02-q3",
+      "prompt": "Чем pipeline лучше ручного .pipe()?",
+      "options": [
+        "Работает быстрее всегда",
+        "Копирует базу",
+        "Не требует потоков",
+        "Закрывает все потоки и передаёт ошибки"
+      ],
+      "correctIndex": 3,
+      "explanation": "Это безопаснее для ресурсов."
+    },
+    {
+      "id": "nodejs-02-q4",
+      "prompt": "Почему в ES-модулях нет __dirname?",
+      "options": [
+        "Это переменная CommonJS; её заменяют import.meta.dirname или fileURLToPath",
+        "Она есть, но называется иначе",
+        "Её удалили из Node навсегда",
+        "Нужен пакет"
+      ],
+      "correctIndex": 0,
+      "explanation": "В ESM другая модель путей."
+    },
+    {
+      "id": "nodejs-02-q5",
+      "prompt": "Что опасно при записи одного JSON-файла двумя запросами одновременно?",
+      "options": [
+        "Сервер остановится",
+        "Данные могут потеряться",
+        "Файл удалится",
+        "Ничего"
+      ],
+      "correctIndex": 1,
+      "explanation": "Одна из причин перейти на базу."
     }
   ]
 }

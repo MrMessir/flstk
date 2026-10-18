@@ -7,8 +7,29 @@
   "goal": "Сделаешь controlled input и отправку формы без перезагрузки страницы.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Управляемые поля ввода"
+    },
+    {
       "type": "paragraph",
-      "content": "Controlled component: value input берётся из state, onChange обновляет state. Так React — единственный источник правды для текста поля. onSubmit формы: e.preventDefault(), читаешь state, валидируешь, сбрасываешь поле setTitle(''). Не используй document.querySelector для значений формы в React-приложении."
+      "content": "Управляемый (controlled) компонент: значение поля хранится в state, а не в DOM. <input value={title} onChange={e => setTitle(e.target.value)} />. Так React — единственный источник правды: можно очистить поле, подставить значение, проверить его на лету. Читать значения формы через document.querySelector в React-приложении не стоит: ты обходишь систему и получаешь рассинхрон."
+    },
+    {
+      "type": "heading",
+      "content": "Отправка формы"
+    },
+    {
+      "type": "list",
+      "items": [
+        "onSubmit на form: в обработчике вызови e.preventDefault(), иначе страница перезагрузится.",
+        "Перед использованием проверь данные: trim(), непустое значение, ограничения длины.",
+        "После успеха очисти поле: setTitle('') и верни фокус при необходимости.",
+        "Кнопке внутри формы задавай type='submit', а кнопкам вне отправки type='button'."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Enter в поле автоматически отправляет форму, если есть кнопка submit: отдельный обработчик клавиши не нужен. Для чекбоксов используется checked и e.target.checked, для select — value."
     },
     {
       "type": "heading",
@@ -16,15 +37,7 @@
     },
     {
       "type": "paragraph",
-      "content": "SyntheticEvent оборачивает нативное событие. onClick={(e) => ...}, onChange для input, onSubmit для form. Для checkbox value заменяется на checked: boolean. textarea тоже controlled через value + onChange. name и id связывают с label htmlFor для a11y."
-    },
-    {
-      "type": "heading",
-      "content": "Ошибки валидации"
-    },
-    {
-      "type": "paragraph",
-      "content": "Храни error: string | null в state. При submit если title.trim() === '' — setError('Введите текст'), иначе setError(null) и добавь todo. Показывай error под полем с role=\"alert\". disabled на кнопке при loading optional."
+      "content": "События React оборачиваются в единый объект (SyntheticEvent), поэтому работают одинаково во всех браузерах. Типы событий в TypeScript: ChangeEvent<HTMLInputElement>, FormEvent<HTMLFormElement>, MouseEvent<HTMLButtonElement>. Передавай функцию, а не результат её вызова: onClick={handle}, а не onClick={handle()}: во втором случае функция выполнится при отрисовке. Если форма растёт, один state-объект с полями удобнее десяти отдельных useState, но обновляй его неизменяемо: setForm(prev => ({ ...prev, title: value })). Позже такие формы переносят в React Hook Form."
     }
   ],
   "codeExample": "import { useState, FormEvent } from \"react\";\n\nexport function TodoForm({ onAdd }: { onAdd: (title: string) => void }) {\n  const [title, setTitle] = useState(\"\");\n  const [error, setError] = useState<string | null>(null);\n\n  function handleSubmit(e: FormEvent) {\n    e.preventDefault();\n    const value = title.trim();\n    if (!value) {\n      setError(\"Введите задачу\");\n      return;\n    }\n    setError(null);\n    onAdd(value);\n    setTitle(\"\");\n  }\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <label htmlFor=\"title\">Задача</label>\n      <input id=\"title\" value={title} onChange={(e) => setTitle(e.target.value)} />\n      {error && <p role=\"alert\">{error}</p>}\n      <button type=\"submit\">Добавить</button>\n    </form>\n  );\n}",
@@ -78,6 +91,68 @@
       "term": "trim",
       "meaning": "Обрезка пробелов по краям строки.",
       "example": "title.trim()"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-05-q1",
+      "prompt": "Что такое управляемый (controlled) input?",
+      "options": [
+        "Его значение хранится в state, onChange его обновляет",
+        "Поле, управляемое CSS",
+        "Поле без обработчиков",
+        "Поле только для чтения"
+      ],
+      "correctIndex": 0,
+      "explanation": "React — единственный источник правды."
+    },
+    {
+      "id": "react-05-q2",
+      "prompt": "Зачем e.preventDefault() в onSubmit?",
+      "options": [
+        "Чтобы отправить запрос",
+        "Чтобы очистить поле",
+        "Чтобы изменить стили",
+        "Чтобы страница не перезагружалась"
+      ],
+      "correctIndex": 3,
+      "explanation": "Иначе форма отправится стандартным способом."
+    },
+    {
+      "id": "react-05-q3",
+      "prompt": "Как правильно передать обработчик?",
+      "options": [
+        "onClick={() => handle}",
+        "onClick=handle",
+        "onClick={handle}",
+        "onClick={handle()}"
+      ],
+      "correctIndex": 2,
+      "explanation": "Во втором случае функция выполнится при отрисовке."
+    },
+    {
+      "id": "react-05-q4",
+      "prompt": "Какой тип у события изменения поля ввода в TypeScript?",
+      "options": [
+        "MouseEvent",
+        "FormEvent",
+        "KeyboardEvent<Window>",
+        "React.ChangeEvent<HTMLInputElement>"
+      ],
+      "correctIndex": 3,
+      "explanation": "Значение лежит в e.target.value."
+    },
+    {
+      "id": "react-05-q5",
+      "prompt": "Как обновить объект состояния формы?",
+      "options": [
+        "form.title = value",
+        "Object.assign(form, ...)",
+        "setForm(prev => ({ ...prev, title: value }))",
+        "setForm.title(value)"
+      ],
+      "correctIndex": 2,
+      "explanation": "Нужна новая копия объекта."
     }
   ]
 }

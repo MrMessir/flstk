@@ -7,24 +7,37 @@
   "goal": "Подключишь npm-пакет и типы из @types или встроенных .d.ts.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Типы у библиотек"
+    },
+    {
       "type": "paragraph",
-      "content": "Многие пакеты пишут на JS, но публикуют типы внутри (\"types\" в package.json) или отдельным @types/lodash. npm install lodash && npm install -D @types/lodash даёт автодополнение для import { debounce } from 'lodash-es'. Если типов нет — declare module 'legacy-lib' в src/legacy-lib.d.ts с минимальным API."
+      "content": "Многие пакеты написаны на JavaScript, но дают типы тремя способами. Пакет публикует их сам (поле types в package.json, как у dayjs и zod): ничего ставить не нужно. Типы лежат отдельно в @types: npm install -D @types/lodash, версия типов должна быть близка к версии пакета. Типов нет совсем: тогда пишут заглушку declare module 'legacy-lib'; в файле .d.ts, описывая только то, что используешь."
     },
     {
       "type": "heading",
-      "content": "moduleResolution и imports"
+      "content": "Что проверить в проекте"
     },
     {
-      "type": "paragraph",
-      "content": "В tsconfig \"moduleResolution\": \"bundler\" или \"node\" влияет на поиск типов. ESM import axios from 'axios' vs require в CJS — Vite проекты на import. Типы только для devDependencies (@types/*) не попадают в runtime bundle. skipLibCheck: true ускоряет сборку, пропуская проверку .d.ts в node_modules."
+      "type": "list",
+      "items": [
+        "Подсказки и ошибки появились после установки пакета? Значит, типы подключены.",
+        "В tsconfig задан include для папки с .d.ts, иначе файл с объявлениями не подхватится.",
+        "moduleResolution и поля esModuleInterop/allowSyntheticDefaultImports влияют на форму import default; ошибки вида «has no default export» чаще всего из-за них.",
+        "skipLibCheck: true пропускает проверку файлов .d.ts из node_modules, ускоряет сборку и избавляет от чужих ошибок типов."
+      ]
     },
     {
       "type": "heading",
-      "content": "Ambient declarations"
+      "content": "Свои объявления"
     },
     {
       "type": "paragraph",
-      "content": "declare global расширяет Window (analytics.track). declare const __APP_VERSION__: string — переменная от bundler. Минимальный declare module описывает только то, что ты реально вызываешь — не копируй всю библиотеку. При обновлении пакета сверь changelog: типы могут стать встроенными и @types больше не нужен."
+      "content": "Минимальная заглушка: declare module 'legacy-lib' { export function parse(input: string): unknown } лежит в src/legacy-lib.d.ts. Если описываешь пакет для себя и своей команды, возвращай unknown вместо any, чтобы использование всё равно проходило проверку. Для глобальных переменных (например, window.__CONFIG__) расширяй интерфейс Window через declare global."
+    },
+    {
+      "type": "paragraph",
+      "content": "Выбор библиотек: предпочитай пакеты со встроенными типами, это меньше расхождений между кодом и типами. Практика: поставь dayjs или date-fns, убедись, что тип результата виден в редакторе, и проверь, нужен ли для них пакет @types. Если ставишь пакет без типов, сначала поищи его на DefinitelyTyped (@types/имя) и только потом пиши заглушку сам."
     }
   ],
   "codeExample": "// npm i dayjs && npm i -D @types/... не нужен — dayjs с типами\nimport dayjs from \"dayjs\";\n\nconst label = dayjs().format(\"YYYY-MM-DD\");\nconsole.log(label);\n\n// src/vite-env.d.ts\n/// <reference types=\"vite/client\" />",
@@ -78,6 +91,68 @@
       "term": "skipLibCheck",
       "meaning": "Не проверять типы в node_modules.",
       "example": "tsconfig option"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "typescript-10-q1",
+      "prompt": "Откуда у пакета могут быть типы?",
+      "options": [
+        "Только из @types",
+        "Только из интернета",
+        "Только из JS",
+        "Встроены в пакет, в @types или написаны вручную через declare module"
+      ],
+      "correctIndex": 3,
+      "explanation": "Три способа подключения."
+    },
+    {
+      "id": "typescript-10-q2",
+      "prompt": "Что делает skipLibCheck: true?",
+      "options": [
+        "Собирает проект",
+        "Пропускает проверку .d.ts из node_modules",
+        "Отключает все проверки",
+        "Удаляет типы"
+      ],
+      "correctIndex": 1,
+      "explanation": "Ускоряет сборку и избавляет от чужих ошибок."
+    },
+    {
+      "id": "typescript-10-q3",
+      "prompt": "Что возвращать в заглушке declare module, если тип неизвестен?",
+      "options": [
+        "never",
+        "void",
+        "unknown вместо any",
+        "any"
+      ],
+      "correctIndex": 2,
+      "explanation": "Использование всё равно будет проверяться."
+    },
+    {
+      "id": "typescript-10-q4",
+      "prompt": "Что делать, если у библиотеки нет типов?",
+      "options": [
+        "Отказаться от библиотеки всегда",
+        "Отключить TS",
+        "Поискать @types/имя, затем написать .d.ts",
+        "Использовать eval"
+      ],
+      "correctIndex": 2,
+      "explanation": "DefinitelyTyped часто есть."
+    },
+    {
+      "id": "typescript-10-q5",
+      "prompt": "Как расширить глобальный Window?",
+      "options": [
+        "Нельзя",
+        "declare global с интерфейсом Window",
+        "Через var",
+        "Через JSON"
+      ],
+      "correctIndex": 1,
+      "explanation": "Например, window.__CONFIG__."
     }
   ]
 }

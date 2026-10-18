@@ -204,6 +204,17 @@ console.log("authored quiz lessons:", metas.filter((m) => {
       if (n >= 3) fail.push(`${part}: блок теории повторяется в ${n} уроках: «${t.slice(0, 50)}…»`);
     }
   }
+  // Тесты: у каждого не-проектного урока должно быть 5 авторских вопросов.
+  const noStandardQuiz = rawLessons
+    .filter(({ d }) => !d.id.includes("-project") && (d.quiz?.length ?? 0) !== 5)
+    .map(({ d }) => d.id);
+  for (const { d } of rawLessons) {
+    for (const q of d.quiz ?? []) {
+      if (new Set(q.options).size !== q.options.length) fail.push(`${d.id}: повторяются варианты ответа в ${q.id}`);
+      if (!Number.isInteger(q.correctIndex) || q.correctIndex >= q.options.length) fail.push(`${d.id}: неверный correctIndex в ${q.id}`);
+    }
+  }
+  if (noStandardQuiz.length) console.warn(`Предупреждение: авторского теста из 5 вопросов нет в ${noStandardQuiz.length} уроках из ${rawLessons.filter(({ d }) => !d.id.includes("-project")).length}`);
   if (short.length) console.warn(`Предупреждение: теория короче 900 символов в ${short.length} уроках из ${rawLessons.length} (первые: ${short.slice(0, 12).join(", ")})`);
 }
 

@@ -7,24 +7,37 @@
   "goal": "Разделишь HTTP-слой, бизнес-логику и доступ к данным без толстых контроллеров.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Тонкие маршруты"
+    },
+    {
       "type": "paragraph",
-      "content": "Route handler не должен содержать SQL и сложные if на десять экранов. Типичные слои: routes (HTTP, статус, валидация), services (правила: «автор может редактировать свой пост»), repositories (чтение/запись в БД или файл). Так unit-тесты бьют по service без поднятия Express."
+      "content": "Обработчик маршрута не должен содержать SQL и десятки вложенных if. Его работа: принять запрос, вызвать сервис и вернуть ответ. Типичные слои: routes (HTTP, коды ответа, валидация), services (бизнес-правила: «автор может править только свой пост»), repositories (чтение и запись данных). Так сервис тестируют без поднятия Express и без базы: достаточно подставить макет репозитория."
     },
     {
       "type": "heading",
-      "content": "Зависимости между слоями"
+      "content": "Направление зависимостей"
     },
     {
-      "type": "paragraph",
-      "content": "Routes вызывают только services. Services вызывают repositories. Repository не знает про req/res. Направление зависимостей внутрь — если завтра Postgres заменишь на Prisma, меняешь repository, а service остаётся."
+      "type": "list",
+      "items": [
+        "routes вызывают только services; services вызывают repositories; обратных вызовов нет.",
+        "Сервис не знает про req, res и коды HTTP: он принимает обычные аргументы и бросает доменные ошибки (NotFoundError, ForbiddenError).",
+        "Repository не содержит бизнес-правил: только операции с данными (findById, create).",
+        "Преобразование ошибок в коды выполняет центральный обработчик из прошлого урока."
+      ]
     },
     {
       "type": "heading",
-      "content": "In-memory repository для старта"
+      "content": "Зачем это на практике"
     },
     {
       "type": "paragraph",
-      "content": "До подключения БД postsRepository может хранить Map или массив в памяти. Интерфейс findById, create, list — тот же, что потом у Prisma. Проектный урок заменит реализацию, не переписывая routes."
+      "content": "Сегодня данные лежат в Map в памяти, а через неделю будут в PostgreSQL. Если слои разделены, меняется только repository, а маршруты и сервисы остаются прежними. Проверка архитектуры: найди в маршруте всё, что работает с req.body, и убедись, что бизнес-решения там не принимаются. Если ты видишь проверку роли или владельца прямо в обработчике, перенеси её в сервис."
+    },
+    {
+      "type": "paragraph",
+      "content": "Не создавай слои заранее на каждую мелочь. Для маленького CRUD достаточно трёх папок и нескольких файлов; усложнять структуру стоит, когда появляется реальная логика, которую надо тестировать отдельно. Пример правила для сервиса: updatePost(userId, postId, data) загружает пост, сравнивает authorId с userId и бросает ForbiddenError, а маршрут лишь превращает эту ошибку в код 403."
     }
   ],
   "codeExample": "// routes/posts.js\nrouter.post(\"/\", validateBody(createPostSchema), async (req, res, next) => {\n  try {\n    const post = await postsService.create(req.validated);\n    res.status(201).json(post);\n  } catch (e) {\n    next(e);\n  }\n});\n\n// services/postsService.js\nexport async function create(dto) {\n  return postsRepo.insert(dto);\n}\n\n// repositories/postsRepo.js\nconst store = new Map();\nexport function insert(dto) {\n  const id = crypto.randomUUID();\n  const row = { id, ...dto, createdAt: new Date().toISOString() };\n  store.set(id, row);\n  return row;\n}",
@@ -74,36 +87,63 @@
   "quiz": [
     {
       "id": "nodejs-11-q1",
-      "prompt": "Кто должен содержать SQL/обращения к БД?",
+      "prompt": "Что должно делать route handler?",
       "options": [
-        "repository",
-        "route handler напрямую всегда",
-        "CSS-модуль",
-        "browser localStorage"
+        "Содержать SQL",
+        "Принять запрос, вызвать сервис и вернуть ответ",
+        "Писать файлы",
+        "Хранить бизнес-правила"
       ],
-      "correctIndex": 0
+      "correctIndex": 1,
+      "explanation": "Остальное — в сервисах и репозиториях."
     },
     {
       "id": "nodejs-11-q2",
-      "prompt": "Где жить бизнес-правилу «автор редактирует только свой пост»?",
+      "prompt": "Где лежит правило «автор может править только свой пост»?",
       "options": [
-        "service",
-        "Dockerfile",
-        "favicon.ico",
-        "nginx gzip"
+        "В CSS",
+        "В repository",
+        "В миграции",
+        "В service"
       ],
-      "correctIndex": 0
+      "correctIndex": 3,
+      "explanation": "Сервис содержит бизнес-правила."
     },
     {
       "id": "nodejs-11-q3",
-      "prompt": "Route может импортировать repository напрямую?",
+      "prompt": "Что сервис не должен знать?",
       "options": [
-        "Нет, лучше только service — иначе слои смешиваются",
-        "Да, это единственный правильный способ",
-        "Только в React",
-        "Только через WebSocket"
+        "Про req, res и коды HTTP",
+        "Про бизнес-правила",
+        "Про данные",
+        "Про ошибки"
       ],
-      "correctIndex": 0
+      "correctIndex": 0,
+      "explanation": "Он бросает доменные ошибки, а коды ставит обработчик."
+    },
+    {
+      "id": "nodejs-11-q4",
+      "prompt": "Что меняется при переходе с Map на PostgreSQL, если слои разделены?",
+      "options": [
+        "Весь проект",
+        "Только repository",
+        "Все сервисы",
+        "Все маршруты"
+      ],
+      "correctIndex": 1,
+      "explanation": "Остальные слои остаются прежними."
+    },
+    {
+      "id": "nodejs-11-q5",
+      "prompt": "Когда стоит усложнять структуру проекта?",
+      "options": [
+        "Никогда",
+        "Только для больших команд",
+        "Когда появляется логика, которую нужно тестировать отдельно",
+        "Сразу на старте, всегда"
+      ],
+      "correctIndex": 2,
+      "explanation": "Для маленького CRUD хватает простого деления."
     }
   ]
 }

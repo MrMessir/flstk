@@ -7,29 +7,39 @@
   "goal": "Перенесёшь todo или погоду на Vite+TS с типами, zod и npm run typecheck.",
   "theory": [
     {
-      "type": "paragraph",
-      "content": "Итог TypeScript-модуля — тот же функционал, что в JS-проектах, но с типами на границах: модели данных, API, функции storage. Выбери todo со списком Task { id, title, done } или погоду с типизированным ответом Open-Meteo. strict: true и скрипт typecheck обязательны в package.json."
-    },
-    {
       "type": "heading",
-      "content": "Структура src/"
+      "content": "Что нужно сделать"
     },
     {
       "type": "paragraph",
-      "content": "types.ts или schemas.ts — интерфейсы и zod. api.ts — fetch с safeParse. ui.ts или компоненты — работа с DOM. Не смешивай unknown JSON и render: после parse работай только с Post или WeatherDTO. localStorage сериализуй через JSON и проверяй массив z.array(TaskSchema) при load."
+      "content": "Итог модуля — перенести учебный проект (список задач или погоду) на TypeScript с типами на границах системы. Типы должны быть там, где данные приходят и уходят: модели, ответы API, работа с хранилищем. Выбери вариант: todo с моделью Task { id, title, done } или приложение погоды с типизированным ответом открытого API. Функциональность остаётся прежней, меняется надёжность."
     },
     {
       "type": "heading",
-      "content": "Критерии сдачи"
+      "content": "Обязательный минимум"
     },
     {
       "type": "list",
       "items": [
-        "npm run build и npm run typecheck без ошибок.",
-        "Минимум одна zod-схема для внешних данных (API или load).",
-        "README: команды, скрин, что типизировано.",
-        "Репозиторий GitHub."
+        "В tsconfig включён strict: true.",
+        "В package.json есть скрипт typecheck (tsc --noEmit), и он проходит без ошибок.",
+        "Типы моделей лежат в types.ts или рядом со схемами zod (schemas.ts); типы выводятся через z.infer.",
+        "Данные из fetch и localStorage проходят проверку схемой, ошибки обрабатываются и показываются пользователю.",
+        "В коде нет any и лишних приведений as; если исключение необходимо, оно прокомментировано.",
+        "Функции хранилища и API имеют явные типы параметров и результата."
       ]
+    },
+    {
+      "type": "heading",
+      "content": "Структура и проверка"
+    },
+    {
+      "type": "paragraph",
+      "content": "src/types.ts или schemas.ts для моделей, api.ts для запросов, storage.ts для localStorage, main.ts для интерфейса. Запусти npm run typecheck и npm run build, оба должны проходить. Намеренно сломай модель (переименуй поле) и убедись, что компилятор показывает все места, где нужны правки: в этом и польза типов."
+    },
+    {
+      "type": "paragraph",
+      "content": "В README опиши, какие границы проверяются схемами, как запустить typecheck и какие решения принял. Типичные причины отказа: strict выключен, any вместо unknown, as User на ответе fetch вместо проверки, отсутствие скрипта typecheck. Перед сдачей запусти typecheck в чистом клонированном репозитории: так ты убедишься, что проект собирается не только на твоём компьютере."
     }
   ],
   "codeExample": "import { z } from \"zod\";\n\nexport const TaskSchema = z.object({\n  id: z.string(),\n  title: z.string().min(1),\n  done: z.boolean(),\n});\n\nexport type Task = z.infer<typeof TaskSchema>;\n\nexport function loadTasks(): Task[] {\n  const raw = localStorage.getItem(\"tasks\");\n  if (!raw) return [];\n  const parsed = z.array(TaskSchema).safeParse(JSON.parse(raw));\n  return parsed.success ? parsed.data : [];\n}",

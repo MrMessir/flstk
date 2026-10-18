@@ -8,28 +8,32 @@
   "theory": [
     {
       "type": "heading",
-      "content": "async/await читается сверху вниз"
+      "content": "Промисы, которые читаются как обычный код"
     },
     {
       "type": "paragraph",
-      "content": "async-функция всегда возвращает промис. await ждёт результат внутри неё. Ошибки лови try/catch вокруг await — это как синхронный код, только с паузами на сеть."
+      "content": "async function всегда возвращает промис. Внутри неё await останавливает выполнение функции до результата промиса и отдаёт значение: const data = await wait(500, \"ok\"). Остальной код страницы при этом не блокируется: ждёт только эта функция. Код читается сверху вниз, как синхронный, но с паузами на сеть. await работает только внутри async-функций (а также на верхнем уровне модуля)."
     },
     {
-      "type": "paragraph",
-      "content": "Promise.all запускает несколько запросов параллельно и ждёт все. Если один упал — падает весь набор (есть allSettled, если нужно дождаться всех статусов)."
-    },
-    {
-      "type": "paragraph",
-      "content": "async-функция всегда возвращает промис. Внутри неё await паузит выполнение до результата. Пишется почти как обычный код сверху вниз."
+      "type": "heading",
+      "content": "Ошибки и параллельность"
     },
     {
       "type": "list",
       "items": [
-        "async function load() { ... }",
-        "const value = await wait(500, \"ok\");",
-        "Ошибки лови try/catch/finally.",
-        "await в цикле — по очереди. Несколько независимых — лучше Promise.all."
+        "Ошибки лови через try/catch вокруг await: так же, как в обычном коде.",
+        "Последовательные await выполняются по очереди: два независимых запроса подряд займут сумму времени.",
+        "Независимые операции запускай параллельно: const [a, b] = await Promise.all([loadA(), loadB()]).",
+        "Забытый await возвращает промис вместо значения, и дальше код работает с «обещанием»: типичная ошибка, видна по выводу Promise { <pending> }."
       ]
+    },
+    {
+      "type": "heading",
+      "content": "Типичные ловушки"
+    },
+    {
+      "type": "paragraph",
+      "content": "await внутри forEach не работает так, как ожидается: forEach не ждёт промисы. Для последовательной обработки используй for…of, для параллельной — Promise.all с map. Всегда обрабатывай ошибки на границе: в обработчике события оборачивай вызов в try/catch и показывай пользователю сообщение, а не оставляй необработанный reject. async-функция в обработчике click возвращает промис, который браузер не ждёт. Практика: перепиши цепочку then из прошлого урока на async/await, добавь try/catch с показом ошибки, затем замерь время двух запросов последовательно и параллельно через console.time и console.timeEnd. Должна получиться заметная разница."
     }
   ],
   "codeExample": "function wait(ms, value) {\n  return new Promise((resolve) => setTimeout(() => resolve(value), ms));\n}\n\nasync function run() {\n  try {\n    const a = await wait(400, \"а\");\n    const b = await wait(400, \"б\");\n    console.log(a, b);\n    const both = await Promise.all([wait(200, 1), wait(200, 2)]);\n    console.log(both);\n  } catch (error) {\n    console.error(error);\n  } finally {\n    console.log(\"конец\");\n  }\n}\n\nrun();",
@@ -78,6 +82,68 @@
       "term": "try / catch",
       "meaning": "Поймать ошибку при await или рискованном коде.",
       "example": "try { await load() } catch (e) { ... }"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "js-18-q1",
+      "prompt": "Что всегда возвращает async-функция?",
+      "options": [
+        "Массив",
+        "undefined",
+        "Значение напрямую",
+        "Промис"
+      ],
+      "correctIndex": 3,
+      "explanation": "Результат оборачивается в промис."
+    },
+    {
+      "id": "js-18-q2",
+      "prompt": "Как ловить ошибки при использовании await?",
+      "options": [
+        "Никак",
+        "if вокруг await",
+        "try/catch вокруг await",
+        "setTimeout"
+      ],
+      "correctIndex": 2,
+      "explanation": "Так же, как в обычном коде."
+    },
+    {
+      "id": "js-18-q3",
+      "prompt": "Как выполнить два независимых запроса параллельно?",
+      "options": [
+        "Два forEach",
+        "Два await подряд",
+        "Один while",
+        "await Promise.all([a(), b()])"
+      ],
+      "correctIndex": 3,
+      "explanation": "Подряд — суммарное время."
+    },
+    {
+      "id": "js-18-q4",
+      "prompt": "Почему await внутри forEach работает не так, как ожидается?",
+      "options": [
+        "forEach не ждёт промисы",
+        "await запрещён в функциях",
+        "Он удалён",
+        "Он слишком быстрый"
+      ],
+      "correctIndex": 0,
+      "explanation": "Используй for…of или Promise.all с map."
+    },
+    {
+      "id": "js-18-q5",
+      "prompt": "Что значит вывод Promise { <pending> } вместо значения?",
+      "options": [
+        "Значение пустое",
+        "Забыт await",
+        "Ошибка сети",
+        "Промис выполнен"
+      ],
+      "correctIndex": 1,
+      "explanation": "Получили промис, а не результат."
     }
   ]
 }

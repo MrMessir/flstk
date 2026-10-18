@@ -7,24 +7,37 @@
   "goal": "Настроишь cors middleware с явным origin без wildcard на cookie-based API.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что такое CORS на самом деле"
+    },
+    {
       "type": "paragraph",
-      "content": "Браузер блокирует XHR с frontend origin A на API origin B без CORS headers. Access-Control-Allow-Origin должен echo конкретный origin, не * если credentials: include и cookies. Preflight OPTIONS для PATCH с Authorization."
+      "content": "Браузер по умолчанию не даёт странице с одного origin (протокол, домен и порт) читать ответы другого origin. CORS — набор заголовков, которыми сервер разрешает это конкретным сайтам. Важно: ограничение исполняет только браузер. Postman и curl его игнорируют, поэтому CORS не заменяет аутентификацию и защиту API, а лишь запрещает чужим страницам читать ответы от имени пользователя."
     },
     {
       "type": "heading",
-      "content": "credentials и headers"
+      "content": "Какие заголовки важны"
     },
     {
-      "type": "paragraph",
-      "content": "cors({ origin: 'http://localhost:5173', credentials: true }). Allow-Headers: Content-Type, Authorization. Expose-Headers: X-Request-Id optional. На prod whitelist env CORS_ORIGINS split comma."
+      "type": "list",
+      "items": [
+        "Access-Control-Allow-Origin: конкретный адрес сайта. Если запрос с cookie (credentials: 'include'), значение * браузер не примет.",
+        "Access-Control-Allow-Credentials: true разрешает cookie и авторизацию.",
+        "Access-Control-Allow-Headers: Content-Type, Authorization, если фронтенд их отправляет.",
+        "Preflight: перед нестандартными запросами (PATCH, заголовок Authorization) браузер сначала отправляет OPTIONS; сервер должен на него ответить разрешающими заголовками."
+      ]
     },
     {
       "type": "heading",
-      "content": "Не путать с auth"
+      "content": "Настройка на сервере"
     },
     {
       "type": "paragraph",
-      "content": "CORS — только browser enforcement. curl/postman игнорируют CORS. Security auth остаётся на JWT/session."
+      "content": "Пакет cors принимает функцию origin: ты сравниваешь адрес запроса со списком из переменной CORS_ORIGINS (разделитель запятая) и разрешаешь только совпавшие. Для разработки в список входит http://localhost:5173, для прода реальный домен. Запросы без заголовка Origin (сервер-сервер, curl) обычно пропускают, потому что они не браузерные."
+    },
+    {
+      "type": "paragraph",
+      "content": "Диагностика: ошибка «blocked by CORS policy» всегда приходит из браузера. Открой вкладку Network, найди OPTIONS-запрос и посмотри заголовки ответа: чаще всего не разрешён origin, не включён credentials или не добавлен нужный заголовок в Allow-Headers. Не «лечи» ошибку звёздочкой в Allow-Origin: так ты откроешь API для любого сайта."
     }
   ],
   "codeExample": "import cors from \"cors\";\n\nconst allowed = (process.env.CORS_ORIGINS ?? \"http://localhost:5173\").split(\",\");\n\napp.use(\n  cors({\n    origin(origin, cb) {\n      if (!origin || allowed.includes(origin)) return cb(null, true);\n      cb(new Error(\"CORS blocked\"));\n    },\n    credentials: true,\n  }),\n);",
@@ -69,6 +82,68 @@
       "term": "Allow-Origin",
       "meaning": "Заголовок разрешённого frontend origin.",
       "example": "http://localhost:5173"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "security-11-q1",
+      "prompt": "Кто исполняет ограничения CORS?",
+      "options": [
+        "Провайдер",
+        "Сервер базы",
+        "Браузер: curl и Postman их игнорируют",
+        "Операционная система"
+      ],
+      "correctIndex": 2,
+      "explanation": "Поэтому CORS не заменяет авторизацию."
+    },
+    {
+      "id": "security-11-q2",
+      "prompt": "Почему нельзя использовать * вместе с credentials?",
+      "options": [
+        "Это запрещено в Node",
+        "Это удалит cookie",
+        "Это медленно",
+        "Браузер не примет такой ответ: нужен конкретный origin"
+      ],
+      "correctIndex": 3,
+      "explanation": "Нужны Allow-Origin с адресом и Allow-Credentials: true."
+    },
+    {
+      "id": "security-11-q3",
+      "prompt": "Что такое preflight?",
+      "options": [
+        "Сжатие ответа",
+        "Проверка сертификата",
+        "Удаление cookie",
+        "Предварительный OPTIONS-запрос браузера перед нестандартным запросом"
+      ],
+      "correctIndex": 3,
+      "explanation": "Сервер должен ответить разрешающими заголовками."
+    },
+    {
+      "id": "security-11-q4",
+      "prompt": "Как правильно разрешать origin на проде?",
+      "options": [
+        "Сверять со списком из CORS_ORIGINS и пускать только совпавшие",
+        "Отключить CORS в браузере",
+        "Не настраивать",
+        "Разрешать любой адрес"
+      ],
+      "correctIndex": 0,
+      "explanation": "Список адресов хранится в окружении."
+    },
+    {
+      "id": "security-11-q5",
+      "prompt": "Что показывает ошибка «blocked by CORS policy»?",
+      "options": [
+        "Браузер заблокировал ответ: смотри заголовки ответа на OPTIONS",
+        "Нет интернета",
+        "Сервер упал",
+        "Ошибка в SQL"
+      ],
+      "correctIndex": 0,
+      "explanation": "Чаще не разрешён origin или credentials."
     }
   ]
 }

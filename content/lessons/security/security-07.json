@@ -7,24 +7,36 @@
   "goal": "Поймёшь authorization code flow и подключишь вход через Google или GitHub к учебному API.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Идея OAuth"
+    },
+    {
       "type": "paragraph",
-      "content": "OAuth делегирует login провайдеру. Authorization Code flow: редирект на Google → user consent → redirect back с ?code= → backend обменивает code на tokens (client_secret на сервере, never in SPA). Получаешь profile email, создаёшь или link local User."
+      "content": "OAuth 2.0 позволяет пользователю войти через стороннего провайдера (Google, GitHub), не сообщая вашему сайту пароль. Для веб-приложений используют Authorization Code flow: твой сайт перенаправляет на страницу провайдера, пользователь подтверждает доступ, провайдер возвращает его на твой redirect_uri с одноразовым параметром code, а твой сервер обменивает code на токены. Обмен идёт между серверами, и client_secret никогда не попадает в браузер."
     },
     {
       "type": "heading",
-      "content": "PKCE для public clients"
+      "content": "state и PKCE"
     },
     {
-      "type": "paragraph",
-      "content": "SPA/mobile без secret используют PKCE: code_verifier + challenge. Backend route /auth/google/callback принимает code, state сравниваешь с cookie против CSRF."
+      "type": "list",
+      "items": [
+        "state: случайная строка, которую сервер кладёт в cookie и передаёт провайдеру. На возврате значения должны совпасть, иначе это подделанный запрос (защита от CSRF на входе).",
+        "PKCE: для приложений без секрета (SPA, мобильные) клиент генерирует code_verifier и отправляет его хеш (challenge). Обмен кода проходит, только если предъявлен исходный verifier.",
+        "redirect_uri должен быть зарегистрирован у провайдера и совпадать точно."
+      ]
     },
     {
       "type": "heading",
-      "content": "Account linking"
+      "content": "Свои пользователи и привязка аккаунтов"
     },
     {
       "type": "paragraph",
-      "content": "Таблица OAuthAccount: provider, providerAccountId, userId. Email от Google совпал с существующим — merge или ошибка по политике."
+      "content": "OAuth подтверждает личность, а свои данные ты хранишь сам. Заведи таблицу OAuthAccount (provider, providerAccountId, userId): так один пользователь может входить и паролем, и через Google. Самая опасная ошибка: автоматически соединять аккаунт по совпавшему email, если провайдер не гарантирует, что email подтверждён, иначе можно захватить чужой аккаунт. Политику заранее реши: объединять только при подтверждённом email или просить войти существующим способом."
+    },
+    {
+      "type": "paragraph",
+      "content": "После успешного callback ты создаёшь свою сессию или выдаёшь свои токены, дальше всё работает как обычный вход."
     }
   ],
   "codeExample": "// redirect start\nres.redirect(\n  `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({\n    client_id: process.env.GOOGLE_CLIENT_ID,\n    redirect_uri: process.env.OAUTH_REDIRECT_URI,\n    response_type: \"code\",\n    scope: \"openid email profile\",\n    state: req.session.oauthState,\n  })}`,\n);",
@@ -69,6 +81,68 @@
       "term": "state",
       "meaning": "Random string против CSRF в OAuth redirect.",
       "example": "req.session.oauthState"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "security-07-q1",
+      "prompt": "Что возвращает провайдер после согласия пользователя в Authorization Code flow?",
+      "options": [
+        "Одноразовый code на твой redirect_uri",
+        "Готовый JWT твоего сайта",
+        "Пароль пользователя",
+        "Ключ клиента"
+      ],
+      "correctIndex": 0,
+      "explanation": "Сервер обменивает code на токены."
+    },
+    {
+      "id": "security-07-q2",
+      "prompt": "Зачем параметр state?",
+      "options": [
+        "Чтобы выбрать язык",
+        "Чтобы хранить пароль",
+        "Чтобы ускорить вход",
+        "Защита от подделанного запроса: значения при возврате должны совпасть"
+      ],
+      "correctIndex": 3,
+      "explanation": "Это защита от CSRF на входе."
+    },
+    {
+      "id": "security-07-q3",
+      "prompt": "Для чего нужен PKCE?",
+      "options": [
+        "Для приложений без секрета (SPA, мобильные), чтобы подтвердить владельца кода",
+        "Для шифрования базы",
+        "Для хранения паролей",
+        "Для кэширования"
+      ],
+      "correctIndex": 0,
+      "explanation": "Обмен кода проходит только с исходным code_verifier."
+    },
+    {
+      "id": "security-07-q4",
+      "prompt": "Где должен храниться client_secret?",
+      "options": [
+        "В URL",
+        "В cookie",
+        "В SPA",
+        "Только на сервере"
+      ],
+      "correctIndex": 3,
+      "explanation": "В браузере его увидит любой."
+    },
+    {
+      "id": "security-07-q5",
+      "prompt": "Чем опасно автоматическое объединение аккаунта по email?",
+      "options": [
+        "Это замедляет вход",
+        "Это дорого",
+        "Это запрещено OAuth",
+        "Если провайдер не гарантирует подтверждение email, можно захватить чужой аккаунт"
+      ],
+      "correctIndex": 3,
+      "explanation": "Нужна политика: объединять только при подтверждённом email."
     }
   ]
 }

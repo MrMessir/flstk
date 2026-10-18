@@ -7,24 +7,34 @@
   "goal": "Настроишь BrowserRouter, маршруты и ссылку NavLink между страницами SPA.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Одностраничное приложение и маршруты"
+    },
+    {
       "type": "paragraph",
-      "content": "React Router синхронизирует UI с URL без полной перезагрузки. BrowserRouter оборачивает приложение, Routes содержит Route path element. path=\"/products/:id\" даёт useParams(). Navigate to=\"/login\" — редирект. NavLink добавляет active class при совпадении маршрута."
+      "content": "В SPA браузер загружает страницу один раз, а смену экранов делает JavaScript. React Router синхронизирует интерфейс с адресом: ссылки не перезагружают страницу, кнопка «назад» работает, а у каждого экрана есть свой URL, которым можно поделиться. BrowserRouter оборачивает приложение, Routes содержит список Route, каждый с path и element."
     },
     {
       "type": "heading",
-      "content": "Layout routes"
+      "content": "Основные части"
     },
     {
-      "type": "paragraph",
-      "content": "<Route element={<Layout />}> с Outlet внутри Layout — общий header/footer для вложенных страниц. index route для /. Loader/action в data routers (v6.4+) — обзор: данные можно подгружать до render route. Для курса достаточно declarative Routes + fetch в компонентах или hooks."
+      "type": "list",
+      "items": [
+        "Route path=\"/products/:id\" element={<ProductPage />}: параметр :id читается хуком useParams().",
+        "Link и NavLink вместо тега a: не перезагружают страницу, а NavLink добавляет класс active активной ссылке.",
+        "Navigate to=\"/login\" делает перенаправление; useNavigate() даёт функцию для перехода из кода (после отправки формы).",
+        "Layout-маршрут: Route element={<Layout />} с вложенными маршрутами; Layout выводит шапку и Outlet, куда подставляется дочерняя страница.",
+        "Маршрут path=\"*\" ловит все неизвестные адреса и показывает страницу 404."
+      ]
     },
     {
       "type": "heading",
-      "content": "404 и программная навигация"
+      "content": "Защита страниц и параметры"
     },
     {
       "type": "paragraph",
-      "content": "path=\"*\" element={<NotFound />}. useNavigate()() для редиректа после login. Link to=\"/cart\" вместо <a href> — без перезагрузки SPA. При деплое на static host нужен fallback на index.html для deep links."
+      "content": "Приватные страницы оборачивают в компонент-защитник: нет сессии — Navigate на /login. Это удобство интерфейса, а настоящая проверка прав выполняется на сервере. useParams() возвращает строки: число из :id нужно преобразовать, и учесть, что значения может не быть. Параметры строки запроса (?q=…) читает useSearchParams(). При размещении на статическом хостинге настрой переписывание всех адресов на index.html, иначе прямой переход на /products/5 даст 404 на сервере. Проверь результат: открой страницу товара прямой ссылкой, обнови её, нажми «назад» и убедись, что поведение браузера не нарушено."
     }
   ],
   "codeExample": "import { BrowserRouter, Routes, Route, NavLink, Outlet } from \"react-router-dom\";\n\nfunction Layout() {\n  return (\n    <>\n      <nav>\n        <NavLink to=\"/\" end>Home</NavLink>\n        <NavLink to=\"/about\">About</NavLink>\n      </nav>\n      <Outlet />\n    </>\n  );\n}\n\nexport function AppRouter() {\n  return (\n    <BrowserRouter>\n      <Routes>\n        <Route element={<Layout />}>\n          <Route index element={<h1>Home</h1>} />\n          <Route path=\"about\" element={<h1>About</h1>} />\n          <Route path=\"*\" element={<h1>404</h1>} />\n        </Route>\n      </Routes>\n    </BrowserRouter>\n  );\n}",
@@ -78,6 +88,68 @@
       "term": "Outlet",
       "meaning": "Место вложенного child route в layout.",
       "example": "<Outlet />"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-09-q1",
+      "prompt": "Что делает Link вместо обычного a?",
+      "options": [
+        "Перезагружает страницу",
+        "Открывает новое окно",
+        "Переходит без перезагрузки страницы",
+        "Скачивает файл"
+      ],
+      "correctIndex": 2,
+      "explanation": "SPA меняет экран без загрузки."
+    },
+    {
+      "id": "react-09-q2",
+      "prompt": "Как получить параметр :id из адреса?",
+      "options": [
+        "useRef()",
+        "useState()",
+        "useParams()",
+        "useId()"
+      ],
+      "correctIndex": 2,
+      "explanation": "Значение приходит строкой."
+    },
+    {
+      "id": "react-09-q3",
+      "prompt": "Для чего Outlet?",
+      "options": [
+        "Хранит состояние",
+        "Показывает дочерний маршрут внутри layout",
+        "Выводит ошибки",
+        "Делает запросы"
+      ],
+      "correctIndex": 1,
+      "explanation": "Layout выводит шапку и Outlet."
+    },
+    {
+      "id": "react-09-q4",
+      "prompt": "Защищает ли редирект на /login данные по-настоящему?",
+      "options": [
+        "Только на мобильных",
+        "Только для админов",
+        "Да, полностью",
+        "Нет, настоящая проверка прав на сервере"
+      ],
+      "correctIndex": 3,
+      "explanation": "Это удобство интерфейса."
+    },
+    {
+      "id": "react-09-q5",
+      "prompt": "Почему при прямом переходе на /products/5 на статическом хостинге может быть 404?",
+      "options": [
+        "Нужно переписывание всех адресов на index.html",
+        "Нет интернета",
+        "Нужен новый браузер",
+        "React сломан"
+      ],
+      "correctIndex": 0,
+      "explanation": "Сервер не знает про маршруты SPA."
     }
   ]
 }

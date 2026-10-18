@@ -7,27 +7,39 @@
   "goal": "Ограничишь частоту login, подключишь helmet и залогируешь неудачные входы.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Лимит попыток входа"
+    },
+    {
       "type": "paragraph",
-      "content": "express-rate-limit: windowMs 15 min, max 10 на POST /auth/login per IP. helmet() ставит X-Content-Type-Options, HSTS на prod, убирает X-Powered-By. Audit log: structured { event: 'login_failed', emailHash, ip } без пароля."
+      "content": "express-rate-limit считает запросы в окне времени: например, не больше 10 попыток входа за 15 минут с одного IP. После превышения сервер отвечает 429 Too Many Requests. Для входа лимит строгий (10–20), для остального API мягче. Ключ лучше составлять из IP и email, иначе легко заблокировать целый офис за одного нарушителя. Не забывай параметр standardHeaders, чтобы клиент видел, сколько ждать."
     },
     {
       "type": "heading",
-      "content": "Trust proxy"
+      "content": "trust proxy"
     },
     {
       "type": "paragraph",
-      "content": "За nginx/render app.set('trust proxy', 1) — иначе rate limit видит один IP балансера. Иначе все пользователи делят один bucket."
+      "content": "За nginx, Render или другим прокси приложение видит IP самого прокси, и все пользователи окажутся в одной корзине лимита. Включи app.set('trust proxy', 1) (число — количество доверенных прокси), чтобы Express брал настоящий IP из X-Forwarded-For. Если указать слишком широкое доверие, клиент сможет подделать заголовок и обойти лимит. Проверь результат: сделай одиннадцать неверных входов подряд и убедись, что одиннадцатый вернул 429, а в заголовках есть Retry-After."
     },
     {
       "type": "heading",
-      "content": "Alerting basics"
+      "content": "helmet"
     },
     {
       "type": "paragraph",
-      "content": "Spike login_failed — сигнал brute force. На курсе достаточно counter в log + README «куда смотреть»."
+      "content": "helmet() выставляет безопасные HTTP-заголовки: X-Content-Type-Options против подмены типа, Strict-Transport-Security (на HTTPS), убирает X-Powered-By, чтобы не раскрывать, что за сервер. Подключай его одной строкой глобально. Для HTML-страниц отдельно настраивают Content-Security-Policy."
+    },
+    {
+      "type": "heading",
+      "content": "Журнал аудита"
+    },
+    {
+      "type": "paragraph",
+      "content": "Кроме технических логов нужен журнал событий безопасности: неудачный вход, смена пароля, выдача прав. Запись содержит событие, время, IP и идентификатор пользователя или хеш email, но не пароль и не токен. Резкий рост login_failed — признак перебора. На курсе достаточно структурированной строки в логе и абзаца в README о том, где смотреть."
     }
   ],
-  "codeExample": "import helmet from \"helmet\";\nimport rateLimit from \"express-rate-limit\";\n\napp.use(helmet());\n\nconst loginLimiter = rateLimit({\n  windowMs: 15 * 60 * 1000,\n  max: 10,\n  standardHeaders: true,\n  legacyHeaders: false,\n});\n\napp.post(\"/auth/login\", loginLimiter, loginHandler);",
+  "codeExample": "import helmet from \"helmet\";\nimport rateLimit from \"express-rate-limit\";\n\napp.use(helmet());\n\nconst loginLimiter = rateLimit({\n  windowMs: 15 * 60 * 1000,\n  limit: 10,\n  standardHeaders: true,\n  legacyHeaders: false,\n});\n\napp.post(\"/auth/login\", loginLimiter, loginHandler);",
   "practice": [
     {
       "title": "helmet headers",
@@ -69,6 +81,68 @@
       "term": "audit log",
       "meaning": "Журнал security-событий для расследований.",
       "example": "login_failed"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "security-12-q1",
+      "prompt": "Какой код возвращает сервер при превышении лимита запросов?",
+      "options": [
+        "301",
+        "429 Too Many Requests",
+        "500",
+        "401"
+      ],
+      "correctIndex": 1,
+      "explanation": "Это стандартный ответ на слишком частые запросы."
+    },
+    {
+      "id": "security-12-q2",
+      "prompt": "Зачем нужен trust proxy за nginx или Render?",
+      "options": [
+        "Чтобы включить HTTPS",
+        "Чтобы хранить cookie",
+        "Чтобы сжимать ответы",
+        "Чтобы Express брал настоящий IP клиента, а не IP прокси"
+      ],
+      "correctIndex": 3,
+      "explanation": "Иначе все пользователи в одной корзине лимита."
+    },
+    {
+      "id": "security-12-q3",
+      "prompt": "Что делает helmet?",
+      "options": [
+        "Шифрует базу",
+        "Выставляет безопасные HTTP-заголовки и убирает X-Powered-By",
+        "Запускает тесты",
+        "Проверяет пароли"
+      ],
+      "correctIndex": 1,
+      "explanation": "Подключается одной строкой."
+    },
+    {
+      "id": "security-12-q4",
+      "prompt": "Что нельзя писать в журнал аудита?",
+      "options": [
+        "Тип события",
+        "Пароль и токены",
+        "Время события",
+        "IP-адрес"
+      ],
+      "correctIndex": 1,
+      "explanation": "Пишут событие и хеш email."
+    },
+    {
+      "id": "security-12-q5",
+      "prompt": "Что может означать резкий рост login_failed?",
+      "options": [
+        "Новый релиз",
+        "Обновление Node",
+        "Перебор паролей",
+        "Добавление индекса"
+      ],
+      "correctIndex": 2,
+      "explanation": "Это сигнал для оповещения."
     }
   ]
 }

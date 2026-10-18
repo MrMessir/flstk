@@ -7,30 +7,38 @@
   "goal": "Сверстаешь адаптивный лендинг: шапка, hero, карточки проектов и подвал на Flexbox и Grid.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что нужно сверстать"
+    },
+    {
       "type": "paragraph",
-      "content": "Берёшь простую HTML-структуру портфолио и делаешь её читаемой и адаптивной. На телефоне — одна колонка, на широком экране — сетка карточек. CSS в отдельном файле, цвета через переменные в :root."
+      "content": "Итог модуля — адаптивный лендинг-портфолио на готовой HTML-структуре: на телефоне одна колонка, на широком экране сетка карточек. Стили в отдельном файле, цвета и отступы через переменные в :root. Это первая работа, которую можно показать как вёрстку."
     },
     {
       "type": "heading",
-      "content": "Минимум секций"
+      "content": "Обязательные блоки"
     },
     {
       "type": "list",
       "items": [
-        "Липкая шапка: display flex, space-between, position sticky.",
-        "Hero: заголовок, подзаголовок, кнопка-ссылка.",
-        "Сетка проектов: grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)).",
-        "Footer с ссылками или годом.",
-        "meta viewport и реальное изменение вида на узком окне (DevTools Toggle device toolbar)."
+        "Липкая шапка: display: flex, justify-content: space-between, position: sticky, фон и тень или линия снизу.",
+        "Hero: заголовок, подзаголовок, кнопка-ссылка с состояниями :hover и :focus-visible.",
+        "Сетка проектов: grid с repeat(auto-fit, minmax(240px, 1fr)) и gap; карточка с картинкой, названием и ссылкой.",
+        "Подвал с контактами.",
+        "Meta viewport, box-sizing: border-box, читаемый шрифт и line-height."
       ]
     },
     {
       "type": "heading",
-      "content": "Критерии готовности"
+      "content": "Проверка перед сдачей"
     },
     {
       "type": "paragraph",
-      "content": "Два файла index.html и styles.css в репозитории css-portfolio. Нет inline-стилей на каждом теге. Lighthouse Performance необязателен, но текст не должен вылезать за экран на 375px ширины."
+      "content": "Открой страницу в режиме устройств на ширине 375, 768 и 1280 пикселей: нет горизонтальной прокрутки, текст читается, кнопки удобно нажимать. Пройди страницу клавишей Tab: фокус виден. Проверь контраст текста и фона. Убери из HTML атрибуты style: всё оформление в CSS-файле. Остановись на одном способе именования классов и придерживайся его (например, БЭМ)."
+    },
+    {
+      "type": "paragraph",
+      "content": "Выложи на GitHub и включи GitHub Pages, добавь README со скриншотами для телефона и компьютера и ссылкой на страницу. Сделай мини-проверку приёмки: открой страницу в браузере без интернета (кроме картинок) и убедись, что она читаема без шрифтов и изображений. Типичные причины замечаний: фиксированная ширина в пикселях вместо max-width, картинки вылезают за экран, нет viewport, убран outline без замены, стили в атрибутах style, сложные селекторы вместо простых классов."
     }
   ],
   "codeExample": ":root {\n  --ink: #0b1220;\n  --accent: #0f8a8a;\n  --paper: #f4f7fb;\n}\n* { box-sizing: border-box; }\nbody { margin: 0; font-family: system-ui, sans-serif; color: var(--ink); background: var(--paper); }\n.header { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #fff; }\n.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; padding: 20px; }",

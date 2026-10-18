@@ -7,24 +7,37 @@
   "goal": "Поднимешь минимальный HTTP-сервер и перенесёшь его на Express с JSON-body.",
   "theory": [
     {
+      "type": "heading",
+      "content": "HTTP за пять минут"
+    },
+    {
       "type": "paragraph",
-      "content": "HTTP — текстовый протокол: метод (GET, POST), путь, заголовки, тело. Модуль node:http даёт createServer с колбэком (req, res). Вручную парсить URL и body утомительно — Express добавляет роутинг, middleware и res.json(). Для REST API курса Express остаётся базой, поверх которой ложатся валидация и auth."
+      "content": "HTTP — текстовый протокол «запрос — ответ». В запросе есть метод (GET читает, POST создаёт, PUT и PATCH меняют, DELETE удаляет), путь, заголовки и необязательное тело. В ответе — статус-код, заголовки и тело. Модуль node:http даёт createServer((req, res) => …), но руками разбирать адрес и тело запроса утомительно и ошибочно: поэтому используют Express."
     },
     {
       "type": "heading",
-      "content": "Статус-коды и Content-Type"
+      "content": "Что добавляет Express"
     },
     {
-      "type": "paragraph",
-      "content": "200 — успех с телом, 201 — создан ресурс, 400 — ошибка клиента, 404 — нет маршрута, 500 — ошибка сервера. Для JSON ставь Content-Type: application/json и res.json(obj) — Express сериализует сам. Не отдавай stack trace наружу в production."
+      "type": "list",
+      "items": [
+        "Маршрутизация: app.get('/health', handler), app.post('/posts', handler).",
+        "Middleware: цепочка функций, которая обрабатывает запрос до обработчика.",
+        "express.json() разбирает тело запроса в req.body; без него req.body пустой. Задай лимит: express.json({ limit: '100kb' }).",
+        "res.json(объект) выставляет Content-Type и сериализует ответ; res.status(201).json(…) задаёт код."
+      ]
     },
     {
       "type": "heading",
-      "content": "express.json()"
+      "content": "Коды ответа"
     },
     {
       "type": "paragraph",
-      "content": "Middleware express.json() читает тело POST/PATCH и кладёт объект в req.body. Без него req.body undefined. Лимит размера можно уменьшить, чтобы не принимать гигантские payload. Порядок подключения middleware важен: json — до маршрутов, которые читают body."
+      "content": "Подбирай код по смыслу: 200 успех, 201 создано, 204 успех без тела, 400 некорректный запрос, 401 не вошёл, 403 нет прав, 404 не найдено, 409 конфликт, 500 внутренняя ошибка. Клиент полагается на код, а не только на текст. Обработчик 404 ставят после всех маршрутов: app.use((req, res) => res.status(404).json({ error: 'Not found' })). Порядок регистрации имеет значение: Express проверяет маршруты и middleware сверху вниз."
+    },
+    {
+      "type": "paragraph",
+      "content": "Проверка: POST /echo с JSON в Postman возвращает те же данные; запрос без Content-Type: application/json даёт пустое тело. Это самая частая причина вопроса «почему req.body undefined». Ещё одна типичная ошибка: два вызова res.json в одном обработчике, и тогда Express выдаёт «Cannot set headers after they are sent»: после ответа нужно сделать return."
     }
   ],
   "codeExample": "import express from \"express\";\n\nconst app = express();\napp.use(express.json());\n\napp.get(\"/health\", (_req, res) => {\n  res.json({ ok: true });\n});\n\napp.post(\"/echo\", (req, res) => {\n  res.status(201).json({ received: req.body });\n});\n\napp.listen(3000, () => console.log(\"API :3000\"));",
@@ -69,6 +82,68 @@
       "term": "status code",
       "meaning": "Число в ответе HTTP о результате операции.",
       "example": "res.status(201)"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-05-q1",
+      "prompt": "Зачем нужен express.json()?",
+      "options": [
+        "Чтобы отправлять JSON клиенту",
+        "Чтобы шифровать",
+        "Чтобы запускать сервер",
+        "Чтобы разобрать тело запроса в req.body"
+      ],
+      "correctIndex": 3,
+      "explanation": "Без него req.body пустой."
+    },
+    {
+      "id": "nodejs-05-q2",
+      "prompt": "Какой код ответа подходит после успешного создания ресурса?",
+      "options": [
+        "201",
+        "200 всегда",
+        "404",
+        "500"
+      ],
+      "correctIndex": 0,
+      "explanation": "201 означает, что ресурс создан."
+    },
+    {
+      "id": "nodejs-05-q3",
+      "prompt": "Где ставят обработчик 404?",
+      "options": [
+        "Перед express.json",
+        "В самом начале",
+        "Не нужен",
+        "После всех маршрутов"
+      ],
+      "correctIndex": 3,
+      "explanation": "Express проверяет цепочку сверху вниз."
+    },
+    {
+      "id": "nodejs-05-q4",
+      "prompt": "Что значит 204?",
+      "options": [
+        "Конфликт",
+        "Успех без тела ответа",
+        "Перенаправление",
+        "Ошибка клиента"
+      ],
+      "correctIndex": 1,
+      "explanation": "Часто возвращают после DELETE."
+    },
+    {
+      "id": "nodejs-05-q5",
+      "prompt": "Что произойдёт при двух res.json в одном обработчике?",
+      "options": [
+        "Ошибка «Cannot set headers after they are sent»",
+        "Ничего",
+        "Сервер удалит маршрут",
+        "Клиент получит два ответа"
+      ],
+      "correctIndex": 0,
+      "explanation": "После ответа нужно сделать return."
     }
   ]
 }

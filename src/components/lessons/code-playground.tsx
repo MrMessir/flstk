@@ -1,9 +1,18 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
+import type { BeforeMount, OnMount } from "@monaco-editor/react";
 import type { CoursePart } from "@/lib/types/lesson";
-import { getLessonLanguage, supportsPlayground } from "@/lib/types/lesson";
+import { getLessonLanguage } from "@/lib/types/lesson";
+import {
+  buildCssPage,
+  buildHtmlPage,
+  buildScriptHtml,
+  detectPlaygroundMode,
+  stripEmptyExport,
+  usesModules,
+} from "@/lib/playground/mode";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -19,83 +28,150 @@ type CodePlaygroundProps = {
   part: CoursePart;
 };
 
-function buildPreviewHtml(code: string, part: CoursePart) {
-  if (part === "html") {
-    return code.includes("<html")
-      ? code
-      : `<!DOCTYPE html><html><head><meta charset="UTF-8" /></head><body>${code}</body></html>`;
-  }
+type Monaco = Parameters<OnMount>[1];
+type Editor = Parameters<OnMount>[0];
 
-  if (part === "css") {
-    return `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <style>${code}</style>
-  </head>
-  <body>
-    <header class="header">
-      <strong>Logo</strong>
-      <nav><a href="#">Уроки</a></nav>
-    </header>
-    <main class="hero">
-      <h1>Заголовок</h1>
-      <p>Текст для проверки стилей.</p>
-      <a class="button" href="#">Кнопка</a>
-    </main>
-    <section class="cards">
-      <article class="card">Карточка 1</article>
-      <article class="card">Карточка 2</article>
-      <article class="card">Карточка 3</article>
-    </section>
-  </body>
-</html>`;
-  }
+type Diagnostic = { line: number; column: number; message: string };
 
-  // javascript + typescript (TS runs as JS in sandbox for demos)
-  return `<!DOCTYPE html>
-<html>
-  <head><meta charset="UTF-8" /></head>
-  <body>
-    <p id="out">Открой консоль ниже после запуска.</p>
-    <script>
-      const logs = [];
-      const out = document.getElementById("out");
-      const print = (...args) => {
-        logs.push(args.map(String).join(" "));
-        out.textContent = logs.join("\\n");
-      };
-      console.log = print;
-      console.error = print;
-      try {
-        ${code}
-      } catch (error) {
-        print("Ошибка: " + error);
-      }
-    </script>
-  </body>
-</html>`;
+type DiagnosticChain = { messageText: string; next?: DiagnosticChain[] };
+
+function flatten(message: string | DiagnosticChain): string {
+  if (typeof message === "string") return message;
+  const parts = [message.messageText];
+  for (const next of message.next ?? []) parts.push(flatten(next));
+  return parts.join(" ");
 }
 
 export function CodePlayground({ initialCode, part }: CodePlaygroundProps) {
   const language = getLessonLanguage(part);
+  const mode = useMemo(
+    () => detectPlaygroundMode(initialCode, part),
+    [initialCode, part],
+  );
   const [code, setCode] = useState(initialCode);
   const [preview, setPreview] = useState<string | null>(null);
-  const canRun = supportsPlayground(part);
+  const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
+  const monacoRef = useRef<Monaco | null>(null);
+  const editorRef = useRef<Editor | null>(null);
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
 
   const fileLabel = useMemo(() => {
     if (part === "css") return "styles.css";
-    if (part === "javascript") return "script.js";
+    if (part === "javascript") return mode === "html" ? "index.html" : "script.js";
     if (part === "typescript") return "script.ts";
     if (part === "html") return "example.html";
     return "example.txt";
-  }, [part]);
+  }, [part, mode]);
 
-  if (!canRun) {
+  // Для TS каждая песочница получает свой «файл», чтобы они не конфликтовали на странице.
+  const modelPath = `file:///playground-${uid}/${fileLabel}`;
+
+  const beforeMount: BeforeMount = (monaco) => {
+    const ts = monaco.languages.typescript;
+    ts.typescriptDefaults.setCompilerOptions({
+      target: ts.ScriptTarget.ES2020,
+      module: ts.ModuleKind.ESNext,
+      lib: ["es2020", "dom"],
+      strict: true,
+      allowNonTsExtensions: true,
+      // Каждый файл считается модулем: имена вроде name или status
+      // не конфликтуют с глобальными именами браузера.
+      moduleDetection: 3,
+    });
+    ts.typescriptDefaults.setEagerModelSync(true);
+  };
+
+  const handleMount: OnMount = (editor, monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+  };
+
+  async function runTypeScript() {
+    const monaco = monacoRef.current;
+    const model = editorRef.current?.getModel();
+    if (!monaco || !model) {
+      setNotice("Редактор ещё загружается. Попробуй через секунду.");
+      return;
+    }
+    setRunning(true);
+    try {
+      const getWorker = await monaco.languages.typescript.getTypeScriptWorker();
+      const client = await getWorker(model.uri);
+      const uri = model.uri.toString();
+      const [syntactic, semantic, emit] = await Promise.all([
+        client.getSyntacticDiagnostics(uri),
+        client.getSemanticDiagnostics(uri),
+        client.getEmitOutput(uri),
+      ]);
+      const toDiagnostic = (d: {
+        start?: number;
+        messageText: string | DiagnosticChain;
+      }): Diagnostic => {
+        const pos = model.getPositionAt(d.start ?? 0);
+        return {
+          line: pos.lineNumber,
+          column: pos.column,
+          message: flatten(d.messageText),
+        };
+      };
+      setDiagnostics([...syntactic, ...semantic].map(toDiagnostic));
+
+      if (syntactic.length > 0) {
+        setPreview(null);
+        setNotice("Код не запущен: сначала исправь синтаксические ошибки.");
+        return;
+      }
+      const js = stripEmptyExport(emit.outputFiles[0]?.text ?? "");
+      if (!js.trim()) {
+        setPreview(null);
+        setNotice("Нечего запускать: после компиляции код пустой.");
+        return;
+      }
+      if (usesModules(js)) {
+        setPreview(null);
+        setNotice(
+          "В коде есть import или export. Такие примеры запускай в своём проекте.",
+        );
+        return;
+      }
+      setPreview(buildScriptHtml(js));
+      setNotice(
+        semantic.length > 0
+          ? "Есть ошибки типов, они ниже. Код всё равно запущен, как это делает tsc."
+          : null,
+      );
+    } catch {
+      setPreview(null);
+      setNotice("Не удалось проверить код. Обнови страницу и попробуй снова.");
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  async function run() {
+    setNotice(null);
+    setDiagnostics([]);
+    if (mode === "css") setPreview(buildCssPage(code));
+    else if (mode === "html") setPreview(buildHtmlPage(code));
+    else if (mode === "js") setPreview(buildScriptHtml(code));
+    else if (mode === "ts") await runTypeScript();
+  }
+
+  if (mode === "none") {
     return (
-      <pre className="overflow-x-auto rounded-xl border border-line bg-code-bg p-4 text-sm leading-relaxed text-[#c8d4e8]">
-        <code>{initialCode}</code>
-      </pre>
+      <div className="space-y-2">
+        <pre className="overflow-x-auto rounded-xl border border-line bg-code-bg p-4 text-sm leading-relaxed text-[#c8d4e8]">
+          <code>{initialCode}</code>
+        </pre>
+        {part === "javascript" || part === "typescript" ? (
+          <p className="text-xs text-muted">
+            Это пример из нескольких файлов или фрагмент конфига: запусти его у
+            себя в проекте.
+          </p>
+        ) : null}
+      </div>
     );
   }
 
@@ -106,28 +182,34 @@ export function CodePlayground({ initialCode, part }: CodePlaygroundProps) {
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => setCode(initialCode)}
+            onClick={() => {
+              setCode(initialCode);
+              setDiagnostics([]);
+              setNotice(null);
+            }}
             className="rounded-md border border-white/15 px-2.5 py-1 text-xs text-white/80 hover:bg-white/5"
           >
             Сбросить
           </button>
           <button
             type="button"
-            onClick={() => setPreview(buildPreviewHtml(code, part))}
-            className="rounded-md bg-signal px-2.5 py-1 text-xs font-semibold text-signal-ink"
+            disabled={running}
+            onClick={() => void run()}
+            className="rounded-md bg-signal px-2.5 py-1 text-xs font-semibold text-signal-ink disabled:opacity-60"
           >
-            {part === "javascript" || part === "typescript"
-              ? "Запустить"
-              : "Показать"}
+            {mode === "js" || mode === "ts" ? "Запустить" : "Показать"}
           </button>
         </div>
       </div>
 
       <MonacoEditor
         height="320px"
-        language={language === "typescript" ? "typescript" : language}
+        path={modelPath}
+        language={mode === "html" ? "html" : language}
         theme="vs-dark"
         value={code}
+        beforeMount={beforeMount}
+        onMount={handleMount}
         onChange={(value) => setCode(value ?? "")}
         options={{
           minimap: { enabled: false },
@@ -139,6 +221,22 @@ export function CodePlayground({ initialCode, part }: CodePlaygroundProps) {
           tabSize: 2,
         }}
       />
+
+      {notice ? (
+        <p className="border-t border-white/10 px-4 py-2 text-xs text-white/70">
+          {notice}
+        </p>
+      ) : null}
+
+      {diagnostics.length > 0 ? (
+        <ul className="max-h-40 space-y-1 overflow-y-auto border-t border-white/10 px-4 py-2 font-mono text-xs text-[#ffb4a8]">
+          {diagnostics.map((d, index) => (
+            <li key={`${d.line}-${d.column}-${index}`}>
+              строка {d.line}:{d.column}: {d.message}
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       {preview ? (
         <div className="border-t border-white/10 bg-white">

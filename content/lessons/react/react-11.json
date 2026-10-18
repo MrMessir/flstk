@@ -7,24 +7,37 @@
   "goal": "Прокинешь theme через Context и вынесешь корзину в Zustand без prop drilling.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Проблема prop drilling"
+    },
+    {
       "type": "paragraph",
-      "content": "Context передаёт value глубоко без props на каждом уровне: createContext, Provider value={...}, useContext(ThemeContext). Минус — любое изменение value перерисовывает всех потребителей. Подходит для редко меняющихся данных: тема, locale, auth user после login."
+      "content": "Когда данные нужны глубоко в дереве, их приходится передавать через несколько промежуточных компонентов, которым они не нужны. Это называют prop drilling. Context решает проблему: createContext создаёт контекст, Provider value={...} предоставляет значение, useContext получает его в любом потомке без цепочки props. Типичные примеры: тема, язык, текущий пользователь."
     },
     {
       "type": "heading",
-      "content": "Zustand store"
+      "content": "Ограничения Context"
     },
     {
       "type": "paragraph",
-      "content": "create((set) => ({ count: 0, inc: () => set((s) => ({ count: s.count + 1 })) })) — вне React дерево. useStore(s => s.count) подписывается на slice и ре-render только при изменении count. Проще Redux для малого и среднего клиентского state: корзина, UI flags."
+      "content": "Любое изменение значения контекста перерисовывает всех потребителей. Поэтому контекст подходит для редко меняющихся данных (тема, locale, пользователь после входа) и плохо для часто меняющихся (корзина с обновлением каждую секунду, позиция курсора). Объект value не создавай заново на каждой отрисовке без нужды: оберни в useMemo, иначе обновятся все потребители. Заверни useContext в собственный хук useTheme, который проверяет, что провайдер есть."
     },
     {
       "type": "heading",
-      "content": "Что где хранить"
+      "content": "Zustand для общего состояния"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Store создают функцией create: create((set) => ({ items: [], add: (item) => set((s) => ({ items: [...s.items, item] })) })).",
+        "Компонент подписывается на нужный кусок через селектор: useCart(s => s.items.length); при изменении других полей он не перерисовывается.",
+        "Store живёт вне дерева компонентов и не требует провайдера, это удобно для корзины и фильтров.",
+        "Не клади в глобальное состояние всё подряд: данные сервера лучше держать в React Query, а локальное состояние формы в самом компоненте."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "Локальный useState — поле формы. Context — тема/язык. Zustand/Query — корзина и server cache соответственно. Не клади всё в один global store: чем меньше связность, тем проще сопровождать."
+      "content": "Выбор: передать props, если уровня два-три; Context для редких глобальных значений; Zustand (или аналог) для часто меняющегося общего состояния. Сначала подними состояние, и только потом решай про глобальное."
     }
   ],
   "codeExample": "import { createContext, useContext, useState } from \"react\";\nimport { create } from \"zustand\";\n\nconst ThemeContext = createContext<\"light\" | \"dark\">(\"light\");\n\nexport function ThemeProvider({ children }: { children: React.ReactNode }) {\n  const [theme] = useState<\"light\" | \"dark\">(\"light\");\n  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;\n}\n\nexport function useTheme() {\n  return useContext(ThemeContext);\n}\n\ntype CartStore = { items: string[]; add: (id: string) => void };\n\nexport const useCart = create<CartStore>((set) => ({\n  items: [],\n  add: (id) => set((s) => ({ items: [...s.items, id] })),\n}));",
@@ -78,6 +91,68 @@
       "term": "selector",
       "meaning": "Функция выбора части store для подписки.",
       "example": "s => s.items.length"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-11-q1",
+      "prompt": "Какую проблему решает Context?",
+      "options": [
+        "Стили",
+        "Загрузку данных",
+        "Маршрутизацию",
+        "Prop drilling: передачу данных через цепочку компонентов"
+      ],
+      "correctIndex": 3,
+      "explanation": "Любой потомок получает значение через useContext."
+    },
+    {
+      "id": "react-11-q2",
+      "prompt": "Почему Context не подходит для часто меняющихся данных?",
+      "options": [
+        "Он медленный при чтении",
+        "Он удаляет данные",
+        "Он не работает с числами",
+        "Любое изменение перерисовывает всех потребителей"
+      ],
+      "correctIndex": 3,
+      "explanation": "Для таких данных лучше Zustand."
+    },
+    {
+      "id": "react-11-q3",
+      "prompt": "Что даёт селектор в Zustand?",
+      "options": [
+        "Стилизацию",
+        "Хранение в базе",
+        "Маршруты",
+        "Компонент перерисовывается только при изменении выбранного значения"
+      ],
+      "correctIndex": 3,
+      "explanation": "Например useCart(s => s.items.length)."
+    },
+    {
+      "id": "react-11-q4",
+      "prompt": "Где лучше хранить данные сервера?",
+      "options": [
+        "В React Query, а не в глобальном store",
+        "В Context",
+        "В CSS",
+        "В localStorage всегда"
+      ],
+      "correctIndex": 0,
+      "explanation": "Они требуют кэширования и обновления."
+    },
+    {
+      "id": "react-11-q5",
+      "prompt": "Что стоит сделать до выбора глобального состояния?",
+      "options": [
+        "Использовать eval",
+        "Удалить состояние",
+        "Попробовать поднять состояние и передать props",
+        "Сразу подключить Zustand"
+      ],
+      "correctIndex": 2,
+      "explanation": "Глобальное нужно не всегда."
     }
   ]
 }

@@ -7,16 +7,28 @@
   "goal": "Спроектируешь 1:1, 1:N и M:N для блога с таблицей post_tags.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Три вида связей"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Один ко многим (1:N): у пользователя много постов. Внешний ключ author_id лежит в таблице posts.",
+        "Один к одному (1:1): профиль пользователя. Внешний ключ user_id с ограничением UNIQUE, чтобы профиль был один.",
+        "Многие ко многим (M:N): посты и теги. Нужна связующая таблица post_tags с парой (post_id, tag_id) как составным первичным ключом; он же запрещает повторную пару."
+      ]
+    },
+    {
       "type": "paragraph",
-      "content": "One-to-many: у user много posts — foreign key author_id в posts. One-to-one реже: profile user_id UNIQUE REFERENCES users. Many-to-many: posts и tags через junction post_tags (post_id, tag_id) с составным PRIMARY KEY."
+      "content": "Связующая таблица экономит место и исключает ошибки: название тега хранится один раз в tags, а в post_tags лежат только идентификаторы. Переименовать тег можно в одном месте."
     },
     {
       "type": "heading",
-      "content": "ON DELETE"
+      "content": "Что происходит при удалении"
     },
     {
       "type": "paragraph",
-      "content": "ON DELETE CASCADE удалит комментарии при удалении поста — удобно, но опасно без soft delete. ON DELETE SET NULL для optional связи. RESTRICT запретит DELETE post, пока есть comments — явная ошибка."
+      "content": "Правило ON DELETE задаёт поведение связанных строк. CASCADE удаляет зависимые строки вместе с главной (удалили пост, удалились его комментарии): удобно, но опасно без возможности восстановить. SET NULL обнуляет ссылку (для необязательных связей). RESTRICT запрещает удаление, пока есть зависимые строки, и возвращает ошибку. Выбор — это решение о бизнес-правилах: удалять ли комментарии вместе с постом, что делать с постами удалённого пользователя."
     },
     {
       "type": "heading",
@@ -24,7 +36,7 @@
     },
     {
       "type": "paragraph",
-      "content": "comments: post_id, author_id, body. tags: id, name UNIQUE. post_tags только пары id без дублирования имён тегов в каждом посте."
+      "content": "comments: post_id и author_id (оба внешние ключи), body. tags: id и name UNIQUE. Проверь CASCADE на тестовых данных: удали пост и посмотри, исчезли ли комментарии и пары в post_tags. Лучше выяснить это на практике, чем после первой потери данных. Иногда вместо физического удаления используют мягкое (поле deleted_at), чтобы ничего не терять навсегда. Тогда во всех запросах нужно фильтровать deleted_at IS NULL, и это правило легко забыть, так что его выносят во view или в repository. Для связей M:N сразу проверь вставку и повторную вставку той же пары: составной ключ должен вернуть ошибку."
     }
   ],
   "codeExample": "CREATE TABLE tags (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text UNIQUE NOT NULL\n);\n\nCREATE TABLE post_tags (\n  post_id uuid REFERENCES posts(id) ON DELETE CASCADE,\n  tag_id uuid REFERENCES tags(id) ON DELETE CASCADE,\n  PRIMARY KEY (post_id, tag_id)\n);",
@@ -69,6 +81,68 @@
       "term": "foreign key",
       "meaning": "Столбец, ссылающийся на PK другой таблицы.",
       "example": "author_id REFERENCES users(id)"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "database-06-q1",
+      "prompt": "Как реализуют связь «многие ко многим»?",
+      "options": [
+        "Нельзя реализовать",
+        "Связующей таблицей с парой внешних ключей",
+        "Двумя независимыми таблицами",
+        "Одним столбцом со списком через запятую"
+      ],
+      "correctIndex": 1,
+      "explanation": "Например, post_tags."
+    },
+    {
+      "id": "database-06-q2",
+      "prompt": "Что делает ON DELETE CASCADE?",
+      "options": [
+        "Запрещает удаление",
+        "Удаляет зависимые строки вместе с главной",
+        "Копирует строки",
+        "Обнуляет ссылку"
+      ],
+      "correctIndex": 1,
+      "explanation": "Удобно, но опасно без возможности восстановить."
+    },
+    {
+      "id": "database-06-q3",
+      "prompt": "Что делает ON DELETE RESTRICT?",
+      "options": [
+        "Удаляет зависимые",
+        "Ничего",
+        "Обнуляет ссылку",
+        "Запрещает удаление, пока есть зависимые строки"
+      ],
+      "correctIndex": 3,
+      "explanation": "Возвращает ошибку."
+    },
+    {
+      "id": "database-06-q4",
+      "prompt": "Как сделать связь 1:1 между пользователем и профилем?",
+      "options": [
+        "Список в поле",
+        "Внешний ключ user_id с ограничением UNIQUE",
+        "Два внешних ключа",
+        "Связующая таблица"
+      ],
+      "correctIndex": 1,
+      "explanation": "UNIQUE гарантирует один профиль."
+    },
+    {
+      "id": "database-06-q5",
+      "prompt": "Зачем составной первичный ключ у post_tags?",
+      "options": [
+        "Шифрует ключи",
+        "Ускоряет сеть",
+        "Запрещает повтор одной и той же пары пост-тег",
+        "Заменяет индексы"
+      ],
+      "correctIndex": 2,
+      "explanation": "Дубли пар — ошибка данных."
     }
   ]
 }

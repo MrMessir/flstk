@@ -7,8 +7,12 @@
   "goal": "Сфокусируешь input через ref, упростишь state reducer-ом и не перерисуешь лишнее memo.",
   "theory": [
     {
+      "type": "heading",
+      "content": "useRef"
+    },
+    {
       "type": "paragraph",
-      "content": "useRef(initial) даёт { current } mutable box, смена current не вызывает re-render. inputRef.current?.focus() после submit. Храни id таймера или предыдущее value. useRef для DOM: ref={inputRef} на input. Не читай ref.current во время render для UI — только в handlers и effects."
+      "content": "useRef(начальное) возвращает объект { current }, который переживает отрисовки, но изменение current не вызывает перерисовку. Два основных применения: доступ к DOM-элементу (ref={inputRef} на input, затем inputRef.current?.focus() после добавления задачи) и хранение значения между отрисовками, не влияющего на экран (id таймера, предыдущее значение). Не читай и не пиши ref.current во время отрисовки: делай это в обработчиках и эффектах."
     },
     {
       "type": "heading",
@@ -16,15 +20,24 @@
     },
     {
       "type": "paragraph",
-      "content": "const [state, dispatch] = useReducer(reducer, initial). reducer(state, action) возвращает новый state иммутабельно. Удобно для форм с многими полями и конечных автоматов: dispatch({ type: 'increment' }). action типизируют union в TS."
+      "content": "Когда состояние сложное, а действий над ним несколько, useState превращается в кашу. useReducer собирает все изменения в одну функцию reducer(state, action), которая возвращает новое состояние: dispatch({ type: 'add', title }). Это удобно для списка задач (add, toggle, remove), потому что вся логика лежит в одном месте и легко тестируется как обычная функция. Reducer должен быть чистым: не менять state и не делать запросы."
     },
     {
       "type": "heading",
-      "content": "useMemo и useCallback"
+      "content": "Мемоизация без фанатизма"
+    },
+    {
+      "type": "list",
+      "items": [
+        "React.memo(Component) пропускает перерисовку, если props не изменились.",
+        "useCallback(fn, deps) сохраняет одну и ту же функцию между отрисовками; полезен, когда её передают в memo-компонент.",
+        "useMemo(() => расчёт, deps) кэширует результат дорогого вычисления.",
+        "Каждый из них сам стоит ресурсов: добавляй, когда профилировщик показал реальную проблему."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "useMemo(() => heavy(list), [list]) кэширует вычисление. useCallback(fn, deps) стабилизирует ссылку на функцию для memo-детей. React.memo(Component) пропускает render если props shallow equal. Не оборачивай всё подряд — профилируй, когда списки тормозят."
+      "content": "Новая функция или объект в props на каждой отрисовке ломает memo: onClick={() => add(id)} всегда «новый». В небольшом списке это не важно, в списке из тысяч строк уже заметно. Сначала измерь, потом оптимизируй. Мелкий пример выбора: счётчик кликов, который нужен для аналитики, но не показывается на экране, лучше хранить в useRef: обновление не вызовет лишней отрисовки."
     }
   ],
   "codeExample": "import { useRef, useReducer, memo } from \"react\";\n\ntype CountState = { n: number };\ntype Action = { type: \"inc\" } | { type: \"dec\" };\n\nfunction reducer(state: CountState, action: Action): CountState {\n  switch (action.type) {\n    case \"inc\":\n      return { n: state.n + 1 };\n    case \"dec\":\n      return { n: state.n - 1 };\n  }\n}\n\nexport function CounterReducer() {\n  const [state, dispatch] = useReducer(reducer, { n: 0 });\n  const inputRef = useRef<HTMLInputElement>(null);\n  return (\n    <>\n      <p>{state.n}</p>\n      <button type=\"button\" onClick={() => dispatch({ type: \"inc\" })}>+</button>\n      <input ref={inputRef} />\n      <button type=\"button\" onClick={() => inputRef.current?.focus()}>Focus</button>\n    </>\n  );\n}",
@@ -78,6 +91,68 @@
       "term": "useCallback",
       "meaning": "Кэширование функции между render.",
       "example": "useCallback(fn, [deps])"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-07-q1",
+      "prompt": "Что происходит при изменении ref.current?",
+      "options": [
+        "Компонент перерисовывается",
+        "Перерисовки не происходит",
+        "Значение сбрасывается",
+        "Приложение падает"
+      ],
+      "correctIndex": 1,
+      "explanation": "ref хранит значение между отрисовками."
+    },
+    {
+      "id": "react-07-q2",
+      "prompt": "Когда полезен useReducer?",
+      "options": [
+        "Для одной переменной",
+        "Для стилей",
+        "Для маршрутов",
+        "Когда состояние сложное и над ним несколько действий"
+      ],
+      "correctIndex": 3,
+      "explanation": "Логика собирается в одной функции."
+    },
+    {
+      "id": "react-07-q3",
+      "prompt": "Каким должен быть reducer?",
+      "options": [
+        "Любой",
+        "Чистой функцией: не меняет state и не делает запросы",
+        "С побочными эффектами",
+        "Асинхронной"
+      ],
+      "correctIndex": 1,
+      "explanation": "Он возвращает новое состояние."
+    },
+    {
+      "id": "react-07-q4",
+      "prompt": "Что делает React.memo?",
+      "options": [
+        "Запускает эффект",
+        "Создаёт ref",
+        "Сохраняет данные в базе",
+        "Пропускает перерисовку, если props не изменились"
+      ],
+      "correctIndex": 3,
+      "explanation": "Помогает, если props стабильны."
+    },
+    {
+      "id": "react-07-q5",
+      "prompt": "Когда стоит добавлять мемоизацию?",
+      "options": [
+        "Когда профилировщик показал реальную проблему",
+        "Везде заранее",
+        "Только в классах",
+        "Никогда"
+      ],
+      "correctIndex": 0,
+      "explanation": "Мемоизация сама стоит ресурсов."
     }
   ]
 }

@@ -7,24 +7,40 @@
   "goal": "Опишешь зависимости, скрипты и правила semver в своём API-проекте.",
   "theory": [
     {
+      "type": "heading",
+      "content": "package.json как паспорт проекта"
+    },
+    {
       "type": "paragraph",
-      "content": "package.json — паспорт проекта: имя, версия, скрипты запуска и список зависимостей. npm install express добавляет пакет в node_modules и фиксирует версию в package-lock.json. Без lock-файла у коллеги могут установиться другие минорные версии и CI начнёт падать «само»."
+      "content": "В package.json лежит имя проекта, версия, тип модулей, скрипты запуска и зависимости. npm install express скачивает пакет в node_modules и записывает версию в package-lock.json. Папку node_modules в git не коммитят, она восстанавливается из lock-файла, а сам package-lock.json коммитят обязательно: без него у коллеги или в CI установятся другие версии, и сборка начнёт падать «сама»."
     },
     {
       "type": "heading",
       "content": "dependencies и devDependencies"
     },
     {
-      "type": "paragraph",
-      "content": "dependencies нужны в рантайме: express, zod, prisma. devDependencies — только для разработки: typescript, nodemon, eslint. На прод-сервере часто ставят npm ci --omit=dev, чтобы не тащить лишнее. Не клади runtime-библиотеки в devDependencies — деплой сломается."
+      "type": "list",
+      "items": [
+        "dependencies нужны программе в работе: express, zod, pg.",
+        "devDependencies нужны только разработчику: eslint, vitest, typescript, tsx. На проде их ставят без флага (npm ci --omit=dev).",
+        "Устанавливай так: npm install пакет и npm install -D пакет для dev."
+      ]
     },
     {
       "type": "heading",
-      "content": "Semver и caret"
+      "content": "Версии и semver"
     },
     {
       "type": "paragraph",
-      "content": "Версия MAJOR.MINOR.PATCH. Запись ^4.19.0 разрешает обновления minor и patch, но не major. Тильда ~4.19.0 — только patch. Для учебного проекта caret нормален; перед релизом проверяй npm outdated и changelog major-версий."
+      "content": "Версия состоит из трёх чисел: мажорная.минорная.патч (4.21.2). Патч — исправления, минор — новые возможности без поломок, мажор — несовместимые изменения. ^4.21.0 разрешает обновления минора и патча в пределах четвёрки, ~4.21.0 только патчи, точная версия без знака закрепляет полностью. Обновление мажорной версии читай по списку изменений (changelog), а не вслепую."
+    },
+    {
+      "type": "heading",
+      "content": "Скрипты и подозрительные пакеты"
+    },
+    {
+      "type": "paragraph",
+      "content": "scripts задают команды: npm run dev запускает node --watch src/index.js (перезапуск при изменении файлов), npm start — боевой запуск, npm test — тесты. В CI используй npm ci: он ставит строго по lock-файлу и падает, если lock не совпадает с package.json. Перед установкой незнакомого пакета проверь количество загрузок, дату последнего обновления и репозиторий: подмена похожих названий (typosquatting) — реальный способ атаки. npm audit показывает известные уязвимости, но не заменяет внимательность."
     }
   ],
   "codeExample": "{\n  \"name\": \"blog-api\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"node --watch src/index.js\",\n    \"start\": \"node src/index.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.21.0\",\n    \"zod\": \"^3.23.0\"\n  },\n  \"devDependencies\": {\n    \"nodemon\": \"^3.1.0\"\n  }\n}",
@@ -74,6 +90,68 @@
       "term": "node_modules",
       "meaning": "Локальная папка установленных пакетов.",
       "example": ".gitignore → node_modules/"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-03-q1",
+      "prompt": "Зачем коммитить package-lock.json?",
+      "options": [
+        "Чтобы хранить пароли",
+        "Это не нужно",
+        "Чтобы ускорить git",
+        "Чтобы у всех и в CI ставились одни и те же версии"
+      ],
+      "correctIndex": 3,
+      "explanation": "Без него версии могут отличаться."
+    },
+    {
+      "id": "nodejs-03-q2",
+      "prompt": "Чем devDependencies отличаются от dependencies?",
+      "options": [
+        "Нужны только на проде",
+        "Это приватные пакеты",
+        "Нужны только при разработке, например eslint и vitest",
+        "Это одно и то же"
+      ],
+      "correctIndex": 2,
+      "explanation": "На проде ставят без devDependencies."
+    },
+    {
+      "id": "nodejs-03-q3",
+      "prompt": "Что разрешает ^4.21.0?",
+      "options": [
+        "Обновления минора и патча в пределах мажорной версии 4",
+        "Любые версии",
+        "Только точную версию",
+        "Только патчи"
+      ],
+      "correctIndex": 0,
+      "explanation": "~ разрешает только патчи."
+    },
+    {
+      "id": "nodejs-03-q4",
+      "prompt": "Чем npm ci отличается от npm install?",
+      "options": [
+        "Не ставит зависимости",
+        "Удаляет lock",
+        "Ставит строго по lock-файлу и падает, если он не совпадает",
+        "Ставит последние версии"
+      ],
+      "correctIndex": 2,
+      "explanation": "Поэтому его используют в CI."
+    },
+    {
+      "id": "nodejs-03-q5",
+      "prompt": "Что проверить перед установкой незнакомого пакета?",
+      "options": [
+        "Количество загрузок, дату обновления и репозиторий",
+        "Цвет логотипа",
+        "Размер README",
+        "Язык автора"
+      ],
+      "correctIndex": 0,
+      "explanation": "Подмена похожих названий — реальная атака."
     }
   ]
 }

@@ -7,24 +7,44 @@
   "goal": "Опишешь модели Prisma и выполнишь CRUD постов из Express без сырого SQL.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Зачем ORM"
+    },
+    {
       "type": "paragraph",
-      "content": "Prisma Client генерируется из schema: типобезопасные findMany, create, update. prisma.post.findMany({ where: { authorId }, include: { comments: true } }) заменяет JOIN. $queryRaw остаётся для сложного SQL."
+      "content": "Prisma Client генерируется по файлу schema.prisma и даёт типобезопасные методы: findMany, findUnique, create, update, delete. Редактор подсказывает поля, а ошибка в названии столбца находится при компиляции, а не на проде. Вместо JOIN в запросе ты пишешь include: prisma.post.findMany({ where: { authorId }, include: { comments: true } }). Для сложного SQL остаётся $queryRaw (с параметрами) как запасной выход."
     },
     {
       "type": "heading",
-      "content": "Singleton client"
+      "content": "Один клиент на процесс"
     },
     {
       "type": "paragraph",
-      "content": "Один экземпляр PrismaClient на процесс — в db/prisma.js экспорт singleton. В dev hot-reload создаёт лишние соединения — паттерн globalThis.prisma из доки Prisma."
+      "content": "PrismaClient держит пул соединений с базой, поэтому создавать его нужно один раз: экспортируй готовый экземпляр из db/prisma.js. В режиме разработки горячая перезагрузка создаёт новый клиент при каждом изменении файла, и соединения заканчиваются; в документации Prisma для этого есть приём с сохранением экземпляра в globalThis. Закрывай соединение при остановке процесса ($disconnect)."
     },
     {
       "type": "heading",
-      "content": "Repository поверх Prisma"
+      "content": "Слой repository"
     },
     {
       "type": "paragraph",
-      "content": "postsRepo.create вызывает prisma.post.create — service не импортирует Prisma напрямую. Завтра mock repo для тестов без БД."
+      "content": "Не вызывай Prisma прямо из сервисов и обработчиков. Оберни её в repository: postsRepo.create вызывает prisma.post.create. Тогда в тестах сервис получает макет репозитория без базы данных, а смена способа хранения не затрагивает бизнес-логику. Это та самая слоистая архитектура из модуля про Node.js."
+    },
+    {
+      "type": "heading",
+      "content": "Пагинация и выбор полей"
+    },
+    {
+      "type": "list",
+      "items": [
+        "skip и take реализуют страницы; для общего числа используй count.",
+        "select возвращает только нужные поля: не отправляй клиенту password_hash или лишние данные.",
+        "Если include вытягивает большие связи, ограничь их: take внутри include."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Проверь, что SQL у запроса разумный: включи журнал запросов Prisma в разработке и посмотри, не порождает ли код N+1."
     }
   ],
   "codeExample": "import { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient();\n\nexport async function listPosts(page, limit) {\n  const skip = (page - 1) * limit;\n  const [items, total] = await Promise.all([\n    prisma.post.findMany({ skip, take: limit, orderBy: { createdAt: \"desc\" } }),\n    prisma.post.count(),\n  ]);\n  return { items, page, limit, total };\n}",
@@ -69,6 +89,68 @@
       "term": "skip/take",
       "meaning": "Offset и limit в Prisma.",
       "example": "skip: 20, take: 10"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "database-12-q1",
+      "prompt": "Что делает include в Prisma?",
+      "options": [
+        "Загружает связанные записи, заменяя ручной JOIN",
+        "Запускает миграцию",
+        "Удаляет записи",
+        "Создаёт индекс"
+      ],
+      "correctIndex": 0,
+      "explanation": "prisma.post.findMany({ include: { comments: true } })."
+    },
+    {
+      "id": "database-12-q2",
+      "prompt": "Сколько экземпляров PrismaClient создают на процесс?",
+      "options": [
+        "Сто",
+        "Не создают",
+        "По одному на запрос",
+        "Один"
+      ],
+      "correctIndex": 3,
+      "explanation": "Он держит пул соединений."
+    },
+    {
+      "id": "database-12-q3",
+      "prompt": "Зачем слой repository поверх Prisma?",
+      "options": [
+        "Чтобы шифровать данные",
+        "Так требует Prisma",
+        "В тестах сервис получает макет вместо базы, смена хранилища не ломает логику",
+        "Чтобы ускорить запросы"
+      ],
+      "correctIndex": 2,
+      "explanation": "Бизнес-логика не знает про Prisma."
+    },
+    {
+      "id": "database-12-q4",
+      "prompt": "Для чего select в запросе Prisma?",
+      "options": [
+        "Чтобы удалить поля",
+        "Чтобы вернуть только нужные поля, например без password_hash",
+        "Чтобы ускорить сборку",
+        "Чтобы создать индекс"
+      ],
+      "correctIndex": 1,
+      "explanation": "Меньше лишних данных клиенту."
+    },
+    {
+      "id": "database-12-q5",
+      "prompt": "Что делают skip и take?",
+      "options": [
+        "Запускают миграцию",
+        "Реализуют пагинацию страниц",
+        "Создают транзакцию",
+        "Удаляют записи"
+      ],
+      "correctIndex": 1,
+      "explanation": "skip пропускает, take ограничивает число."
     }
   ]
 }

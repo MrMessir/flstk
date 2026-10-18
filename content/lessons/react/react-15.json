@@ -7,8 +7,25 @@
   "goal": "Поймёшь файловый роутинг App Router и отличие SSR от чистого Vite SPA.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что добавляет Next.js"
+    },
+    {
       "type": "paragraph",
-      "content": "Next.js — фреймворк на React с маршрутизацией, SSR и API routes. App Router (папка app/) использует layout.tsx, page.tsx, loading.tsx. Файловая система = URL: app/blog/[slug]/page.tsx. Server Components по умолчанию — async компонент может fetch на сервере без useEffect."
+      "content": "Next.js — фреймворк на React с маршрутизацией по файлам, рендерингом на сервере, оптимизацией изображений и шрифтов и встроенными серверными возможностями. Vite SPA отдаёт почти пустой HTML и строит страницу в браузере, а Next может прислать готовый HTML, что полезно для скорости первого показа и поисковых систем."
+    },
+    {
+      "type": "heading",
+      "content": "App Router"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Папка app: структура файлов задаёт адреса; app/blog/[slug]/page.tsx — страница /blog/любой-slug.",
+        "page.tsx — страница маршрута, layout.tsx — общая обёртка, loading.tsx — показывается при загрузке, error.tsx — при ошибке.",
+        "Компоненты по умолчанию серверные: они выполняются на сервере и могут быть async, делать fetch или запрос к базе напрямую, без useEffect.",
+        "Интерактивные части (useState, события браузера) помечают 'use client' в начале файла."
+      ]
     },
     {
       "type": "heading",
@@ -16,15 +33,11 @@
     },
     {
       "type": "paragraph",
-      "content": "SSR — HTML генерируется на запрос. SSG — HTML на build. CSR (Vite SPA) — пустой shell и fetch в браузере. SEO и первый байт часто лучше у SSR/SSG; интерактивность всё равно гидратируется React на клиенте. 'use client' в начале файла — компонент с hooks в App Router."
-    },
-    {
-      "type": "heading",
-      "content": "Когда Next vs Vite"
+      "content": "SSR (рендер на сервере на каждый запрос): HTML готовится в момент обращения, подходит для персональных данных. SSG (статическая генерация): HTML собирается заранее при сборке, самый быстрый вариант для редко меняющихся страниц. CSR (рендер в браузере): как в Vite SPA, подходит для закрытых кабинетов. Hydration — момент, когда браузер «оживляет» присланный HTML, подключая обработчики событий."
     },
     {
       "type": "paragraph",
-      "content": "Next — сайты с SEO, маркетинг, e-commerce catalog, dashboard с auth на server. Vite SPA — админки за login, tools, прототипы. npx create-next-app@latest с TypeScript и App Router — старт для эксперимента; деплой на Vercel один git push."
+      "content": "Версии Next заметно отличаются в настройках кэширования и работе с параметрами маршрутов (в новых версиях params и searchParams асинхронные), поэтому сверяйся с документацией той версии, что установлена в проекте. Проверка: создай проект командой create-next-app, добавь серверный компонент с fetch и убедись, что данные видны в исходном HTML страницы."
     }
   ],
   "codeExample": "// app/page.tsx (Server Component)\nexport default async function HomePage() {\n  const res = await fetch(\"https://jsonplaceholder.typicode.com/posts/1\", {\n    next: { revalidate: 60 },\n  });\n  const post = await res.json();\n  return (\n    <main>\n      <h1>{post.title}</h1>\n    </main>\n  );\n}\n\n// app/components/Counter.tsx\n\"use client\";\nimport { useState } from \"react\";\nexport function Counter() {\n  const [n, setN] = useState(0);\n  return <button type=\"button\" onClick={() => setN(n + 1)}>{n}</button>;\n}",
@@ -78,6 +91,68 @@
       "term": "hydration",
       "meaning": "Подключение React к server HTML на клиенте.",
       "example": "после SSR"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-15-q1",
+      "prompt": "Что добавляет Next.js к React?",
+      "options": [
+        "Только тесты",
+        "Только стили",
+        "Базу данных",
+        "Файловую маршрутизацию, серверный рендеринг и оптимизации"
+      ],
+      "correctIndex": 3,
+      "explanation": "Это фреймворк на React."
+    },
+    {
+      "id": "react-15-q2",
+      "prompt": "Что значит файл app/blog/[slug]/page.tsx?",
+      "options": [
+        "Файл настройки",
+        "Страница /blog/любой-slug",
+        "Ошибка",
+        "Файл статики"
+      ],
+      "correctIndex": 1,
+      "explanation": "Структура файлов задаёт адреса."
+    },
+    {
+      "id": "react-15-q3",
+      "prompt": "Что по умолчанию в App Router?",
+      "options": [
+        "Классы",
+        "jQuery",
+        "Клиентские компоненты",
+        "Серверные компоненты"
+      ],
+      "correctIndex": 3,
+      "explanation": "'use client' включает клиентский режим."
+    },
+    {
+      "id": "react-15-q4",
+      "prompt": "Чем SSG отличается от SSR?",
+      "options": [
+        "SSG собирает HTML заранее при сборке, SSR готовит на каждый запрос",
+        "SSG на сервере по запросу",
+        "Это одно и то же",
+        "SSR только в браузере"
+      ],
+      "correctIndex": 0,
+      "explanation": "SSG подходит для редко меняющихся страниц."
+    },
+    {
+      "id": "react-15-q5",
+      "prompt": "Что такое hydration?",
+      "options": [
+        "Удаление HTML",
+        "Сжатие",
+        "Загрузка стилей",
+        "Подключение обработчиков к уже присланному HTML в браузере"
+      ],
+      "correctIndex": 3,
+      "explanation": "HTML «оживает»."
     }
   ]
 }

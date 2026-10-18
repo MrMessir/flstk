@@ -11,6 +11,8 @@
     "content:enrich": "python3 scripts/enrich_lessons.py",
     "content:fix-curriculum": "python3 scripts/apply_curriculum_fixes.py",
     "content:verify": "npx --yes tsx scripts/verify-curriculum.mjs",
+    "content:verify:playground": "npx --yes tsx scripts/verify-playground.mjs",
+    "test:quiz": "npx --yes tsx scripts/quiz-test.mjs",
     "seed:admin": "node --env-file=.env.local scripts/seed-admin.mjs",
     "test:security": "node scripts/security-smoke.mjs",
     "test:judge": "npx --yes tsx scripts/judge-security-test.mjs",

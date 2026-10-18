@@ -7,8 +7,25 @@
   "goal": "Запустишь плавную анимацию в rAF и покажешь блок, когда он попадает в экран.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Анимация по кадрам"
+    },
+    {
       "type": "paragraph",
-      "content": "requestAnimationFrame(callback) планирует callback перед следующей отрисовкой кадра браузером — обычно 60 раз в секунду на обычном мониторе. Для анимации положения или прозрачности это лучше setInterval: rAF синхронизирован с экраном и паузируется на скрытой вкладке. Внутри callback снова вызывай requestAnimationFrame, пока анимация не закончена, и храни время старта через performance.now()."
+      "content": "requestAnimationFrame(callback) планирует вызов перед следующей отрисовкой кадра: обычно около 60 раз в секунду. Для анимации положения или прозрачности это лучше setInterval, потому что rAF синхронизирован с экраном и приостанавливается на скрытой вкладке, экономя заряд. Внутри callback снова вызывай requestAnimationFrame, пока анимация не закончится. Вызывающая функция получает метку времени: считай прогресс по времени (ts - start), а не по числу кадров, иначе на медленных устройствах анимация потянется дольше."
+    },
+    {
+      "type": "heading",
+      "content": "Что анимировать"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Меняй transform и opacity: они не заставляют браузер пересчитывать раскладку и идут плавно.",
+        "Анимация width, height, top и left запускает дорогой пересчёт макета (reflow).",
+        "Простые переходы удобнее делать в CSS (transition, @keyframes); JavaScript нужен для сложной логики.",
+        "Уважай настройку prefers-reduced-motion: для таких пользователей анимацию отключают."
+      ]
     },
     {
       "type": "heading",
@@ -16,15 +33,7 @@
     },
     {
       "type": "paragraph",
-      "content": "new IntersectionObserver((entries) => { ... }, { root: null, threshold: 0.2 }) следит, когда целевой элемент пересекается с viewport (root: null) или с прокручиваемым контейнером. В entries[0].isIntersecting — true, если элемент виден хотя бы на threshold долю площади. Так делают lazy load картинок, бесконечный скролл и анимации «появилось при прокрутке» без scroll-слушателя на каждый пиксель."
-    },
-    {
-      "type": "heading",
-      "content": "Когда что брать"
-    },
-    {
-      "type": "paragraph",
-      "content": "rAF — для плавного изменения стилей или canvas каждый кадр. IntersectionObserver — для реакции «элемент вошёл/вышел из зоны видимости». Нативный loading=\"lazy\" на img закрывает простой lazy load; Observer нужен, когда подгружаешь src из data-src или включаешь CSS-класс с анимацией один раз."
+      "content": "IntersectionObserver сообщает, когда элемент появляется в области видимости. new IntersectionObserver((entries) => { … }, { threshold: 0.2 }) срабатывает, когда видно хотя бы 20% элемента. Применения: подсветка блока при прокрутке, ленивая загрузка картинок, бесконечная лента. Не слушай событие scroll для этого: оно срабатывает очень часто и тормозит страницу. Когда наблюдение больше не нужно, вызывай observer.unobserve(element). Практика: квадрат, который едет за одну секунду через rAF, блоки, получающие класс visible при прокрутке, и картинка, которая подставляет настоящий src, когда подходит к экрану; проверь, что на скрытой вкладке анимация не тратит ресурсы."
     }
   ],
   "codeExample": "const box = document.querySelector(\"#box\");\nlet start = null;\n\nfunction animate(ts) {\n  if (!start) start = ts;\n  const t = Math.min((ts - start) / 1000, 1);\n  box.style.transform = `translateX(${t * 200}px)`;\n  if (t < 1) requestAnimationFrame(animate);\n}\nrequestAnimationFrame(animate);\n\nconst target = document.querySelector(\"#lazy-section\");\nconst io = new IntersectionObserver(([entry]) => {\n  if (entry.isIntersecting) {\n    target.classList.add(\"visible\");\n    io.unobserve(target);\n  }\n}, { threshold: 0.25 });\nio.observe(target);",
@@ -78,6 +87,68 @@
       "term": "lazy load",
       "meaning": "Загрузка ресурса только когда он почти на экране.",
       "example": "data-src → src"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "js-26-q1",
+      "prompt": "Когда вызывается callback в requestAnimationFrame?",
+      "options": [
+        "Через секунду",
+        "Сразу",
+        "Перед следующей отрисовкой кадра",
+        "Никогда"
+      ],
+      "correctIndex": 2,
+      "explanation": "Обычно около 60 раз в секунду."
+    },
+    {
+      "id": "js-26-q2",
+      "prompt": "Что делает IntersectionObserver?",
+      "options": [
+        "Считает клики",
+        "Проверяет сеть",
+        "Следит за мышью",
+        "Сообщает, когда элемент попадает в область видимости"
+      ],
+      "correctIndex": 3,
+      "explanation": "Подходит для ленивой загрузки."
+    },
+    {
+      "id": "js-26-q3",
+      "prompt": "Почему rAF лучше setInterval для анимации?",
+      "options": [
+        "Синхронизирован с экраном и паузируется на скрытой вкладке",
+        "Он только для чисел",
+        "Он быстрее всегда",
+        "Он проще"
+      ],
+      "correctIndex": 0,
+      "explanation": "Меньше лишней работы."
+    },
+    {
+      "id": "js-26-q4",
+      "prompt": "Что значит threshold в IntersectionObserver?",
+      "options": [
+        "Задержка",
+        "Цвет",
+        "Какая доля элемента должна быть видна для срабатывания",
+        "Размер"
+      ],
+      "correctIndex": 2,
+      "explanation": "От 0 до 1."
+    },
+    {
+      "id": "js-26-q5",
+      "prompt": "Как включить ленивую загрузку картинки?",
+      "options": [
+        "defer",
+        "Удалить src",
+        "loading=\"lazy\" или IntersectionObserver",
+        "alt"
+      ],
+      "correctIndex": 2,
+      "explanation": "Картинка грузится, когда подходит к экрану."
     }
   ]
 }

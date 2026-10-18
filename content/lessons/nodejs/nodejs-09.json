@@ -7,24 +7,37 @@
   "goal": "Отклонишь невалидный body до бизнес-логики и вернёшь понятные ошибки 400.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Данным от клиента верить нельзя"
+    },
+    {
       "type": "paragraph",
-      "content": "Доверять req.body нельзя: клиент может прислать лишние поля, строку вместо числа или пустой title. Zod описывает схему и parse/ safeParse возвращает типизированный объект или ZodError. Валидацию ставят в middleware или первой строкой handler — до записи в БД."
+      "content": "В req.body может прийти что угодно: строка вместо числа, пустой title, лишние поля, огромный объект. Если сохранить всё без проверки, клиент подставит поле role: 'admin' или переопределит authorId (эта ошибка называется mass assignment). Проверка выполняется до бизнес-логики и записи в базу, на сервере, даже если форма на клиенте уже проверила то же самое: запрос можно отправить в обход интерфейса."
     },
     {
       "type": "heading",
-      "content": "strip и strict"
+      "content": "Схема zod"
     },
     {
       "type": "paragraph",
-      "content": "z.object({ title: z.string().min(1) }).strict() отклонит неизвестные ключи — полезно против mass assignment. .strip() (по умолчанию) удалит лишнее молча. Для публичного API документируй, какие поля игнорируются."
+      "content": "Zod описывает форму данных: z.object({ title: z.string().trim().min(1).max(200), body: z.string().min(1) }). schema.safeParse(req.body) возвращает { success: true, data } или { success: false, error }, не бросая исключений. Тип выводится автоматически: z.infer<typeof schema>. Метод .strict() отклоняет неизвестные поля, а по умолчанию z.object молча отбрасывает их."
+    },
+    {
+      "type": "list",
+      "items": [
+        "Query-параметры приходят строками: z.coerce.number().int().min(1).default(1).",
+        "Для частичного обновления делай схему из базовой через .partial().",
+        "Ошибки формируй для клиента через error.flatten().fieldErrors и отвечай 400.",
+        "Схемы выноси в отдельный файл и переиспользуй на клиенте."
+      ]
     },
     {
       "type": "heading",
-      "content": "Ответ клиенту"
+      "content": "Middleware validateBody"
     },
     {
       "type": "paragraph",
-      "content": "На ошибку валидации — 400 и массив { path, message }, не 500. Не отправляй сырой error.stack. Одна функция formatZodError упрощает фронту показ полей формы."
+      "content": "Универсальная функция validateBody(schema) возвращает middleware: разбирает req.body, при ошибке отвечает 400, иначе кладёт результат в req.validated и вызывает next(). Обработчик берёт данные только из req.validated: туда попадают лишь описанные поля. Проверь негативные случаи в Postman: пустой title, число вместо строки, лишнее поле role, слишком длинный текст. Каждый должен вернуть понятный 400 без падения сервера."
     }
   ],
   "codeExample": "import { z } from \"zod\";\n\nexport const createPostSchema = z.object({\n  title: z.string().trim().min(1).max(200),\n  body: z.string().min(1),\n});\n\nexport function validateBody(schema) {\n  return (req, res, next) => {\n    const parsed = schema.safeParse(req.body);\n    if (!parsed.success) {\n      return res.status(400).json({ errors: parsed.error.flatten() });\n    }\n    req.validated = parsed.data;\n    next();\n  };\n}",
@@ -69,6 +82,68 @@
       "term": "flatten",
       "meaning": "Упрощённый вид ошибок Zod для JSON.",
       "example": "error.flatten().fieldErrors"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-09-q1",
+      "prompt": "Что такое mass assignment?",
+      "options": [
+        "Ошибка базы",
+        "Дубль запросов",
+        "Клиент подставляет лишние поля вроде role или authorId, и они сохраняются",
+        "Массовая рассылка"
+      ],
+      "correctIndex": 2,
+      "explanation": "Защита: схема и .strict()."
+    },
+    {
+      "id": "nodejs-09-q2",
+      "prompt": "Что возвращает safeParse?",
+      "options": [
+        "Ничего",
+        "Объект с success и data или error, не бросая исключение",
+        "Только строку",
+        "Всегда бросает ошибку"
+      ],
+      "correctIndex": 1,
+      "explanation": "Удобно для ответа 400."
+    },
+    {
+      "id": "nodejs-09-q3",
+      "prompt": "Как обработать query-параметр page как число?",
+      "options": [
+        "parseFloat без проверки",
+        "z.coerce.number().int().min(1)",
+        "z.string()",
+        "Использовать как есть"
+      ],
+      "correctIndex": 1,
+      "explanation": "Query приходит строкой."
+    },
+    {
+      "id": "nodejs-09-q4",
+      "prompt": "Откуда обработчик должен брать данные после валидации?",
+      "options": [
+        "Из req.validated, куда попадают только описанные поля",
+        "Из куки",
+        "Из заголовков",
+        "Из req.body без проверки"
+      ],
+      "correctIndex": 0,
+      "explanation": "Так лишние поля не просачиваются."
+    },
+    {
+      "id": "nodejs-09-q5",
+      "prompt": "Почему сервер проверяет данные, если форма уже проверила?",
+      "options": [
+        "Форма всегда ошибается",
+        "Браузер запрещает проверки",
+        "Так быстрее",
+        "Запрос можно отправить в обход интерфейса"
+      ],
+      "correctIndex": 3,
+      "explanation": "Клиентской проверке доверять нельзя."
     }
   ]
 }

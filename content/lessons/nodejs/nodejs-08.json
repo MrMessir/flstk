@@ -7,24 +7,37 @@
   "goal": "Спроектируешь ресурсы REST для блога и опишешь их в черновике OpenAPI 3.",
   "theory": [
     {
+      "type": "heading",
+      "content": "REST как договорённость"
+    },
+    {
       "type": "paragraph",
-      "content": "REST — соглашение об URL, методах и кодах ответа, а не отдельный протокол. Клиент (React, мобилка, Postman) читает одну спецификацию и знает форматы. OpenAPI 3 — YAML или JSON с paths, components.schemas и responses. Swagger UI монтируют на /docs и генерируют из того же файла."
+      "content": "REST — соглашение об адресах, методах и кодах ответа, а не отдельный протокол. Когда его соблюдают, клиент (React, мобильное приложение, Postman) может угадать часть поведения, а новому разработчику не нужен устный пересказ. Ресурс — существительное (posts, users, comments), метод — действие над ним."
     },
     {
       "type": "heading",
-      "content": "Идемпотентность и методы"
+      "content": "Методы и их свойства"
+    },
+    {
+      "type": "list",
+      "items": [
+        "GET, HEAD — безопасные: ничего не меняют.",
+        "GET, PUT, DELETE — идемпотентные: повторный запрос с теми же данными даёт тот же результат (двойной DELETE не ломается).",
+        "POST создаёт и не идемпотентен: два запроса дают две записи; от дублей защищают ключом идемпотентности.",
+        "PATCH меняет часть полей, PUT заменяет объект целиком."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "GET, HEAD, PUT, DELETE идемпотентны: повтор запроса не должен плодить побочные эффекты (кроме логов). POST создаёт ресурс — повтор может создать дубликат, если нет Idempotency-Key. PATCH — частичное обновление; документируй, какие поля optional."
+      "content": "Коды ответа: 201 после создания (с заголовком Location на новый ресурс), 204 для успешного удаления, 400 для неверных данных, 404 для отсутствующего ресурса, 409 для конфликта (email занят). Единый формат ошибки, например { error: { code, message } }, избавляет клиента от разбора разных форм."
     },
     {
       "type": "heading",
-      "content": "Схемы в components"
+      "content": "OpenAPI"
     },
     {
       "type": "paragraph",
-      "content": "Вынеси Post, CreatePostDto, Error в components/schemas и ссылайся $ref. Так Postman и codegen не копируют JSON вручную. Укажи required поля и примеры — это контракт между фронтом и бэком."
+      "content": "OpenAPI 3 — файл в YAML или JSON с разделами paths (адреса и методы), components.schemas (модели данных) и responses. Это контракт: по нему генерируют документацию, клиентский код и тесты. Swagger UI подключают на /docs, и он строится из того же файла. Храни openapi.yaml в репозитории и обновляй вместе с кодом: устаревшая спецификация вреднее, чем её отсутствие. Схемы описывают DTO (объекты передачи данных), то есть форму ответа, а не таблицы базы: поля вроде passwordHash в них не попадают. Импортируй файл в Postman, и коллекция запросов построится сама."
     }
   ],
   "codeExample": "openapi: 3.0.3\ninfo:\n  title: Blog API\n  version: 0.1.0\npaths:\n  /posts:\n    get:\n      summary: List posts\n      responses:\n        \"200\":\n          description: OK\n    post:\n      summary: Create post\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/CreatePost\"\ncomponents:\n  schemas:\n    CreatePost:\n      type: object\n      required: [title, body]\n      properties:\n        title: { type: string }\n        body: { type: string }",
@@ -69,6 +82,68 @@
       "term": "DTO",
       "meaning": "Объект передачи данных для create/update.",
       "example": "CreatePost { title, body }"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-08-q1",
+      "prompt": "Какой метод идемпотентен?",
+      "options": [
+        "DELETE",
+        "POST",
+        "Никакой",
+        "Только GET создаёт данные"
+      ],
+      "correctIndex": 0,
+      "explanation": "Повторный DELETE не ломает результат."
+    },
+    {
+      "id": "nodejs-08-q2",
+      "prompt": "Что возвращают после успешного создания с заголовком Location?",
+      "options": [
+        "400",
+        "201",
+        "204",
+        "301"
+      ],
+      "correctIndex": 1,
+      "explanation": "Location указывает на новый ресурс."
+    },
+    {
+      "id": "nodejs-08-q3",
+      "prompt": "Что описывает OpenAPI?",
+      "options": [
+        "Список зависимостей",
+        "Docker-образ",
+        "Контракт API: пути, методы, схемы и ответы",
+        "Структуру папок"
+      ],
+      "correctIndex": 2,
+      "explanation": "По нему строят документацию и тесты."
+    },
+    {
+      "id": "nodejs-08-q4",
+      "prompt": "Чем PUT отличается от PATCH?",
+      "options": [
+        "Это одно и то же",
+        "PATCH создаёт, PUT удаляет",
+        "PUT заменяет объект целиком, PATCH меняет часть полей",
+        "PUT только для чтения"
+      ],
+      "correctIndex": 2,
+      "explanation": "Выбирай по смыслу."
+    },
+    {
+      "id": "nodejs-08-q5",
+      "prompt": "Что не должно попадать в схему ответа?",
+      "options": [
+        "title",
+        "id",
+        "Внутренние поля вроде passwordHash",
+        "createdAt"
+      ],
+      "correctIndex": 2,
+      "explanation": "Схема описывает DTO, а не таблицу."
     }
   ]
 }

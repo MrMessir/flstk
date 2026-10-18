@@ -7,8 +7,12 @@
   "goal": "Опишешь форму объекта через interface и type и выберешь подходящий инструмент.",
   "theory": [
     {
+      "type": "heading",
+      "content": "interface"
+    },
+    {
       "type": "paragraph",
-      "content": "interface User { id: string; name: string; } задаёт контракт объекта: у каждого User есть эти поля с указанными типами. interface можно расширять: interface Admin extends User { role: string }. Несколько объявлений с одним именем interface сливаются — удобно для augmentation библиотек."
+      "content": "interface описывает форму объекта: interface User { id: string; name: string; email?: string }. Поле со знаком вопроса необязательное, а readonly запрещает менять поле после создания. Интерфейсы расширяют: interface Admin extends User { role: 'admin' }. Если в одном месте объявить interface с тем же именем дважды, объявления сливаются (declaration merging): так дополняют типы библиотек, например добавляют поле в Express Request."
     },
     {
       "type": "heading",
@@ -16,15 +20,24 @@
     },
     {
       "type": "paragraph",
-      "content": "type Point = { x: number; y: number } или type Id = string | number описывает не только объекты, но union и примитивы. type нельзя «дописать» дважды с тем же именем — одно определение. Для объектов interface и type часто взаимозаменяемы; команды выбирают стиль в eslint-правиле."
+      "content": "type даёт имя любому типу, а не только объекту: type Id = string | number, type Status = 'idle' | 'loading' | 'error', type Point = { x: number; y: number }. Для объединений (union) и сложных вычисляемых типов подходит только type. Пересечение (&) соединяет типы: type CartLine = Product & { qty: number }."
     },
     {
       "type": "heading",
-      "content": "readonly и опциональные поля"
+      "content": "Что выбрать"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Форма объекта или контракт класса: interface (его легче расширять и читать в сообщениях об ошибках).",
+        "Union, кортеж, примитивные синонимы и вычисляемые типы: type.",
+        "В команде договорись об одном правиле и не меняй стиль от файла к файлу.",
+        "Для публичных библиотек interface удобен, потому что его можно дополнять снаружи."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "readonly id: string запрещает присвоение после создания. email?: string означает string | undefined. Индексная сигнатура [key: string]: number описывает словарь. Для React props чаще interface ComponentProps { ... }, для union состояний — type State = 'idle' | 'loading'."
+      "content": "extends для interface и & для type похожи, но при конфликте полей ведут себя по-разному: extends сообщит об ошибке сразу, а пересечение может дать тип never. Проверь: опиши interface Task и тип Status = 'todo' | 'done', присвой Task.status значение 'doing' и убедись, что компилятор отклоняет его. Дополнительно попробуй изменить поле readonly id после создания: ошибка должна появиться сразу в редакторе, ещё до запуска кода."
     }
   ],
   "codeExample": "interface Product {\n  readonly id: string;\n  title: string;\n  price: number;\n  tag?: string;\n}\n\ntype CartLine = Product & { qty: number };\n\nfunction lineTotal(line: CartLine): number {\n  return line.price * line.qty;\n}\n\nconst line: CartLine = {\n  id: \"p1\",\n  title: \"Книга\",\n  price: 500,\n  qty: 2,\n};\n\nconsole.log(lineTotal(line));",
@@ -78,6 +91,68 @@
       "term": "intersection",
       "meaning": "Объединение типов через &.",
       "example": "Product & { qty: number }"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "typescript-04-q1",
+      "prompt": "Что описывает interface?",
+      "options": [
+        "Форму объекта и контракт",
+        "Только числа",
+        "Только функции",
+        "Только массивы"
+      ],
+      "correctIndex": 0,
+      "explanation": "Его можно расширять через extends."
+    },
+    {
+      "id": "typescript-04-q2",
+      "prompt": "Для чего подходит только type?",
+      "options": [
+        "Для массивов только",
+        "Для классов",
+        "Для union, кортежей и синонимов примитивов",
+        "Для объектов только"
+      ],
+      "correctIndex": 2,
+      "explanation": "type Status = 'idle' | 'loading'."
+    },
+    {
+      "id": "typescript-04-q3",
+      "prompt": "Что делает declaration merging?",
+      "options": [
+        "Удаляет типы",
+        "Сливает несколько объявлений interface с одним именем",
+        "Исправляет ошибки",
+        "Создаёт классы"
+      ],
+      "correctIndex": 1,
+      "explanation": "Так дополняют типы библиотек."
+    },
+    {
+      "id": "typescript-04-q4",
+      "prompt": "Что делает readonly у поля?",
+      "options": [
+        "Удаляет поле",
+        "Скрывает поле",
+        "Делает поле необязательным",
+        "Запрещает менять поле после создания"
+      ],
+      "correctIndex": 3,
+      "explanation": "Проверка на уровне типов."
+    },
+    {
+      "id": "typescript-04-q5",
+      "prompt": "Что делает пересечение A & B?",
+      "options": [
+        "Исключает поля",
+        "Любое поле одного типа",
+        "Создаёт union",
+        "Требует все поля обоих типов"
+      ],
+      "correctIndex": 3,
+      "explanation": "type CartLine = Product & { qty: number }."
     }
   ]
 }

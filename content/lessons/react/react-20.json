@@ -7,25 +7,37 @@
   "goal": "Загрузишь данные в Server Component и вынесешь интерактив в client island.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Серверные компоненты и данные"
+    },
+    {
       "type": "paragraph",
-      "content": "Server Component может быть async и делать fetch/БД прямо в компоненте. По умолчанию fetch в Next кэшируется; для динамики — cache: 'no-store' или revalidate. Передавать в Client Component можно только сериализуемые props. Хуки (useState, useEffect) — только после 'use client'. Паттерн: сервер готовит данные → клиентский виджет отвечает за клики."
+      "content": "Серверный компонент может быть async: он ждёт данные прямо в теле (const posts = await getPosts()) и отдаёт готовый HTML, а код загрузки не попадает в браузер. Это убирает useEffect, состояния загрузки и лишний запрос из браузера. Секреты и обращения к базе остаются на сервере."
     },
     {
       "type": "heading",
-      "content": "Когда оставаться на Vite SPA"
+      "content": "Кэширование"
     },
     {
       "type": "paragraph",
-      "content": "Админка за логином, тяжёлый canvas, офлайн-first — часто проще Vite SPA + отдельный API. Маркетинг, SEO-каталог, dashboard с cookie-auth — Next. В курсе основной портфельный React-проект остаётся Vite; Next-уроки закрывают пробел рынка. Не смешивай без нужды: один репозиторий — один способ роутинга."
+      "content": "Поведение кэша fetch зависит от версии Next: в более старых версиях ответы кэшировались по умолчанию, в новых по умолчанию нет, и кэш включают явно. Параметры: cache: 'no-store' для данных, которые должны быть всегда свежими, и next: { revalidate: 60 } для обновления не чаще раза в минуту. Всегда проверяй документацию установленной версии: из-за разницы легко получить устаревшие данные или лишнюю нагрузку на сервер."
+    },
+    {
+      "type": "heading",
+      "content": "Граница клиента"
     },
     {
       "type": "list",
       "items": [
-        "async Server Component + fetch.",
-        "'use client' только для интерактива.",
-        "Не импортируй серверный модуль с секретами в client.",
-        "Для SEO смотри View Source — контент должен быть в HTML."
+        "Хуки (useState, useEffect) и обработчики событий работают только в клиентских компонентах, помеченных 'use client'.",
+        "В клиентский компонент можно передавать только сериализуемые props: строки, числа, объекты и массивы, но не функции и экземпляры классов.",
+        "Клиентские компоненты можно вкладывать в серверные, а серверные нельзя импортировать внутрь клиентских; их передают как children.",
+        "Держи границу клиента как можно ниже по дереву: «остров» интерактива внутри серверной страницы."
       ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Паттерн: серверная страница загружает список постов, а клиентский компонент LikeButton («остров») обрабатывает клики. Так в браузер уходит минимум JavaScript. Проверь через «Просмотр кода страницы»: данные из серверного компонента видны в HTML сразу, без выполнения скриптов."
     }
   ],
   "codeExample": "// app/posts/page.tsx — Server Component\nasync function getPosts() {\n  const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5', {\n    next: { revalidate: 60 },\n  });\n  return res.json();\n}\n\nexport default async function PostsPage() {\n  const posts = await getPosts();\n  return (\n    <main>\n      <h1>Посты</h1>\n      <PostListClient initial={posts} />\n    </main>\n  );\n}\n\n// app/posts/post-list-client.tsx\n'use client';\nexport function PostListClient({ initial }: { initial: { id: number; title: string }[] }) {\n  return <ul>{initial.map((p) => <li key={p.id}>{p.title}</li>)}</ul>;\n}",
@@ -80,25 +92,63 @@
   "quiz": [
     {
       "id": "react-20-q1",
-      "prompt": "Можно ли вызывать useState в Server Component?",
+      "prompt": "Что можно в async серверном компоненте?",
       "options": [
-        "Нет — хуки только в Client Components",
-        "Да, всегда",
-        "Только в CSS modules",
-        "Только через iframe"
+        "Обрабатывать onClick",
+        "Ждать данные прямо в теле и отдавать готовый HTML",
+        "Использовать useState",
+        "Использовать useEffect"
       ],
-      "correctIndex": 0
+      "correctIndex": 1,
+      "explanation": "Код загрузки не попадает в браузер."
     },
     {
       "id": "react-20-q2",
-      "prompt": "Как проверить, что SEO-контент пришёл с сервера?",
+      "prompt": "Какие props можно передавать в клиентский компонент?",
       "options": [
-        "View Source / «Просмотр кода страницы» — текст в HTML",
-        "Только React DevTools Components",
-        "Только Lighthouse mobile",
-        "Только ping DNS"
+        "Только функции",
+        "Любые",
+        "Только сериализуемые: строки, числа, объекты, массивы",
+        "Функции и классы"
       ],
-      "correctIndex": 0
+      "correctIndex": 2,
+      "explanation": "Функции через границу сервера не передаются."
+    },
+    {
+      "id": "react-20-q3",
+      "prompt": "Где ставят 'use client'?",
+      "options": [
+        "В конце файла",
+        "В .env",
+        "В начале файла, где нужны хуки и события",
+        "В package.json"
+      ],
+      "correctIndex": 2,
+      "explanation": "Граница клиента как можно ниже."
+    },
+    {
+      "id": "react-20-q4",
+      "prompt": "Что учитывать про кэш fetch в Next?",
+      "options": [
+        "Он всегда выключен навсегда",
+        "Он не существует",
+        "Он всегда одинаков",
+        "Поведение зависит от версии, сверяй документацию установленной"
+      ],
+      "correctIndex": 3,
+      "explanation": "В старых версиях кэшировался по умолчанию, в новых по умолчанию нет."
+    },
+    {
+      "id": "react-20-q5",
+      "prompt": "Что такое клиентский «остров»?",
+      "options": [
+        "Небольшой интерактивный компонент внутри серверной страницы",
+        "Отдельный сервер",
+        "Тип базы",
+        "Файл стилей"
+      ],
+      "correctIndex": 0,
+      "explanation": "В браузер уходит минимум JavaScript."
     }
   ]
 }

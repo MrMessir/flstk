@@ -7,24 +7,33 @@
   "goal": "Сопоставишь ответ fetch с типом и проверишь JSON через zod на runtime.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Ответу сервера нельзя верить на слово"
+    },
+    {
       "type": "paragraph",
-      "content": "fetch возвращает unknown в виде JSON: компилятор не знает форму ответа. as User опасно — сервер мог прислать другое. Правильный пайп: прочитать json(), прогнать через схему zod, получить типизированный объект или ошибку валидации. z.infer<typeof UserSchema> связывает runtime-схему и TS-тип."
+      "content": "fetch возвращает данные неизвестной формы: компилятор не знает, что пришло. Запись response.json() as User только заставляет TypeScript молчать, но сервер мог прислать другое: поле переименовали, значение вместо числа строка. Ошибка проявится позже и в другом месте. Правильный способ: проверить данные схемой во время выполнения и получить типизированный результат."
     },
     {
       "type": "heading",
-      "content": "Схема zod"
+      "content": "Схема zod и z.infer"
     },
     {
       "type": "paragraph",
-      "content": "const UserSchema = z.object({ id: z.string(), email: z.string().email(), age: z.number().optional() }). safeParse(data) возвращает { success: true, data } или { success: false, error }. parse бросает ZodError. Вложенные объекты, массивы z.array(z.string()), union z.union([z.literal('a'), z.literal('b')]) покрывают большинство REST-ответов."
+      "content": "Описываем схему один раз: const PostSchema = z.object({ id: z.number(), title: z.string(), body: z.string() }). Тип выводится из неё автоматически: type Post = z.infer<typeof PostSchema>, поэтому схема и тип не расходятся. schema.parse(data) бросает ошибку при несоответствии, schema.safeParse(data) возвращает { success, data } или { success: false, error } без исключения."
     },
     {
-      "type": "heading",
-      "content": "Обёртка apiClient"
+      "type": "list",
+      "items": [
+        "Функция fetchPost: проверить res.ok, получить json, прогнать через safeParse, вернуть данные или понятную ошибку.",
+        "Массив постов: z.array(PostSchema).",
+        "Необязательные поля: z.string().optional(); значения по умолчанию: .default(...).",
+        "Ошибки покажи пользователю общим текстом, а подробности логируй."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "async function getUser(id: string): Promise<User> { const res = await fetch(`/api/users/${id}`); const json = await res.json(); const parsed = UserSchema.safeParse(json); if (!parsed.success) throw new Error('Invalid API'); return parsed.data; } — тип User совпадает со схемой. При смене API тесты и zod упадут раньше, чем UI покажет undefined."
+      "content": "Это граница системы: внутри приложения доверяй типам, на границе (сеть, localStorage, ввод пользователя) проверяй схемой. Дублирование типов вручную рано или поздно разойдётся с реальностью, а схема в единственном экземпляре остаётся источником правды. Проверь поведение на плохих данных: подставь в ответ строку вместо числа и убедись, что интерфейс показывает понятное сообщение об ошибке, а не ломается на пустом экране."
     }
   ],
   "codeExample": "import { z } from \"zod\";\n\nconst PostSchema = z.object({\n  id: z.number(),\n  title: z.string(),\n  body: z.string(),\n});\n\ntype Post = z.infer<typeof PostSchema>;\n\nasync function fetchPost(id: number): Promise<Post> {\n  const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);\n  const json: unknown = await res.json();\n  const parsed = PostSchema.safeParse(json);\n  if (!parsed.success) throw new Error(parsed.error.message);\n  return parsed.data;\n}",
@@ -83,25 +92,63 @@
   "quiz": [
     {
       "id": "typescript-09-q1",
-      "prompt": "Зачем zod на границе API?",
+      "prompt": "Почему response.json() as User опасно?",
       "options": [
-        "Проверить runtime-данные; TypeScript типы исчезают в JS",
-        "Заменить HTTP статусы",
-        "Скомпилировать CSS",
-        "Отключить strict mode"
+        "as ускоряет код",
+        "Сервер мог прислать другое, as только заставляет компилятор молчать",
+        "as удаляет ошибки",
+        "as проверяет данные"
       ],
-      "correctIndex": 0
+      "correctIndex": 1,
+      "explanation": "Нужна проверка во время выполнения."
     },
     {
       "id": "typescript-09-q2",
-      "prompt": "Что даёт z.infer<typeof schema>?",
+      "prompt": "Что делает z.infer<typeof Schema>?",
       "options": [
-        "Тип TypeScript из zod-схемы",
-        "SQL-миграцию",
-        "Docker image",
-        "JWT secret"
+        "Создаёт базу",
+        "Запускает проверку",
+        "Выводит тип TypeScript из схемы zod",
+        "Удаляет схему"
       ],
-      "correctIndex": 0
+      "correctIndex": 2,
+      "explanation": "Тип и схема не расходятся."
+    },
+    {
+      "id": "typescript-09-q3",
+      "prompt": "Чем safeParse отличается от parse?",
+      "options": [
+        "Это одно и то же",
+        "parse не бросает",
+        "Не бросает исключение, возвращает success и data или error",
+        "safeParse бросает всегда"
+      ],
+      "correctIndex": 2,
+      "explanation": "Удобен для ответов пользователю."
+    },
+    {
+      "id": "typescript-09-q4",
+      "prompt": "Где нужна проверка схемой?",
+      "options": [
+        "Нигде",
+        "На границе системы: сеть, localStorage, ввод",
+        "Только в тестах",
+        "Только внутри функций"
+      ],
+      "correctIndex": 1,
+      "explanation": "Внутри приложения доверяют типам."
+    },
+    {
+      "id": "typescript-09-q5",
+      "prompt": "Как описать массив постов в zod?",
+      "options": [
+        "PostSchema[]",
+        "z.array(PostSchema)",
+        "z.list(Post)",
+        "Array(Post)"
+      ],
+      "correctIndex": 1,
+      "explanation": "Схема массива из схемы элемента."
     }
   ]
 }

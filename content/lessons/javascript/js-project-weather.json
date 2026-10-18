@@ -7,24 +7,34 @@
   "goal": "Соберёшь поиск города, запрос к Open-Meteo и экраны loading, success и error.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что нужно сделать"
+    },
+    {
       "type": "paragraph",
-      "content": "Погодное приложение — классическая тренировка fetch и UI-состояний. Пользователь вводит город, ты геокодируешь название в координаты, затем запрашиваешь текущую температуру. Пока запрос идёт, показываешь «Загрузка…» и блокируешь кнопку. При ошибке сети или пустом городе — отдельное сообщение, скрипт не падает с необработанным reject."
+      "content": "Мини-проект: приложение с погодой. Пользователь вводит город, ты находишь координаты через API геокодинга (например, Open-Meteo), затем запрашиваешь текущую температуру и показываешь результат. Это классическая тренировка fetch и состояний интерфейса: загрузка, успех, ошибка, пустой ввод."
     },
     {
       "type": "heading",
-      "content": "Open-Meteo без ключа"
+      "content": "Минимальный набор"
     },
     {
-      "type": "paragraph",
-      "content": "Geocoding API: https://geocoding-api.open-meteo.com/v1/search?name=Казань&count=1 возвращает latitude и longitude. Forecast: https://api.open-meteo.com/v1/forecast?latitude=...&longitude=...&current=temperature_2m. Оба endpoint бесплатны для учебного проекта. Парси response.json(), проверяй results.length — если 0, покажи «Город не найден»."
+      "type": "list",
+      "items": [
+        "Форма с полем города и кнопкой; submit без перезагрузки страницы.",
+        "Функция fetchWeather(city): геокодинг, затем запрос погоды, проверка response.ok, понятные ошибки.",
+        "Три состояния на экране: «Загрузка…» (кнопка заблокирована), результат (город и температура), сообщение об ошибке.",
+        "Особые случаи: город не найден, пустая строка, ошибка сети.",
+        "Логика запросов отделена от отрисовки: модуль api.js и main.js."
+      ]
     },
     {
       "type": "heading",
-      "content": "Структура файлов"
+      "content": "Как проверить себя"
     },
     {
       "type": "paragraph",
-      "content": "api.js экспортирует fetchWeather(city). ui.js переключает data-state на #app: idle | loading | error | success. main.js связывает форму и вызывает api. Не храни API-ключи в коде — здесь они не нужны. Для деплоя достаточно GitHub Pages и статических файлов."
+      "content": "Введи существующий город, несуществующее слово, пустую строку и отключи сеть в DevTools: каждый случай должен показывать понятное сообщение, а консоль без необработанных ошибок. Проверь быстрые повторные отправки: старый ответ не должен перезаписать новый (отмена через AbortController или проверка актуальности). Не показывай в интерфейсе сырой текст ошибки с техническими деталями. Не храни ключи в коде: Open-Meteo работает без ключа, но для других сервисов ключ выносят на сервер. README: ссылка на демо, скриншот ошибки, описание структуры и использованных API. Типичные причины замечаний: нет проверки response.ok, нет состояния загрузки, нет обработки пустого города, всё в одном длинном файле. Отдельно проверь адаптивность: форма и результат должны нормально выглядеть на ширине телефона, а температура быть подписана единицами измерения."
     }
   ],
   "codeExample": "export async function fetchWeather(city) {\n  const geoUrl = new URL(\"https://geocoding-api.open-meteo.com/v1/search\");\n  geoUrl.searchParams.set(\"name\", city);\n  geoUrl.searchParams.set(\"count\", \"1\");\n  const geo = await fetch(geoUrl).then((r) => r.json());\n  if (!geo.results?.length) throw new Error(\"Город не найден\");\n  const { latitude, longitude, name } = geo.results[0];\n  const wxUrl = new URL(\"https://api.open-meteo.com/v1/forecast\");\n  wxUrl.searchParams.set(\"latitude\", latitude);\n  wxUrl.searchParams.set(\"longitude\", longitude);\n  wxUrl.searchParams.set(\"current\", \"temperature_2m\");\n  const wx = await fetch(wxUrl).then((r) => r.json());\n  return { name, temp: wx.current.temperature_2m };\n}",

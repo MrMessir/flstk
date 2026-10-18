@@ -7,8 +7,12 @@
   "goal": "Сузишь union до конкретного типа через typeof, in и пользовательские guard-функции.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Union и сужение"
+    },
+    {
       "type": "paragraph",
-      "content": "Union type A | B значит «или одно, или другое». Пока TS не знает, какая ветка активна, доступны только общие поля. Сужение (narrowing) — проверки в if и switch, после которых внутри блока тип конкретнее: if (typeof x === \"string\") внутри x — string."
+      "content": "Union A | B значит «или одно, или другое». Пока компилятор не знает, какая ветка активна, доступны только общие для обоих типов поля. Сужение (narrowing) — проверки, после которых внутри блока тип становится точнее: if (typeof x === 'string') { x.toUpperCase() }. Работают typeof (для примитивов), instanceof (для классов), оператор in (проверка наличия поля) и обычное сравнение с литералом."
     },
     {
       "type": "heading",
@@ -16,15 +20,19 @@
     },
     {
       "type": "paragraph",
-      "content": "Общее поле-дискриминатор вроде kind: 'circle' | 'square' позволяет switch (shape.kind) и в каждой ветке видеть свои поля. Так моделируют результаты API: { ok: true, data: T } | { ok: false, error: string }. Intersection A & B требует одновременно поля обоих типов — удобно добавить метаданные к сущности."
+      "content": "Самый полезный приём: общее поле-признак. type Result = { ok: true; value: number } | { ok: false; message: string }. Проверка if (result.ok) сужает тип: внутри доступен value, в else — message. Так моделируют состояния запроса ({ status: 'loading' } | { status: 'ok'; data } | { status: 'error'; error }): нельзя обратиться к data, пока статус не ok."
     },
     {
-      "type": "heading",
-      "content": "Type predicate"
+      "type": "list",
+      "items": [
+        "В switch по полю-признаку добавь ветку default с проверкой на never: если добавишь новый вариант и забудешь обработать, компилятор подскажет.",
+        "Пользовательский type guard: function isString(x: unknown): x is string даёт возможность сужать тип своими проверками.",
+        "Пересечение A & B требует всех полей обоих типов; использовать его с несовместимыми типами бессмысленно (получится never)."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "function isFish(pet: Fish | Bird): pet is Fish { return (pet as Fish).swim !== undefined; } — пользовательский guard. После if (isFish(pet)) TS считает pet рыбой. in проверяет наличие ключа: 'swim' in pet. Избегай лишних as без проверки — guard надёжнее assertion."
+      "content": "Практика: опиши Shape как union из circle (radius) и square (side) с полем kind и напиши area(shape) через switch. Затем добавь вариант triangle и убедись, что компилятор показывает ошибку в switch, пока ты его не обработаешь. Этот приём называют проверкой на исчерпанность: он превращает забытую ветку из скрытого бага в ошибку компиляции, а значит, защищает код при каждом расширении модели данных."
     }
   ],
   "codeExample": "type Result =\n  | { ok: true; value: number }\n  | { ok: false; message: string };\n\nfunction unwrap(r: Result): number {\n  if (!r.ok) throw new Error(r.message);\n  return r.value;\n}\n\ntype Shape =\n  | { kind: \"circle\"; radius: number }\n  | { kind: \"rect\"; w: number; h: number };\n\nfunction area(s: Shape): number {\n  switch (s.kind) {\n    case \"circle\":\n      return Math.PI * s.radius ** 2;\n    case \"rect\":\n      return s.w * s.h;\n  }\n}",
@@ -78,6 +86,68 @@
       "term": "intersection",
       "meaning": "Тип, совмещающий поля A и B.",
       "example": "A & B"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "typescript-05-q1",
+      "prompt": "Что такое сужение типа (narrowing)?",
+      "options": [
+        "Копирование",
+        "Удаление типа",
+        "Расширение типа",
+        "Проверка, после которой внутри блока тип становится точнее"
+      ],
+      "correctIndex": 3,
+      "explanation": "if (typeof x === 'string') внутри x — string."
+    },
+    {
+      "id": "typescript-05-q2",
+      "prompt": "Что такое discriminated union?",
+      "options": [
+        "Union с общим полем-признаком, например ok или kind",
+        "Два одинаковых типа",
+        "Класс",
+        "Массив"
+      ],
+      "correctIndex": 0,
+      "explanation": "Проверка поля сужает тип."
+    },
+    {
+      "id": "typescript-05-q3",
+      "prompt": "Зачем default с проверкой на never в switch?",
+      "options": [
+        "Компилятор подскажет, если новый вариант не обработан",
+        "Для скорости",
+        "Для логов",
+        "Для стилей"
+      ],
+      "correctIndex": 0,
+      "explanation": "Это проверка на исчерпанность."
+    },
+    {
+      "id": "typescript-05-q4",
+      "prompt": "Что возвращает пользовательский type guard?",
+      "options": [
+        "x is string — сужение типа своими проверками",
+        "Объект",
+        "void",
+        "Любое число"
+      ],
+      "correctIndex": 0,
+      "explanation": "function isString(x: unknown): x is string."
+    },
+    {
+      "id": "typescript-05-q5",
+      "prompt": "Что делает оператор in при сужении?",
+      "options": [
+        "Перебирает массив",
+        "Удаляет поле",
+        "Создаёт поле",
+        "Проверяет наличие поля в объекте"
+      ],
+      "correctIndex": 3,
+      "explanation": "Подходит для union объектов."
     }
   ]
 }

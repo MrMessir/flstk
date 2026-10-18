@@ -7,26 +7,30 @@
   "goal": "Сделаешь меню и блок «герой» в одну линию с помощью flex.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Flexbox: ряд или столбик"
+    },
+    {
       "type": "paragraph",
-      "content": "Flexbox — способ разложить детей в ряд или столбик. Родителю пишут display: flex;. Дети сами встают рядом и начинают слушаться правил выравнивания."
+      "content": "Flexbox — способ разложить детей контейнера в ряд или столбик. Родителю пишут display: flex, и дети сами встают рядом и начинают слушаться правил выравнивания. У flex две оси. Главная ось идёт в направлении flex-direction (row, по умолчанию слева направо, или column, сверху вниз). Поперечная ось перпендикулярна ей."
+    },
+    {
+      "type": "heading",
+      "content": "Основные свойства родителя"
     },
     {
       "type": "list",
       "items": [
-        "flex-direction: row; — в ряд (по умолчанию). column — столбиком.",
-        "justify-content — вдоль главной оси: space-between разносит по краям, center — по центру.",
-        "align-items — поперёк оси: center выравнивает по вертикали в ряду.",
-        "gap — расстояние между детьми. Удобнее, чем margin на каждом.",
-        "flex-wrap: wrap; — разрешить перенос на новую строку, если не влезают."
+        "justify-content выравнивает по главной оси: flex-start, center, flex-end, space-between (по краям), space-around, space-evenly.",
+        "align-items выравнивает по поперечной оси: stretch (по умолчанию), center, flex-start, flex-end.",
+        "gap задаёт промежутки между детьми, удобнее, чем margin у каждого.",
+        "flex-wrap: wrap позволяет переносить детей на новую строку, когда не хватает места.",
+        "flex-direction: column меняет оси местами, и justify-content начинает работать по вертикали."
       ]
     },
     {
       "type": "paragraph",
-      "content": "Меню, шапка с логотипом и кнопкой, три кнопки в ряд — типичные задачи для flex."
-    },
-    {
-      "type": "paragraph",
-      "content": "Flex-контейнер — родитель с display: flex; дети становятся flex-items. justify-content двигает их вдоль главной оси, align-items — поперёк. flex-direction: column меняет ось местами: колонка вместо ряда."
+      "content": "Типичное меню: .nav { display: flex; justify-content: space-between; align-items: center; gap: 16px }. Логотип слева, ссылки справа, всё по вертикали по центру. Отладка в DevTools: рядом с display: flex есть значок, подсвечивающий контейнер и показывающий направление осей. Если элементы не растягиваются на всю ширину, проверь, не задан ли у них width, и не мешает ли ему flex-basis. Если элементы не выстроились, проверь, что свойство написано на родителе, а не на детях. Свойство order меняет порядок элементов без правки HTML, но не стоит злоупотреблять: порядок для клавиатуры и скринридера остаётся прежним, и это сбивает с толку. Практика: сделай flex-ряд меню, смени justify-content на center и сравни, потом замени margin между пунктами на gap."
     }
   ],
   "codeExample": ".nav {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 16px;\n  padding: 12px 16px;\n  background: #0b1220;\n  color: white;\n}\n\n.nav a { color: white; text-decoration: none; }\n\n.hero {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n  gap: 12px;\n  padding: 40px 16px;\n}",
@@ -80,6 +84,68 @@
       "term": "gap",
       "meaning": "Расстояние между flex/grid-детьми.",
       "example": "gap: 16px;"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "css-08-q1",
+      "prompt": "Что нужно, чтобы включить flexbox?",
+      "options": [
+        "position: flex",
+        "display: flex у родителя",
+        "float у родителя",
+        "display: flex у детей"
+      ],
+      "correctIndex": 1,
+      "explanation": "Дети сами встают в ряд."
+    },
+    {
+      "id": "css-08-q2",
+      "prompt": "Что делает justify-content: space-between?",
+      "options": [
+        "Выравнивает по вертикали",
+        "Объединяет элементы",
+        "Разносит элементы по краям вдоль главной оси",
+        "Скрывает промежутки"
+      ],
+      "correctIndex": 2,
+      "explanation": "align-items — по поперечной оси."
+    },
+    {
+      "id": "css-08-q3",
+      "prompt": "Что делает gap?",
+      "options": [
+        "Меняет размер шрифта",
+        "Задаёт промежутки между детьми",
+        "Задаёт цвет",
+        "Скругляет углы"
+      ],
+      "correctIndex": 1,
+      "explanation": "Удобнее, чем margin у каждого."
+    },
+    {
+      "id": "css-08-q4",
+      "prompt": "Что делает flex-direction: column?",
+      "options": [
+        "Скрывает элементы",
+        "Выстраивает в ряд",
+        "Меняет цвет",
+        "Выстраивает элементы столбиком и меняет оси"
+      ],
+      "correctIndex": 3,
+      "explanation": "justify-content начинает работать по вертикали."
+    },
+    {
+      "id": "css-08-q5",
+      "prompt": "Что делает flex-wrap: wrap?",
+      "options": [
+        "Позволяет переносить элементы на новую строку",
+        "Запрещает перенос",
+        "Скрывает лишние",
+        "Сжимает элементы"
+      ],
+      "correctIndex": 0,
+      "explanation": "Когда не хватает места."
     }
   ]
 }

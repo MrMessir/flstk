@@ -90,5 +90,67 @@
       "meaning": "eslint.config.js формат ESLint 9.",
       "example": "export default []"
     }
+  ],
+  "quiz": [
+    {
+      "id": "testing-08-q1",
+      "prompt": "Чем ESLint отличается от Prettier?",
+      "options": [
+        "Они делают одно и то же",
+        "ESLint запускает тесты",
+        "ESLint ищет ошибки и опасные места, Prettier форматирует",
+        "Prettier ищет баги"
+      ],
+      "correctIndex": 2,
+      "explanation": "Конфликты между ними решает eslint-config-prettier."
+    },
+    {
+      "id": "testing-08-q2",
+      "prompt": "Как называется современный формат конфигурации ESLint?",
+      "options": [
+        "package-lock",
+        "Flat config (eslint.config.js)",
+        "tsconfig",
+        ".eslintrc"
+      ],
+      "correctIndex": 1,
+      "explanation": "Старый формат .eslintrc считается устаревшим."
+    },
+    {
+      "id": "testing-08-q3",
+      "prompt": "Что делает lint-staged?",
+      "options": [
+        "Заменяет git",
+        "Запускает команды только для изменённых файлов",
+        "Удаляет файлы",
+        "Ускоряет сеть"
+      ],
+      "correctIndex": 1,
+      "explanation": "Проверка занимает секунды."
+    },
+    {
+      "id": "testing-08-q4",
+      "prompt": "Почему проверки дублируют в CI, а не только в git-хуке?",
+      "options": [
+        "CI дешевле",
+        "Хуки запрещены",
+        "Хук можно обойти через --no-verify",
+        "Хуки не работают в git"
+      ],
+      "correctIndex": 2,
+      "explanation": "В CI пропустить проверки нельзя."
+    },
+    {
+      "id": "testing-08-q5",
+      "prompt": "Когда добавлять правило ESLint?",
+      "options": [
+        "Никогда",
+        "Когда оно красиво выглядит",
+        "Сразу все",
+        "Когда оно предотвращает реальные баги"
+      ],
+      "correctIndex": 3,
+      "explanation": "Сотни правил без обсуждения приведут к eslint-disable."
+    }
   ]
 }

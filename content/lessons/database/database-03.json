@@ -7,24 +7,42 @@
   "goal": "Создашь таблицы users и posts с PK, UNIQUE, NOT NULL и CHECK.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Таблица — это договор"
+    },
+    {
       "type": "paragraph",
-      "content": "CREATE TABLE задаёт имя столбцов и типы: uuid, text, timestamptz, boolean. PRIMARY KEY уникально идентифицирует строку. NOT NULL запрещает пустое значение. UNIQUE на email не даст двум пользователям один адрес. CHECK (char_length(title) > 0) — простое правило на уровне БД."
+      "content": "CREATE TABLE описывает столбцы и их типы, и база будет следить, чтобы данные ему соответствовали. Это последняя линия обороны, если проверка в приложении (zod) пропустила ошибку или кто-то обратился к базе напрямую. Основные типы курса: uuid для идентификаторов, text для строк, timestamptz для времени, boolean для флагов, integer для чисел."
     },
     {
       "type": "heading",
-      "content": "Типы и время"
+      "content": "Ограничения"
+    },
+    {
+      "type": "list",
+      "items": [
+        "PRIMARY KEY: уникально идентифицирует строку и неявно NOT NULL.",
+        "NOT NULL: значение обязательно; пустую ячейку (NULL) база не примет.",
+        "UNIQUE: значения не повторяются, например email пользователя.",
+        "CHECK: произвольное правило, например CHECK (char_length(title) > 0).",
+        "FOREIGN KEY (REFERENCES): значение должно существовать в другой таблице, поэтому у поста не может быть несуществующего автора."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "Для id курса используй uuid с gen_random_uuid(). Даты — timestamptz (с часовым поясом), не «голый» timestamp без zone. text подходит для заголовков; varchar(n) имеет смысл, если лимит — часть контракта."
+      "content": "Разница между UNIQUE и NOT NULL частая тема вопросов: UNIQUE допускает несколько NULL (они не считаются равными), а NOT NULL разрешает повторяющиеся значения. Для email нужны оба."
     },
     {
       "type": "heading",
-      "content": "DEFAULT и updated_at"
+      "content": "Типы идентификаторов и время"
     },
     {
       "type": "paragraph",
-      "content": "created_at timestamptz DEFAULT now() заполняется при INSERT. updated_at обновляй триггером или из приложения при PATCH. Ограничения в БД — последняя линия обороны, если zod обошли."
+      "content": "Для первичных ключей курса используй uuid с gen_random_uuid(): идентификаторы нельзя угадать перебором, и их удобно создавать в приложении. Время храни как timestamptz: оно хранит момент по UTC и корректно работает с часовыми поясами; «голый» timestamp без пояса вызывает ошибки при переходе на другой сервер или поясной режим. text подходит почти всегда, а varchar(n) нужен, если ограничение длины — часть контракта."
+    },
+    {
+      "type": "paragraph",
+      "content": "created_at timestamptz NOT NULL DEFAULT now() заполняется сам при вставке. updated_at обновляют из приложения при изменении или триггером. Проверь на практике: сделай два INSERT с одним email и убедись, что получил ошибку duplicate key."
     }
   ],
   "codeExample": "CREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  email text UNIQUE NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE posts (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  author_id uuid NOT NULL REFERENCES users(id),\n  title text NOT NULL CHECK (char_length(title) BETWEEN 1 AND 200),\n  body text NOT NULL\n);",
@@ -69,6 +87,68 @@
       "term": "CHECK",
       "meaning": "Булево ограничение на значение столбца.",
       "example": "CHECK (char_length(title) > 0)"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "database-03-q1",
+      "prompt": "Что делает FOREIGN KEY?",
+      "options": [
+        "Ускоряет запись",
+        "Не даёт сослаться на несуществующую запись в другой таблице",
+        "Делает значение уникальным",
+        "Шифрует столбец"
+      ],
+      "correctIndex": 1,
+      "explanation": "У поста не может быть несуществующего автора."
+    },
+    {
+      "id": "database-03-q2",
+      "prompt": "Чем UNIQUE отличается от NOT NULL?",
+      "options": [
+        "UNIQUE запрещает пустое",
+        "Это одно и то же",
+        "UNIQUE запрещает повторы, NOT NULL запрещает пустое значение",
+        "NOT NULL запрещает повторы"
+      ],
+      "correctIndex": 2,
+      "explanation": "Для email нужны оба."
+    },
+    {
+      "id": "database-03-q3",
+      "prompt": "Какой тип использовать для времени?",
+      "options": [
+        "text",
+        "timestamp без пояса",
+        "timestamptz",
+        "integer"
+      ],
+      "correctIndex": 2,
+      "explanation": "Он хранит момент по UTC."
+    },
+    {
+      "id": "database-03-q4",
+      "prompt": "Зачем нужны ограничения в базе, если есть zod?",
+      "options": [
+        "Это дублирует работу без пользы",
+        "Zod не работает",
+        "База быстрее",
+        "База — последняя линия обороны, если проверку обошли"
+      ],
+      "correctIndex": 3,
+      "explanation": "Кто-то может обратиться к базе напрямую."
+    },
+    {
+      "id": "database-03-q5",
+      "prompt": "Что делает DEFAULT now()?",
+      "options": [
+        "Создаёт индекс",
+        "Заполняет столбец текущим временем при INSERT",
+        "Удаляет строку",
+        "Обновляет столбец при UPDATE"
+      ],
+      "correctIndex": 1,
+      "explanation": "Для updated_at нужен триггер или код."
     }
   ]
 }

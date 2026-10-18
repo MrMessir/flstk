@@ -7,24 +7,37 @@
   "goal": "Сделаешь центральный error handler и вынесешь настройки в переменные окружения.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Один обработчик ошибок вместо десятка try/catch"
+    },
+    {
       "type": "paragraph",
-      "content": "Разбросанные try/catch с res.status(500) дублируют код и забывают вызвать next(err). В Express последний middleware с четырьмя аргументами ловит ошибки из async-handler и sync-роутов. Классы ошибок AppError с полем statusCode отделяют «пост не найден» (404) от «БД недоступна» (503)."
+      "content": "Разбросанные по коду try/catch с res.status(500) дублируют код и часто забывают вызвать нужный ответ. Лучше один центральный middleware ошибок (четыре аргумента), который решает, что ответить. Для этого заводят класс AppError с полем statusCode: new AppError(404, 'Post not found') описывает ожидаемую ситуацию, а любая другая ошибка считается внутренней и превращается в 500 без подробностей клиенту, с записью в лог."
     },
     {
       "type": "heading",
-      "content": "dotenv и NODE_ENV"
+      "content": "Асинхронные обработчики"
     },
     {
       "type": "paragraph",
-      "content": "Секреты и порты не хардкодят: PORT, DATABASE_URL, JWT_SECRET в .env (файл в .gitignore). dotenv/config при старте или --env-file в Node 20+. В production переменные задаёт платформа (Render, Docker). NODE_ENV=production отключает подробные ошибки клиенту."
+      "content": "В Express 5 исключение или отклонённый промис в async-обработчике автоматически попадает в обработчик ошибок. В Express 4 так не работает: нужно оборачивать обработчик (asyncHandler) или писать try/catch с next(err), иначе процесс получает необработанную ошибку, а запрос зависает. Проверь версию в package.json и выбери одно правило на весь проект."
     },
     {
       "type": "heading",
-      "content": "Async errors"
+      "content": "Конфигурация в окружении"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Порты, адреса и секреты не хардкодят: process.env.PORT, process.env.DATABASE_URL.",
+        "Файл .env читают пакетом dotenv или флагом node --env-file=.env; сам .env в git не попадает, в репозитории лежит .env.example.",
+        "NODE_ENV=production включает режим прода (например, отключает подробные ошибки).",
+        "Проверяй конфиг при старте: схема zod для process.env, и сервер падает сразу, если не хватает переменной, а не через час на первом запросе."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "Async handler без try/catch не попадёт в error middleware — промис упадёт как unhandled. Обёртка asyncHandler(fn) или express-async-errors вызывает next(err). В Node 16+ можно await в route, но обёртка всё равно спасает."
+      "content": "Дополнительно: на SIGTERM закрывай сервер аккуратно (server.close), чтобы текущие запросы успели завершиться при выкладке. Необработанные unhandledRejection и uncaughtException логируй и перезапускай процесс: состояние после них ненадёжно."
     }
   ],
   "codeExample": "import \"dotenv/config\";\nimport express from \"express\";\n\nconst app = express();\nconst PORT = Number(process.env.PORT ?? 3000);\n\nexport class AppError extends Error {\n  constructor(status, message) {\n    super(message);\n    this.statusCode = status;\n  }\n}\n\napp.use((err, _req, res, _next) => {\n  const status = err.statusCode ?? 500;\n  res.status(status).json({\n    error: err.message,\n    ...(process.env.NODE_ENV !== \"production\" && { stack: err.stack }),\n  });\n});\n\napp.listen(PORT);",
@@ -69,6 +82,68 @@
       "term": "NODE_ENV",
       "meaning": "Режим приложения: development или production.",
       "example": "NODE_ENV=production"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-10-q1",
+      "prompt": "Зачем нужен класс AppError со statusCode?",
+      "options": [
+        "Отделяет ожидаемые ошибки, например 404, от внутренних",
+        "Для шифрования",
+        "Для кэша",
+        "Для маршрутов"
+      ],
+      "correctIndex": 0,
+      "explanation": "Остальные ошибки превращаются в 500."
+    },
+    {
+      "id": "nodejs-10-q2",
+      "prompt": "В чём разница обработки async-ошибок в Express 4 и 5?",
+      "options": [
+        "В Express 5 ошибки async-обработчика попадают в обработчик ошибок автоматически",
+        "В Express 5 нужно оборачивать всё",
+        "Разницы нет",
+        "В Express 4 это работает само"
+      ],
+      "correctIndex": 0,
+      "explanation": "В четвёрке нужна обёртка или try/catch с next(err)."
+    },
+    {
+      "id": "nodejs-10-q3",
+      "prompt": "Где хранят порты, адреса и секреты?",
+      "options": [
+        "В URL",
+        "В переменных окружения",
+        "В README",
+        "В коде"
+      ],
+      "correctIndex": 1,
+      "explanation": "Рядом лежит .env.example без значений."
+    },
+    {
+      "id": "nodejs-10-q4",
+      "prompt": "Зачем проверять конфиг схемой при старте?",
+      "options": [
+        "Сервер падает сразу при нехватке переменной, а не на первом запросе",
+        "Для скорости",
+        "Для логов",
+        "Для кэша"
+      ],
+      "correctIndex": 0,
+      "explanation": "Ранняя ошибка проще в диагностике."
+    },
+    {
+      "id": "nodejs-10-q5",
+      "prompt": "Для чего корректно закрывать сервер на SIGTERM?",
+      "options": [
+        "Чтобы сменить порт",
+        "Чтобы ускорить запуск",
+        "Чтобы текущие запросы успели завершиться при выкладке",
+        "Чтобы удалить логи"
+      ],
+      "correctIndex": 2,
+      "explanation": "server.close перед выходом."
     }
   ]
 }

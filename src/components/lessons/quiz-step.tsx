@@ -1,102 +1,123 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { QuizQuestion } from "@/lib/types/lesson";
+import { useCallback, useEffect, useState } from "react";
+import type { PublicQuizQuestion } from "@/lib/types/lesson";
 
 type QuizStepViewProps = {
-  questions: QuizQuestion[];
+  lessonId: string;
+  questions: PublicQuizQuestion[];
   onAllCorrectChange: (ok: boolean) => void;
-  /** If learner already passed this quiz in the session, keep the gate open. */
+  /** Тест уже пройден в этой сессии: держим «Далее» открытым. */
   initiallyPassed?: boolean;
-}
+};
 
-type AnswerState = {
-  selected: number | null;
-  checked: boolean;
+type QuestionResult = {
+  id: string;
+  correct: boolean;
+  correctIndex?: number;
+  explanation?: string;
+};
+
+type SubmitResponse = {
+  passed: boolean;
+  correct: number;
+  total: number;
+  required: number;
+  results: QuestionResult[];
 };
 
 export function QuizStepView({
+  lessonId,
   questions,
   onAllCorrectChange,
   initiallyPassed = false,
 }: QuizStepViewProps) {
-  const [answers, setAnswers] = useState<Record<string, AnswerState>>(() =>
-    Object.fromEntries(
-      questions.map((q) => [
-        q.id,
-        initiallyPassed
-          ? { selected: q.correctIndex, checked: true }
-          : { selected: null, checked: false },
-      ]),
-    ),
-  );
+  const [selected, setSelected] = useState<Record<string, number>>({});
+  const [outcome, setOutcome] = useState<SubmitResponse | null>(null);
+  const [alreadyPassed, setAlreadyPassed] = useState(initiallyPassed);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const allCorrect = useMemo(
-    () =>
-      initiallyPassed ||
-      questions.every((q) => {
-        const state = answers[q.id];
-        return (
-          state?.checked &&
-          state.selected !== null &&
-          state.selected === q.correctIndex
+  const passed = alreadyPassed || outcome?.passed === true;
+  const answeredAll = questions.every((q) => selected[q.id] !== undefined);
+
+  // Если тест уже сдан раньше (например, до перезагрузки страницы), не заставляем сдавать заново.
+  useEffect(() => {
+    if (initiallyPassed) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/quiz/status?lessonId=${encodeURIComponent(lessonId)}`,
+          { credentials: "same-origin" },
         );
-      }),
-    [answers, initiallyPassed, questions],
-  );
+        if (!res.ok) return;
+        const data = (await res.json()) as { passed?: boolean };
+        if (!cancelled && data.passed) setAlreadyPassed(true);
+      } catch {
+        // Нет сети: тест можно сдать позже, ничего не ломаем.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [lessonId, initiallyPassed]);
 
   useEffect(() => {
-    onAllCorrectChange(allCorrect);
-  }, [allCorrect, onAllCorrectChange]);
+    onAllCorrectChange(passed);
+  }, [passed, onAllCorrectChange]);
 
-  function selectOption(questionId: string, optionIndex: number) {
-    setAnswers((prev) => {
-      const question = questions.find((q) => q.id === questionId);
-      const current = prev[questionId];
-      if (
-        current?.checked &&
-        question &&
-        current.selected === question.correctIndex
-      ) {
-        return prev;
+  const select = useCallback((questionId: string, optionIndex: number) => {
+    setSelected((prev) => ({ ...prev, [questionId]: optionIndex }));
+    setOutcome((prev) => (prev && !prev.passed ? null : prev));
+    setError(null);
+  }, []);
+
+  async function submit() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/quiz/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ lessonId, answers: selected }),
+      });
+      const data = (await res.json()) as SubmitResponse & { error?: string };
+      if (!res.ok) {
+        setError(data.error ?? "Не удалось проверить ответы. Попробуй ещё раз.");
+        return;
       }
-      return {
-        ...prev,
-        [questionId]: { selected: optionIndex, checked: false },
-      };
-    });
+      setOutcome(data);
+    } catch {
+      setError("Нет связи с сервером. Проверь интернет и попробуй ещё раз.");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function checkAnswer(question: QuizQuestion) {
-    setAnswers((prev) => {
-      const current = prev[question.id];
-      if (current?.selected === null || current?.selected === undefined) {
-        return prev;
-      }
-      return {
-        ...prev,
-        [question.id]: { ...current, checked: true },
-      };
-    });
+  if (alreadyPassed && !outcome) {
+    return (
+      <p className="rounded-xl border border-accent/30 bg-accent-soft px-4 py-3 text-sm text-ink">
+        Тест этого урока уже пройден. Можно идти дальше.
+      </p>
+    );
   }
+
+  const resultById = new Map((outcome?.results ?? []).map((r) => [r.id, r]));
+  const locked = outcome?.passed === true;
 
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted">
-        Ответь на вопросы. Кнопка «Далее» откроется после верных ответов.
+        Ответь на все вопросы и нажми «Проверить». Чтобы пройти дальше, нужно{" "}
+        {Math.ceil(questions.length * 0.7 - 1e-9)} верных ответа из{" "}
+        {questions.length}.
       </p>
 
       <ol className="space-y-5">
         {questions.map((question, index) => {
-          const state = answers[question.id] ?? {
-            selected: null,
-            checked: false,
-          };
-          const isCorrect =
-            state.checked && state.selected === question.correctIndex;
-          const isWrong =
-            state.checked && state.selected !== question.correctIndex;
-
+          const result = resultById.get(question.id);
           return (
             <li
               key={question.id}
@@ -111,26 +132,24 @@ export function QuizStepView({
 
               <ul className="mt-4 space-y-2">
                 {question.options.map((option, optionIndex) => {
-                  const selected = state.selected === optionIndex;
-                  const showAsCorrect =
-                    state.checked && optionIndex === question.correctIndex;
-                  const showAsWrong =
-                    state.checked &&
-                    selected &&
-                    optionIndex !== question.correctIndex;
-
+                  const isSelected = selected[question.id] === optionIndex;
+                  const showCorrect =
+                    locked && result?.correctIndex === optionIndex;
+                  const showWrong =
+                    outcome && !outcome.passed && result && !result.correct && isSelected;
                   return (
                     <li key={`${question.id}-${optionIndex}`}>
                       <button
                         type="button"
-                        disabled={isCorrect}
-                        onClick={() => selectOption(question.id, optionIndex)}
+                        disabled={locked || busy}
+                        onClick={() => select(question.id, optionIndex)}
+                        aria-pressed={isSelected}
                         className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
-                          showAsCorrect
+                          showCorrect
                             ? "border-accent bg-accent-soft text-ink"
-                            : showAsWrong
+                            : showWrong
                               ? "border-warn/50 bg-[#fff7e8] text-ink"
-                              : selected
+                              : isSelected
                                 ? "border-accent bg-white text-ink"
                                 : "border-line bg-white/70 text-ink/85 hover:border-accent/50"
                         }`}
@@ -142,36 +161,52 @@ export function QuizStepView({
                 })}
               </ul>
 
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                {!isCorrect ? (
-                  <button
-                    type="button"
-                    disabled={state.selected === null}
-                    onClick={() => checkAnswer(question)}
-                    className="rounded-md bg-ink px-3 py-2 text-sm font-medium text-signal disabled:opacity-40"
-                  >
-                    Проверить
-                  </button>
-                ) : null}
-                {isCorrect ? (
-                  <p className="text-sm font-medium text-accent">Верно</p>
-                ) : null}
-                {isWrong ? (
-                  <p className="text-sm text-[#7a4a00]">
-                    Неверно — попробуй ещё раз
-                    {question.explanation ? `. ${question.explanation}` : ""}
-                  </p>
-                ) : null}
-              </div>
+              {result ? (
+                <p
+                  className={`mt-3 text-sm ${
+                    result.correct ? "font-medium text-accent" : "text-[#7a4a00]"
+                  }`}
+                  role="status"
+                >
+                  {result.correct ? "Верно" : "Неверно"}
+                  {result.explanation ? `. ${result.explanation}` : ""}
+                </p>
+              ) : null}
             </li>
           );
         })}
       </ol>
 
-      {allCorrect ? (
-        <p className="rounded-xl border border-accent/30 bg-accent-soft px-4 py-3 text-sm text-ink">
-          Все ответы верны — можно идти дальше.
+      {error ? (
+        <p className="text-sm text-[#7a4a00]" role="alert">
+          {error}
         </p>
+      ) : null}
+
+      {outcome ? (
+        <p
+          className={`rounded-xl border px-4 py-3 text-sm text-ink ${
+            outcome.passed
+              ? "border-accent/30 bg-accent-soft"
+              : "border-warn/40 bg-[#fff7e8]"
+          }`}
+          role="status"
+        >
+          {outcome.passed
+            ? `Тест пройден: ${outcome.correct} из ${outcome.total}. Можно идти дальше.`
+            : `Верно ${outcome.correct} из ${outcome.total}, нужно ${outcome.required}. Исправь отмеченные вопросы и проверь снова.`}
+        </p>
+      ) : null}
+
+      {!locked ? (
+        <button
+          type="button"
+          disabled={!answeredAll || busy}
+          onClick={() => void submit()}
+          className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-signal disabled:opacity-40"
+        >
+          {busy ? "Проверяю…" : "Проверить ответы"}
+        </button>
       ) : null}
     </div>
   );

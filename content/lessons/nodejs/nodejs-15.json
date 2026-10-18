@@ -7,24 +7,41 @@
   "goal": "Добавишь структурные логи pino и единый error handler в учебный сервер.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Почему не console.log"
+    },
+    {
       "type": "paragraph",
-      "content": "console.log в production теряет контекст: нет уровня, requestId, JSON для Loki/Datadog. pino — быстрый JSON-logger: logger.info({ reqId, userId }, 'post created'). pino-http автоматически логирует запросы. morgan можно убрать или оставить только в dev."
+      "content": "В продакшене console.log теряет контекст: нет уровня важности, времени, идентификатора запроса, и сложно искать. Структурные логи пишутся как JSON, один объект на строку; системы вроде Loki, Datadog и CloudWatch умеют по ним фильтровать и искать. pino — быстрый логгер: logger.info({ reqId, userId }, 'post created') даёт запись с уровнем, временем и полями."
     },
     {
       "type": "heading",
-      "content": "Уровни и redaction"
+      "content": "Уровни"
+    },
+    {
+      "type": "list",
+      "items": [
+        "debug — локальная отладка, на проде обычно выключен.",
+        "info — бизнес-события (пост создан, пользователь вошёл).",
+        "warn — подозрительное, но не ошибка (повторная попытка, неверный пароль).",
+        "error — сбой, который требует внимания; передавай ошибку целиком: logger.error({ err }, 'failed')."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "debug — локальная отладка, info — бизнес-события, warn — деградация, error — с полем err и stack. redact: ['req.headers.authorization', 'password'] — пароли не попадают в логи. LOG_LEVEL=info на проде."
+      "content": "Уровень задаётся переменной LOG_LEVEL, чтобы менять его без правок кода."
     },
     {
       "type": "heading",
-      "content": "Связка с error middleware"
+      "content": "pino-http и redaction"
     },
     {
       "type": "paragraph",
-      "content": "В error handler: logger.error({ err, reqId: req.id }, err.message). Клиенту — короткий message, в лог — полный объект ошибки. 404 AppError логируй как warn, не error."
+      "content": "pino-http автоматически логирует каждый запрос: метод, адрес, код ответа, время; он же создаёт req.log с привязанным идентификатором запроса. Используй req.log внутри обработчиков, тогда все записи одного запроса связаны. Опция redact скрывает чувствительные поля: ['req.headers.authorization', 'req.headers.cookie', 'password'] заменяются на [Redacted] до записи. Это важно, потому что логи часто попадают в сторонние системы и видны многим."
+    },
+    {
+      "type": "paragraph",
+      "content": "Читаемый вывод для разработки даёт pino-pretty, на проде оставляй JSON. Проверка: сделай запрос с заголовком Authorization и убедись, что в логе токена нет, а у ошибки есть стек и reqId. Не логируй тела запросов целиком и персональные данные без необходимости: объём логов растёт быстро, и они сами становятся источником утечки."
     }
   ],
   "codeExample": "import pino from \"pino\";\nimport pinoHttp from \"pino-http\";\n\nexport const logger = pino({\n  level: process.env.LOG_LEVEL ?? \"info\",\n  redact: [\"req.headers.authorization\"],\n});\n\napp.use(\n  pinoHttp({\n    logger,\n    genReqId: (req) => req.id,\n  }),\n);\n\napp.use((err, req, res, _next) => {\n  req.log.error({ err }, \"request failed\");\n  res.status(err.statusCode ?? 500).json({ error: err.message });\n});",
@@ -69,6 +86,68 @@
       "term": "pino-http",
       "meaning": "Middleware логирования HTTP для Express.",
       "example": "app.use(pinoHttp({ logger }))"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-15-q1",
+      "prompt": "Почему структурные JSON-логи лучше console.log на проде?",
+      "options": [
+        "Они красивее",
+        "Они короче",
+        "Они не нужны",
+        "По ним можно фильтровать и искать по полям уровня, времени, reqId"
+      ],
+      "correctIndex": 3,
+      "explanation": "Системы вроде Loki читают JSON."
+    },
+    {
+      "id": "nodejs-15-q2",
+      "prompt": "Какой уровень для бизнес-события «пост создан»?",
+      "options": [
+        "fatal",
+        "error",
+        "debug",
+        "info"
+      ],
+      "correctIndex": 3,
+      "explanation": "debug для отладки, error для сбоев."
+    },
+    {
+      "id": "nodejs-15-q3",
+      "prompt": "Что делает redact в pino?",
+      "options": [
+        "Ускоряет запись",
+        "Скрывает чувствительные поля, например Authorization, до записи",
+        "Сжимает файл",
+        "Шифрует базу"
+      ],
+      "correctIndex": 1,
+      "explanation": "Токенов в логах быть не должно."
+    },
+    {
+      "id": "nodejs-15-q4",
+      "prompt": "Зачем req.log из pino-http?",
+      "options": [
+        "Для кэша",
+        "Все записи одного запроса связаны с его идентификатором",
+        "Для базы",
+        "Для маршрутов"
+      ],
+      "correctIndex": 1,
+      "explanation": "Проще искать цепочку событий."
+    },
+    {
+      "id": "nodejs-15-q5",
+      "prompt": "Как менять уровень логирования без правки кода?",
+      "options": [
+        "Через переменную LOG_LEVEL",
+        "Править package.json",
+        "Перекомпилировать",
+        "Удалять файл"
+      ],
+      "correctIndex": 0,
+      "explanation": "Настройка идёт из окружения."
     }
   ]
 }

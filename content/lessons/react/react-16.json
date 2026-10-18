@@ -7,24 +7,37 @@
   "goal": "Соберёшь Button, Input и Modal с focus trap и закрытием по Escape.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что такое UI-кит"
+    },
+    {
       "type": "paragraph",
-      "content": "UI-кит — набор переиспользуемых компонентов с единым API: variant, size, disabled. Button type=\"button\" по умолчанию, чтобы не submit форму случайно. Input связывает label, aria-invalid при ошибке, id из useId() для уникальности."
+      "content": "UI-кит — набор небольших переиспользуемых компонентов с единым устройством: Button, Input, Modal, Card. У них одинаковые понятия (variant, size, disabled) и единый вид. Выгода в том, что дизайн меняется в одном месте, а новые экраны собираются быстро. Но кит должен быть доступным: красивые, но недоступные кнопки не подходят."
     },
     {
       "type": "heading",
-      "content": "Modal и a11y"
+      "content": "Button и Input"
     },
     {
-      "type": "paragraph",
-      "content": "Modal: role=\"dialog\" aria-modal=\"true\", focus на первый focusable при open, return focus на trigger при close. Overlay click и Escape закрывают. Блокируй scroll body при open (class overflow-hidden). Portal createPortal(modal, document.body) — overlay поверх всего дерева."
+      "type": "list",
+      "items": [
+        "Button по умолчанию type=\"button\", чтобы случайно не отправлять форму; для отправки передают type=\"submit\" явно.",
+        "Расширяй нативные атрибуты (...props), чтобы работали disabled, aria-label, onClick.",
+        "Input связывает поле и подпись: label htmlFor и id из useId() дают уникальные значения без ручных идентификаторов.",
+        "При ошибке выставляй aria-invalid и связывай сообщение через aria-describedby."
+      ]
     },
     {
       "type": "heading",
-      "content": "Документация в Storybook (обзор)"
+      "content": "Modal и доступность"
     },
     {
       "type": "paragraph",
-      "content": "Stories показывают состояния: primary/disabled/error. Для сдачи курса достаточно pages/UiPlayground.tsx со всеми вариантами. Тестируй клавиатурой: Tab не уходит под modal, Shift+Tab цикл внутри."
+      "content": "Модальное окно: role=\"dialog\" и aria-modal=\"true\", заголовок подключён через aria-labelledby. При открытии фокус переходит на первый интерактивный элемент внутри, а при закрытии возвращается на кнопку, которая окно открыла. Фокус не должен уходить за пределы окна (focus trap): Tab по кругу перемещается внутри. Закрытие по клавише Escape и по клику на фон обязательно. Рендерят модальное окно через createPortal в document.body, чтобы родительские стили (overflow, z-index) не мешали."
+    },
+    {
+      "type": "paragraph",
+      "content": "Проверь клавиатурой: открой окно Enter, пройди Tab по кругу, закрой Escape, убедись, что фокус вернулся на исходную кнопку. Если страница под окном прокручивается, заблокируй прокрутку на время показа. Ещё одна деталь: возвращай фокус на элемент, вызвавший окно, и закрывай окно при потере навигации, иначе пользователи скринридеров теряются на странице."
     }
   ],
   "codeExample": "import { useEffect, useId, useRef } from \"react\";\nimport { createPortal } from \"react-dom\";\n\nexport function Modal({ open, title, onClose, children }: {\n  open: boolean;\n  title: string;\n  onClose: () => void;\n  children: React.ReactNode;\n}) {\n  const titleId = useId();\n  const ref = useRef<HTMLDivElement>(null);\n\n  useEffect(() => {\n    if (!open) return;\n    function onKey(e: KeyboardEvent) {\n      if (e.key === \"Escape\") onClose();\n    }\n    document.addEventListener(\"keydown\", onKey);\n    ref.current?.focus();\n    return () => document.removeEventListener(\"keydown\", onKey);\n  }, [open, onClose]);\n\n  if (!open) return null;\n  return createPortal(\n    <div className=\"overlay\" onClick={onClose}>\n      <div role=\"dialog\" aria-modal aria-labelledby={titleId} tabIndex={-1} ref={ref} onClick={(e) => e.stopPropagation()}>\n        <h2 id={titleId}>{title}</h2>\n        {children}\n      </div>\n    </div>,\n    document.body\n  );\n}",
@@ -78,6 +91,68 @@
       "term": "useId",
       "meaning": "Стабильный уникальный id для a11y связей.",
       "example": "aria-labelledby"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-16-q1",
+      "prompt": "Почему у Button по умолчанию type=\"button\"?",
+      "options": [
+        "Для скорости",
+        "Для стилей",
+        "Чтобы случайно не отправлять форму",
+        "Так требует Next"
+      ],
+      "correctIndex": 2,
+      "explanation": "Для отправки type=\"submit\" передают явно."
+    },
+    {
+      "id": "react-16-q2",
+      "prompt": "Что даёт useId в Input?",
+      "options": [
+        "Уникальные id для связи label и поля",
+        "Данные с сервера",
+        "Состояние",
+        "Маршрут"
+      ],
+      "correctIndex": 0,
+      "explanation": "Без ручной генерации идентификаторов."
+    },
+    {
+      "id": "react-16-q3",
+      "prompt": "Что нужно модальному окну для доступности?",
+      "options": [
+        "Только анимация",
+        "Ничего",
+        "role=\"dialog\", aria-modal, фокус внутри окна",
+        "Только цвет"
+      ],
+      "correctIndex": 2,
+      "explanation": "Фокус возвращается на кнопку после закрытия."
+    },
+    {
+      "id": "react-16-q4",
+      "prompt": "Что такое focus trap?",
+      "options": [
+        "Блокировка клавиатуры",
+        "Фокус по Tab остаётся внутри окна",
+        "Ловушка для ошибок",
+        "Кэш фокуса"
+      ],
+      "correctIndex": 1,
+      "explanation": "Иначе фокус уходит на страницу под окном."
+    },
+    {
+      "id": "react-16-q5",
+      "prompt": "Зачем рендерить модальное окно через createPortal?",
+      "options": [
+        "Чтобы стили родителей не мешали (overflow, z-index)",
+        "Для скорости базы",
+        "Для SEO",
+        "Для маршрутов"
+      ],
+      "correctIndex": 0,
+      "explanation": "Окно выводится в document.body."
     }
   ]
 }

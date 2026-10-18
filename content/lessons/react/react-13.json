@@ -7,24 +7,37 @@
   "goal": "Найдёшь лишние render и применишь lazy, memo и виртуализацию по делу.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Когда React перерисовывает"
+    },
+    {
       "type": "paragraph",
-      "content": "React перерисовывает компонент при изменении state или props родителя. Profiler в DevTools записывает commit duration. Частая ошибка — новый объект/функция в props каждый render: onClick={() => ...} ломает memo. useCallback стабилизирует fn, useMemo — дорогой расчёт."
+      "content": "Компонент перерисовывается при изменении его state, при изменении props и при перерисовке родителя. Сама по себе перерисовка дёшева: React сравнивает новое описание со старым и обновляет DOM только там, где изменилось. Проблемы начинаются, когда перерисовок слишком много или одна из них тяжёлая. Сначала измерь: вкладка Profiler в React DevTools записывает перерисовки и показывает, какие компоненты и сколько времени заняли."
     },
     {
       "type": "heading",
-      "content": "Code splitting"
+      "content": "Типичные причины"
     },
     {
-      "type": "paragraph",
-      "content": "const Admin = lazy(() => import('./Admin')); <Suspense fallback={<p>…</p>}><Admin /></Suspense> — отдельный chunk грузится при первом показе Admin. Route-based splitting с React Router уменьшает initial bundle. list virtualization (react-window) рисует только видимые строки длинного списка."
+      "type": "list",
+      "items": [
+        "Новая функция или объект в props на каждой отрисовке ломает memo: onClick={() => ...}, style={{ ... }}.",
+        "Слишком высокое состояние: изменение счётчика в корне перерисовывает всё дерево; опусти состояние ближе к тем, кто его использует.",
+        "Тяжёлый расчёт в теле компонента на каждой отрисовке: оберни в useMemo или вынеси.",
+        "Длинные списки: тысячи строк в DOM тормозят браузер; используй виртуализацию (показываются только видимые строки, например react-window)."
+      ]
     },
     {
       "type": "heading",
-      "content": "Когда не оптимизировать"
+      "content": "Инструменты"
     },
     {
       "type": "paragraph",
-      "content": "Premature memo усложняет код. Сначала измерь Profiler, потом memo/useMemo. key=index на сортируемом списке — и баги, и лишние remount. State colocation: держи state ближе к месту использования, чтобы не будить всё дерево."
+      "content": "memo, useCallback и useMemo работают вместе: useCallback стабилизирует функцию, чтобы memo-компонент не перерисовывался зря. Разделение кода: const Admin = lazy(() => import('./Admin')) подгружает код страницы только при открытии, а Suspense с fallback показывает заглушку на время загрузки. Так первая загрузка быстрее. Ещё помогают ленивые изображения (loading=\"lazy\") и анализ размера сборки (rollup-plugin-visualizer)."
+    },
+    {
+      "type": "paragraph",
+      "content": "Правило: профилируй до и после изменения. Без измерения оптимизация часто бесполезна и усложняет код. Для интерфейсов с очень частыми обновлениями (поиск, ввод) используй debounce и transition."
     }
   ],
   "codeExample": "import { lazy, Suspense, memo, useMemo, useState } from \"react\";\n\nconst HeavyChart = lazy(() => import(\"./HeavyChart\"));\n\nconst Row = memo(function Row({ label }: { label: string }) {\n  return <li>{label}</li>;\n});\n\nexport function BigList({ items }: { items: string[] }) {\n  const [q, setQ] = useState(\"\");\n  const filtered = useMemo(() => items.filter((x) => x.includes(q)), [items, q]);\n  return (\n    <>\n      <input value={q} onChange={(e) => setQ(e.target.value)} />\n      <ul>\n        {filtered.map((label) => (\n          <Row key={label} label={label} />\n        ))}\n      </ul>\n      <Suspense fallback={<p>График…</p>}>\n        <HeavyChart />\n      </Suspense>\n    </>\n  );\n}",
@@ -78,6 +91,68 @@
       "term": "Profiler",
       "meaning": "Инструмент измерения времени commit React.",
       "example": "React DevTools"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-13-q1",
+      "prompt": "Когда React перерисовывает компонент?",
+      "options": [
+        "Только по таймеру",
+        "Только при клике",
+        "Никогда",
+        "При изменении state, props или перерисовке родителя"
+      ],
+      "correctIndex": 3,
+      "explanation": "Сама перерисовка дёшева."
+    },
+    {
+      "id": "react-13-q2",
+      "prompt": "Чем полезен Profiler в DevTools?",
+      "options": [
+        "Сжимает картинки",
+        "Исправляет код",
+        "Показывает, какие компоненты перерисовывались и сколько времени заняли",
+        "Ускоряет сеть"
+      ],
+      "correctIndex": 2,
+      "explanation": "Сначала измерь, потом оптимизируй."
+    },
+    {
+      "id": "react-13-q3",
+      "prompt": "Что ломает memo в props?",
+      "options": [
+        "Новая функция или объект на каждой отрисовке",
+        "Строка",
+        "Число",
+        "Булево значение"
+      ],
+      "correctIndex": 0,
+      "explanation": "Например onClick={() => ...}."
+    },
+    {
+      "id": "react-13-q4",
+      "prompt": "Что даёт lazy и Suspense?",
+      "options": [
+        "Кэш картинок",
+        "Код страницы загружается только при открытии, заглушка на время загрузки",
+        "Стили",
+        "Ускорение базы"
+      ],
+      "correctIndex": 1,
+      "explanation": "Первая загрузка быстрее."
+    },
+    {
+      "id": "react-13-q5",
+      "prompt": "Что помогает при списках из тысяч строк?",
+      "options": [
+        "Виртуализация: в DOM только видимые строки",
+        "Больше memo",
+        "Больше useEffect",
+        "Увеличение шрифта"
+      ],
+      "correctIndex": 0,
+      "explanation": "Меньше узлов — быстрее браузер."
     }
   ]
 }

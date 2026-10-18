@@ -7,24 +7,43 @@
   "goal": "Добавишь регистрацию, JWT или session, роли, reset password и hardening в blog API.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что нужно собрать"
+    },
+    {
       "type": "paragraph",
-      "content": "Финал модуля: auth поверх database-project API. Register/login, bcrypt, access+refresh или session cookie, requireOwner на mutating posts, admin role на модерацию. forgot/reset password с hashed tokens. helmet, cors whitelist, rate limit login, audit failed login."
+      "content": "Итог модуля — безопасное API блога: регистрация и вход с хешированием паролей, токены или сессия, роли, сброс пароля и защитные настройки. Ты берёшь API из модуля про базы данных и закрываешь его правилами доступа: читать посты может кто угодно, создавать — вошедший, менять и удалять — автор или администратор, модерировать — только администратор."
     },
     {
       "type": "heading",
-      "content": "Scope сдачи"
+      "content": "Обязательный минимум"
     },
     {
-      "type": "paragraph",
-      "content": "Обязательно: auth на CRUD posts/comments, 401/403 корректно, secrets в env, Postman folder Auth + Protected. Опционально: OAuth, 2FA design doc, email SMTP."
+      "type": "list",
+      "items": [
+        "Register и login: bcrypt или argon2, одинаковое сообщение при неудаче, passwordHash нигде не возвращается.",
+        "Токены (access и refresh с ротацией) или сессия в cookie с правильными флагами.",
+        "Проверка владения на PATCH и DELETE постов и комментариев, роль admin на модерации; 401 и 403 используются верно.",
+        "Сброс пароля с одноразовым хешированным токеном, нейтральный ответ forgot-password.",
+        "helmet, список разрешённых CORS-адресов, лимит попыток входа, журнал неудачных входов.",
+        "Секреты в окружении, .env.example без значений."
+      ]
     },
     {
       "type": "heading",
-      "content": "Документация безопасности"
+      "content": "Документы безопасности"
     },
     {
       "type": "paragraph",
-      "content": "docs/security.md: модель auth, где хранятся tokens, CORS origins, как rotate JWT secrets. owasp-map.md обнови статусы done."
+      "content": "docs/security.md отвечает на вопросы: где хранятся токены, какие origin разрешены, как ротировать секреты JWT, что делать при утечке. owasp-map.md обновляется статусами «сделано» со ссылками на код. Папка Postman Auth и Protected содержит рабочие запросы: цепочку register, login, защищённый запрос и негативные случаи (без токена, чужой пост, просроченный токен)."
+    },
+    {
+      "type": "heading",
+      "content": "Как проверить себя"
+    },
+    {
+      "type": "paragraph",
+      "content": "Пройди сценарий глазами злоумышленника: попробуй удалить чужой пост, войти с неверным паролем 20 раз подряд, использовать токен после выхода, открыть админский маршрут без роли. Всё, что сработало, нужно закрыть. Если на какой-то вопрос ответ «не знаю», этот пункт ещё не закрыт."
     }
   ],
   "codeExample": "POST /auth/register → 201 user\nPOST /auth/login → access + refresh\nGET /posts → public\nPOST /posts → Bearer access\nPATCH /posts/:id → owner or admin\nPOST /auth/forgot-password → neutral 200\nPOST /auth/reset-password → one-time token",

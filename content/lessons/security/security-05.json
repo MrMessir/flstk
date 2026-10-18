@@ -7,24 +7,44 @@
   "goal": "Выдашь пару JWT и обновишь access по refresh без хранения пароля в токене.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что такое JWT"
+    },
+    {
       "type": "paragraph",
-      "content": "JWT — три части base64: header.payload.signature. Сервер подписывает HS256 секретом или RS256 приватным ключом. Payload: sub (user id), exp, optional role. Access короткий (15m), refresh длинный (7d) хранится hashed в БД или httpOnly cookie."
+      "content": "JWT состоит из трёх частей в base64: заголовок, полезная нагрузка (claims) и подпись. Нагрузка не зашифрована, её может прочитать любой, поэтому секретам там не место. Подпись гарантирует, что нагрузку не изменили: сервер подписывает токен секретом (HS256) или приватным ключом (RS256) и при каждом запросе проверяет подпись. В claims кладут sub (id пользователя), exp (срок действия) и при необходимости роль."
     },
     {
       "type": "heading",
-      "content": "Что не класть в JWT"
+      "content": "Пара токенов"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Access-токен живёт недолго (около 15 минут) и отправляется в Authorization: Bearer … на каждый запрос.",
+        "Refresh-токен живёт дольше (например, 7 дней), используется только для получения нового access и хранится в httpOnly cookie или как хеш в базе.",
+        "Секреты для access и refresh разные и лежат в .env, а не в коде."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "Пароль, payment data, PII лишнее. JWT не revoke мгновенно без blacklist — короткий access снижает риск. Refresh rotation: новый refresh при каждом use, старый invalidate."
+      "content": "Такая схема нужна потому, что выданный JWT нельзя мгновенно отозвать (без чёрного списка). Если access короткий, украденный токен быстро перестанет работать."
     },
     {
       "type": "heading",
-      "content": "Bearer middleware"
+      "content": "Ротация refresh"
     },
     {
       "type": "paragraph",
-      "content": "Authorization: Bearer <access>. jwt.verify(token, secret) → req.user = { id: payload.sub }. 401 при expired или bad signature."
+      "content": "При каждом использовании refresh выдаётся новый, а старый становится недействительным. Если кто-то предъявит уже использованный refresh, значит токен украли: отзови всю цепочку и потребуй вход заново. В базе храни хеш refresh-токена, а не сам токен."
+    },
+    {
+      "type": "heading",
+      "content": "Проверка на сервере"
+    },
+    {
+      "type": "paragraph",
+      "content": "Middleware читает заголовок, вызывает jwt.verify(token, secret) и кладёт req.user = { id: payload.sub }. При истёкшем или подделанном токене ответ 401. Не принимай токен без проверки алгоритма (укажи algorithms: ['HS256']), иначе возможны атаки подменой алгоритма. Не клади в JWT пароль, платёжные данные и лишние персональные данные."
     }
   ],
   "codeExample": "import jwt from \"jsonwebtoken\";\n\nconst ACCESS_TTL = \"15m\";\nconst REFRESH_TTL = \"7d\";\n\nexport function signAccess(user) {\n  return jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_ACCESS_SECRET, {\n    expiresIn: ACCESS_TTL,\n  });\n}\n\nexport function authBearer(req, res, next) {\n  const h = req.headers.authorization;\n  if (!h?.startsWith(\"Bearer \")) return res.status(401).json({ error: \"Unauthorized\" });\n  try {\n    req.user = jwt.verify(h.slice(7), process.env.JWT_ACCESS_SECRET);\n    next();\n  } catch {\n    res.status(401).json({ error: \"Unauthorized\" });\n  }\n}",
@@ -74,36 +94,63 @@
   "quiz": [
     {
       "id": "security-05-q1",
-      "prompt": "Зачем разделяют access и refresh JWT?",
+      "prompt": "Что содержит JWT?",
       "options": [
-        "Короткий access снижает ущерб при утечке; refresh обновляет сессию",
-        "Refresh нужен только для CSS",
-        "Access хранит пароль в открытом виде",
-        "Оба токена обязаны жить вечно"
+        "Только зашифрованный пароль",
+        "Только подпись",
+        "Заголовок, нагрузку и подпись; нагрузку может прочитать любой",
+        "Пароль и роль"
       ],
-      "correctIndex": 0
+      "correctIndex": 2,
+      "explanation": "Подпись защищает от подделки, но не скрывает содержимое."
     },
     {
       "id": "security-05-q2",
-      "prompt": "Куда нельзя класть JWT access token?",
+      "prompt": "Зачем access-токен делают коротким?",
       "options": [
-        "В URL query-параметр (утечёт в логи и Referer)",
-        "В память клиента на время сессии",
-        "В Authorization: Bearer заголовок",
-        "В httpOnly cookie при продуманном CSRF"
+        "Чтобы ускорить вход",
+        "Так требует HTTP",
+        "Выданный JWT нельзя мгновенно отозвать, и украденный быстро перестанет работать",
+        "Чтобы он весил меньше"
       ],
-      "correctIndex": 0
+      "correctIndex": 2,
+      "explanation": "Обычно около 15 минут."
     },
     {
       "id": "security-05-q3",
-      "prompt": "Что делать со старым refresh при ротации?",
+      "prompt": "Что такое ротация refresh-токена?",
       "options": [
-        "Инвалидировать (отозвать) после выдачи нового",
-        "Оставить навсегда для удобства",
-        "Записать в git",
-        "Отправить в Discord webhook"
+        "Токен хранится в localStorage",
+        "Токен никогда не меняется",
+        "Токен удаляется при выходе из браузера",
+        "При каждом использовании выдаётся новый, а старый перестаёт действовать"
       ],
-      "correctIndex": 0
+      "correctIndex": 3,
+      "explanation": "Повторное использование старого — сигнал кражи."
+    },
+    {
+      "id": "security-05-q4",
+      "prompt": "Что нельзя класть в JWT?",
+      "options": [
+        "Срок действия exp",
+        "Роль",
+        "Идентификатор пользователя sub",
+        "Пароль, платёжные данные и лишние персональные данные"
+      ],
+      "correctIndex": 3,
+      "explanation": "Нагрузка не зашифрована."
+    },
+    {
+      "id": "security-05-q5",
+      "prompt": "Что нужно указать при проверке токена?",
+      "options": [
+        "Разрешённые алгоритмы, например algorithms: ['HS256']",
+        "Пароль пользователя",
+        "Адрес клиента",
+        "Любой алгоритм"
+      ],
+      "correctIndex": 0,
+      "explanation": "Иначе возможны атаки подменой алгоритма."
     }
   ]
 }

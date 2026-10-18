@@ -8,16 +8,20 @@
   "theory": [
     {
       "type": "heading",
-      "content": "display"
+      "content": "Блоки и строки"
     },
     {
       "type": "list",
       "items": [
-        "block — занимает всю ширину, следующий элемент идёт снизу. Так ведут себя div, p, h1.",
-        "inline — идёт в строке текста, width и height почти не слушаются. Так ведут себя a, strong.",
-        "inline-block — в строке, но width и height работают.",
-        "none — элемент скрыт."
+        "display: block: занимает всю ширину, следующий элемент идёт снизу (div, p, h1).",
+        "display: inline: идёт в строке текста, width и height почти не работают (a, strong).",
+        "display: inline-block: в строке, но размеры работают.",
+        "display: none: элемент скрыт и не занимает места."
       ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Если ширина блока не действует, проверь display: у inline-элементов размеры игнорируются. Чтобы скрыть элемент, но оставить место, используют visibility: hidden."
     },
     {
       "type": "heading",
@@ -26,24 +30,16 @@
     {
       "type": "list",
       "items": [
-        "static — обычное место. Значение по умолчанию.",
-        "relative — сдвиг от своего места. Соседи помнят старое место.",
-        "absolute — позиция относительно ближайшего родителя с position не static.",
-        "fixed — приклеен к окну браузера. Не уезжает при прокрутке.",
-        "sticky — ведёт себя как обычный, пока не доскроллишь, потом «прилипает»."
+        "static: обычное положение, значение по умолчанию.",
+        "relative: сдвиг относительно своего места, остальное не двигается; нужен и как «опора» для вложенных absolute.",
+        "absolute: вынимается из потока и позиционируется относительно ближайшего родителя с position не static (например, relative).",
+        "fixed: прикреплён к окну браузера и не прокручивается.",
+        "sticky: ведёт себя как обычный, пока не дойдёт до границы (top: 0), затем прилипает."
       ]
     },
     {
       "type": "paragraph",
-      "content": "top, right, bottom, left — насколько сдвинуть. z-index — кто выше, если блоки накладываются. Большее число ближе к тебе."
-    },
-    {
-      "type": "paragraph",
-      "content": "display меняет модель коробки: block тянется на всю строку, inline-flow ведёт себя как слово в предложении. position sticky удобен для шапки: не нужен JavaScript, достаточно top: 0 и фона, чтобы контент не просвечивал под меню."
-    },
-    {
-      "type": "paragraph",
-      "content": "Для sticky родитель не должен обрезать overflow: hidden — иначе шапка не прилипнет. Проверяй шапку прокруткой длинной страницы в Live Server."
+      "content": "Липкая шапка: position: sticky; top: 0; background: white; z-index: 10. z-index управляет тем, кто сверху, когда элементы накладываются; он работает только у позиционированных элементов. Ошибка: sticky не срабатывает, если у родителя есть overflow: hidden, или не задано значение top, а fixed-шапка перекрывает начало страницы, и ей нужен отступ сверху у остального содержимого. Для центрирования блока внутри другого блока сегодня обычно используют не absolute, а flex или grid: display: grid; place-items: center даёт идеальный центр двумя строками. Практика: сделай шапку на flex и закрепи её; затем добавь на карточку значок через absolute в угол, поставив карточке position: relative."
     }
   ],
   "codeExample": ".header {\n  position: sticky;\n  top: 0;\n  background: white;\n  border-bottom: 1px solid #ddd;\n  padding: 12px;\n  z-index: 10;\n}\n\n.badge {\n  display: inline-block;\n  padding: 4px 8px;\n  background: #e8fff8;\n}\n\n.modal {\n  position: fixed;\n  top: 20%;\n  left: 50%;\n  transform: translateX(-50%);\n  background: white;\n  border: 1px solid #ccc;\n  padding: 20px;\n}",
@@ -97,6 +93,68 @@
       "term": "z-index",
       "meaning": "Кто выше при наложении блоков.",
       "example": "z-index: 10;"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "css-06-q1",
+      "prompt": "Что значит display: inline-block?",
+      "options": [
+        "Скрыт",
+        "В строке, но width и height работают",
+        "На всю ширину",
+        "Всегда блок"
+      ],
+      "correctIndex": 1,
+      "explanation": "inline игнорирует размеры."
+    },
+    {
+      "id": "css-06-q2",
+      "prompt": "Как ведёт себя position: sticky?",
+      "options": [
+        "Всегда вверху",
+        "Обычно, пока не дойдёт до границы top, затем прилипает",
+        "Скрыт",
+        "Прикреплён к окну всегда"
+      ],
+      "correctIndex": 1,
+      "explanation": "Нужно значение top."
+    },
+    {
+      "id": "css-06-q3",
+      "prompt": "Относительно чего позиционируется absolute?",
+      "options": [
+        "Всегда окна браузера",
+        "Ближайшего родителя с position не static",
+        "Соседа",
+        "Корня страницы"
+      ],
+      "correctIndex": 1,
+      "explanation": "Родителю часто ставят position: relative."
+    },
+    {
+      "id": "css-06-q4",
+      "prompt": "Для чего нужен z-index?",
+      "options": [
+        "Скрывает элемент",
+        "Задаёт цвет",
+        "Определяет, кто сверху при наложении позиционированных элементов",
+        "Задаёт размер"
+      ],
+      "correctIndex": 2,
+      "explanation": "Работает у позиционированных элементов."
+    },
+    {
+      "id": "css-06-q5",
+      "prompt": "Почему sticky может не сработать?",
+      "options": [
+        "Нет цвета",
+        "У родителя overflow: hidden или не задан top",
+        "Браузер не поддерживает",
+        "Нет шрифта"
+      ],
+      "correctIndex": 1,
+      "explanation": "Это частая причина."
     }
   ]
 }

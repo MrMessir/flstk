@@ -7,16 +7,28 @@
   "goal": "Применишь базовые защиты: escape вывод, CSRF для cookie session, параметры SQL и blocklist URL.",
   "theory": [
     {
+      "type": "heading",
+      "content": "XSS: чужой скрипт на твоей странице"
+    },
+    {
       "type": "paragraph",
-      "content": "XSS — выполнение JS в браузере жертвы. API отдаёт JSON — reflected XSS реже; stored XSS если фронт рендерит post.body как HTML без sanitize. Используй DOMPurify на клиенте, Content-Type application/json. SQLi — конкатенация строк в SQL; Prisma ORM по умолчанию safe."
+      "content": "Cross-site scripting — это выполнение чужого JavaScript в браузере жертвы. Сохранённый (stored) вариант выглядит так: пользователь пишет комментарий с тегом script, твой фронтенд выводит его как HTML, и скрипт запускается у всех, кто откроет страницу. Защита: по умолчанию выводи текст как текст (React экранирует его сам), избегай dangerouslySetInnerHTML, а если HTML нужен, очищай его DOMPurify. Настрой Content-Security-Policy, чтобы запретить встроенные скрипты."
     },
     {
       "type": "heading",
-      "content": "CSRF"
+      "content": "CSRF: запрос от чужого сайта"
     },
     {
       "type": "paragraph",
-      "content": "Cookie session автоматически шлётся браузером — злонамеренный сайт может POST от имени user. SameSite=Lax/Strict, CSRF token double-submit для cookie API. JWT в Authorization header CSRF не триггерит."
+      "content": "Cookie браузер отправляет автоматически, поэтому вредный сайт может отправить POST на твой API от имени вошедшего пользователя. Основная защита — SameSite=Lax или Strict у cookie сессии. Для дополнительной защиты используют токен: сервер выдаёт случайное значение, клиент присылает его в заголовке, и сервер сравнивает с cookie или сессией. Пакет csurf давно не поддерживается, поэтому пользуйся современными реализациями или несколькими строками собственного кода. Если токен передаётся в заголовке Authorization, CSRF неактуален, потому что браузер не добавляет такой заголовок сам."
+    },
+    {
+      "type": "heading",
+      "content": "SQL-инъекция"
+    },
+    {
+      "type": "paragraph",
+      "content": "Опасна конкатенация: запрос, собранный как строка «SELECT * FROM posts WHERE id = » плюс значение id. Если id равен «1 OR 1=1», запрос вернёт всё. Параметризованные запросы отправляют значение отдельно от текста запроса, поэтому оно не может стать частью команды. Prisma делает это по умолчанию, а вызов $queryRaw через шаблонную строку с ${id} тоже параметризуется. Опасны $queryRawUnsafe и ручная сборка строки."
     },
     {
       "type": "heading",
@@ -24,10 +36,10 @@
     },
     {
       "type": "paragraph",
-      "content": "Endpoint fetch?url= позволяет стучаться во внутреннюю сеть. Allowlist доменов, block 169.254.169.254 metadata. Не проксируй произвольные URL."
+      "content": "Если сервер получает от пользователя адрес и сам обращается к нему (превью ссылки, вебхук), атакующий может указать внутренний адрес, например метаданные облака 169.254.169.254. Защита: разрешать только заранее заданные домены (allowlist), запрещать частные диапазоны адресов и не проксировать произвольные URL."
     }
   ],
-  "codeExample": "// SQL safe\nawait prisma.$queryRaw`SELECT * FROM posts WHERE id = ${id}`;\n\n// CSRF (cookie session)\nimport csrf from \"csurf\";\napp.use(csrf({ cookie: true }));\napp.get(\"/csrf-token\", (req, res) => res.json({ csrfToken: req.csrfToken() }));",
+  "codeExample": "// SQL: безопасно, значение передаётся параметром, а не склеивается в строку\nawait prisma.$queryRaw`SELECT * FROM posts WHERE id = ${id}`;\n\n// CSRF для cookie-сессии: double-submit токен (пакет csurf больше не поддерживается)\nimport { randomBytes, timingSafeEqual } from \"node:crypto\";\n\napp.get(\"/csrf-token\", (req, res) => {\n  const token = randomBytes(32).toString(\"hex\");\n  res.cookie(\"csrf\", token, { sameSite: \"strict\", secure: true });\n  res.json({ csrfToken: token });\n});\n\n// требует cookie-parser; клиент присылает токен в заголовке X-CSRF-Token\nfunction csrfProtect(req, res, next) {\n  if ([\"GET\", \"HEAD\", \"OPTIONS\"].includes(req.method)) return next();\n  const cookie = Buffer.from(req.cookies.csrf ?? \"\");\n  const header = Buffer.from(req.get(\"x-csrf-token\") ?? \"\");\n  if (!cookie.length || cookie.length !== header.length || !timingSafeEqual(cookie, header)) {\n    return res.status(403).json({ error: \"CSRF token mismatch\" });\n  }\n  next();\n}",
   "practice": [
     {
       "title": "Stored XSS thought",
@@ -69,6 +81,68 @@
       "term": "SSRF",
       "meaning": "Server-Side Request Forgery.",
       "example": "fetch internal IP"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "security-10-q1",
+      "prompt": "Что такое stored XSS?",
+      "options": [
+        "Ошибка в CSS",
+        "Скрипт запускается только у автора",
+        "Вредный скрипт сохранён на сервере и выполняется у всех, кто откроет страницу",
+        "Подделка cookie"
+      ],
+      "correctIndex": 2,
+      "explanation": "Например, комментарий с тегом script, выведенный как HTML."
+    },
+    {
+      "id": "security-10-q2",
+      "prompt": "Как защититься от XSS при выводе пользовательского текста?",
+      "options": [
+        "Доверять всему",
+        "Выводить как текст и очищать HTML через DOMPurify",
+        "Вставлять через innerHTML",
+        "Отключить JavaScript"
+      ],
+      "correctIndex": 1,
+      "explanation": "React по умолчанию экранирует текст."
+    },
+    {
+      "id": "security-10-q3",
+      "prompt": "Почему JWT в заголовке Authorization не подвержен CSRF?",
+      "options": [
+        "Он шифруется",
+        "Он не изменяется",
+        "Он короткий",
+        "Браузер не добавляет такой заголовок к чужим запросам автоматически"
+      ],
+      "correctIndex": 3,
+      "explanation": "Cookie же добавляются автоматически."
+    },
+    {
+      "id": "security-10-q4",
+      "prompt": "Почему SQL-запрос нельзя собирать конкатенацией?",
+      "options": [
+        "Пользовательское значение станет частью команды (SQL-инъекция)",
+        "База не принимает строки",
+        "Это медленно",
+        "Это запрещено синтаксисом"
+      ],
+      "correctIndex": 0,
+      "explanation": "Нужны параметры."
+    },
+    {
+      "id": "security-10-q5",
+      "prompt": "Что такое защита от SSRF?",
+      "options": [
+        "Включить HTTPS",
+        "Скрыть сервер",
+        "Отключить DNS",
+        "Разрешать только заданные домены и запрещать внутренние адреса"
+      ],
+      "correctIndex": 3,
+      "explanation": "Allowlist и блокировка частных диапазонов."
     }
   ]
 }

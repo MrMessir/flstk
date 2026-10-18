@@ -7,30 +7,38 @@
   "goal": "Соберёшь SPA с роутингом, списком товаров, карточкой и корзиной на React+TS.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что нужно сделать"
+    },
+    {
       "type": "paragraph",
-      "content": "Итог React — приложение уровня витрины: каталог, страница товара, корзина. Данные можно взять из fakestoreapi.com или json файл в public/. Router разводит URL: /, /product/:id, /cart. State корзины — Context или Zustand; server list — useQuery или useEffect+fetch."
+      "content": "Итог модуля — каталог товаров как одностраничное приложение на React и TypeScript: главная с сеткой карточек, страница товара и корзина. Данные можно брать с учебного API (например, fakestoreapi.com) или из JSON-файла в public. Это витрина уровня портфолио: она показывает, что ты умеешь строить интерфейс, работать с данными и состоянием."
     },
     {
       "type": "heading",
-      "content": "Минимальный scope MVP"
+      "content": "Минимальный набор"
     },
     {
       "type": "list",
       "items": [
-        "Главная: сетка карточек title, price, кнопка «В корзину».",
-        "Страница товара: описание, добавление в корзину.",
-        "Корзина: список, удаление, сумма.",
-        "React Router + TypeScript strict.",
-        "README, npm run build без ошибок."
+        "Роутинг: /, /product/:id, /cart и страница 404.",
+        "Главная: сетка карточек (название, цена, картинка, кнопка «В корзину»), состояния загрузки, ошибки и пустого результата.",
+        "Страница товара по id с описанием и кнопкой добавления.",
+        "Корзина: количество, удаление, итоговая сумма; состояние в Context или Zustand, сохранение в localStorage.",
+        "Данные списка через React Query или useEffect с отменой запросов."
       ]
     },
     {
       "type": "heading",
-      "content": "Качество сдачи"
+      "content": "Требования к качеству"
     },
     {
       "type": "paragraph",
-      "content": "Компоненты разнесены: ui/, pages/, hooks/, store/. Loading/error на fetch. Не обязательен pixel-perfect дизайн — важны маршруты, state и читаемость. Скрин или GIF в README, ссылка на GitHub Pages/Vercel optional."
+      "content": "Типизируй props и ответы API без any. Компоненты небольшие и переиспользуемые (ProductCard, CartItem). Интерфейс работает на ширине телефона и с клавиатуры, у кнопок есть доступные имена. Сборка npm run build проходит без ошибок, а линтер без предупреждений. Деплой на статический хостинг с настроенным переписыванием адресов на index.html: иначе прямой переход на /product/3 даст 404."
+    },
+    {
+      "type": "paragraph",
+      "content": "README: описание, скриншоты, команды запуска, выбор хранения состояния и почему. Типичные причины отказа: нет состояний загрузки и ошибки, key из индекса в списке товаров, потерянная корзина после перезагрузки, ссылки через a вместо Link и пропавшая страница 404. Перед сдачей пройди сценарий покупки как новый пользователь и убедись, что при первой загрузке нет пустых экранов, а ошибки сети показываются понятным текстом."
     }
   ],
   "codeExample": "// store/cart.ts (Zustand sketch)\nimport { create } from \"zustand\";\n\ntype Item = { id: number; title: string; price: number; qty: number };\n\ntype CartState = {\n  lines: Item[];\n  add: (p: Omit<Item, \"qty\">) => void;\n  remove: (id: number) => void;\n  total: () => number;\n};\n\nexport const useCart = create<CartState>((set, get) => ({\n  lines: [],\n  add: (p) => set((s) => {\n    const existing = s.lines.find((l) => l.id === p.id);\n    if (existing) {\n      return { lines: s.lines.map((l) => l.id === p.id ? { ...l, qty: l.qty + 1 } : l) };\n    }\n    return { lines: [...s.lines, { ...p, qty: 1 }] };\n  }),\n  remove: (id) => set((s) => ({ lines: s.lines.filter((l) => l.id !== id) })),\n  total: () => get().lines.reduce((sum, l) => sum + l.price * l.qty, 0),\n}));",

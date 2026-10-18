@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { LessonView } from "@/components/lessons/lesson-view";
+import { stripQuizAnswers } from "@/lib/quiz/public";
 import { getAllLessons, getLessonById, getLessonMetas } from "@/lib/lessons/load-lessons";
 import { getLessonNeighbors } from "@/lib/lessons/neighbors";
 import {
@@ -49,7 +50,9 @@ async function LessonContent({ params }: Pick<LessonPageProps, "params">) {
   }
 
   const serverUnlocked = isLessonUnlockedForState(lesson.id, metas, progress);
-  const visibleLesson = serverUnlocked ? lesson : redactLockedLesson(lesson);
+  const visibleLesson = serverUnlocked
+    ? stripQuizAnswers(lesson)
+    : redactLockedLesson(lesson);
   const { prev, next } = getLessonNeighbors(metas, lesson.id);
 
   return (

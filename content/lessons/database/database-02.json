@@ -7,24 +7,40 @@
   "goal": "Поднимешь Postgres в Docker и подключишься через psql или DBeaver.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Зачем Docker для базы"
+    },
+    {
       "type": "paragraph",
-      "content": "Локальный PostgreSQL в Docker изолирует версию и не засоряет систему. Контейнер postgres:16 слушает порт 5432, данные живут в volume. Строка подключения: postgresql://USER:PASSWORD@localhost:5432/DBNAME — её же потом положишь в DATABASE_URL для Prisma."
+      "content": "Установка PostgreSQL прямо в систему засоряет компьютер и привязывает проект к одной версии. Контейнер изолирует всё: удалил контейнер, и система чистая; нужна другая версия, меняешь тег образа. Контейнер слушает порт 5432, а данные хранятся в именованном томе (volume), поэтому переживают пересоздание контейнера. Выбирай тег образа с мажорной версией (postgres:16 или новее поддерживаемая) и закрепляй его, чтобы окружение не менялось неожиданно."
     },
     {
       "type": "heading",
-      "content": "docker compose"
+      "content": "docker-compose.yml"
     },
     {
-      "type": "paragraph",
-      "content": "Файл docker-compose.yml описывает сервис db с переменными POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB. Команда docker compose up -d поднимает фон. docker compose down -v удалит volume — только если сознательно сбрасываешь данные."
+      "type": "list",
+      "items": [
+        "Сервис db с образом postgres и переменными POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB; они создают пользователя и базу при первом запуске.",
+        "docker compose up -d поднимает сервис в фоне, docker compose ps показывает состояние, docker compose logs db — журнал.",
+        "docker compose down останавливает контейнеры, а docker compose down -v ещё и удаляет тома, то есть стирает все данные. Используй -v только когда сознательно сбрасываешь базу."
+      ]
     },
     {
       "type": "heading",
-      "content": "psql и GUI"
+      "content": "Строка подключения"
     },
     {
       "type": "paragraph",
-      "content": "psql -h localhost -U blog -d blog — интерактивная консоль: \\dt список таблиц, \\d posts описание. DBeaver или pgAdmin удобны для просмотра данных и EXPLAIN. На курсе держи оба: psql для скриптов, GUI для отладки."
+      "content": "Все клиенты подключаются по одной строке: postgresql://пользователь:пароль@localhost:5432/имя_базы. Позже она станет переменной DATABASE_URL для Prisma. Пароль в учебном проекте простой, но реальный пароль никогда не кладут в репозиторий, а в compose-файл подставляют из .env."
+    },
+    {
+      "type": "heading",
+      "content": "Клиенты"
+    },
+    {
+      "type": "paragraph",
+      "content": "psql — консольный клиент: psql -h localhost -U blog -d blog. Внутри \\dt показывает таблицы, \\d posts — структуру таблицы, \\q — выход. DBeaver или pgAdmin удобны для просмотра данных и планов запросов (EXPLAIN). Держи оба: psql для скриптов, графический клиент для отладки. Если подключение не проходит, проверь по порядку: запущен ли контейнер, свободен ли порт 5432 (не занят ли локальным Postgres), правильны ли пользователь и пароль."
     }
   ],
   "codeExample": "services:\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_USER: blog\n      POSTGRES_PASSWORD: blog\n      POSTGRES_DB: blog\n    ports:\n      - \"5432:5432\"\n    volumes:\n      - pgdata:/var/lib/postgresql/data\nvolumes:\n  pgdata:",
@@ -69,6 +85,68 @@
       "term": "psql",
       "meaning": "CLI-клиент PostgreSQL.",
       "example": "psql -U blog -d blog"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "database-02-q1",
+      "prompt": "Что делает docker compose down -v?",
+      "options": [
+        "Копирует базу",
+        "Останавливает контейнеры и удаляет тома, то есть данные",
+        "Только останавливает",
+        "Обновляет образ"
+      ],
+      "correctIndex": 1,
+      "explanation": "Без -v данные сохраняются."
+    },
+    {
+      "id": "database-02-q2",
+      "prompt": "Какой порт по умолчанию слушает PostgreSQL?",
+      "options": [
+        "80",
+        "5432",
+        "3000",
+        "6379"
+      ],
+      "correctIndex": 1,
+      "explanation": "Это стандартный порт."
+    },
+    {
+      "id": "database-02-q3",
+      "prompt": "Для чего нужен volume?",
+      "options": [
+        "Чтобы шифровать",
+        "Чтобы данные пережили пересоздание контейнера",
+        "Чтобы ускорить запросы",
+        "Чтобы хранить код"
+      ],
+      "correctIndex": 1,
+      "explanation": "Контейнер можно удалить, данные останутся."
+    },
+    {
+      "id": "database-02-q4",
+      "prompt": "Как называется консольный клиент PostgreSQL?",
+      "options": [
+        "pgcli",
+        "psql",
+        "pgrun",
+        "dbcon"
+      ],
+      "correctIndex": 1,
+      "explanation": "\\dt показывает таблицы."
+    },
+    {
+      "id": "database-02-q5",
+      "prompt": "Что проверить, если подключение не проходит?",
+      "options": [
+        "Цвет терминала",
+        "Название ветки",
+        "Размер экрана",
+        "Запущен ли контейнер, свободен ли порт 5432, верны ли пользователь и пароль"
+      ],
+      "correctIndex": 3,
+      "explanation": "Это три типичные причины."
     }
   ]
 }

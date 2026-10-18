@@ -7,30 +7,34 @@
   "goal": "Сделаешь todo-приложение с модулями, localStorage и формой без перезагрузки страницы.",
   "theory": [
     {
-      "type": "paragraph",
-      "content": "Итоговый проект модуля — маленькое приложение, а не набор отдельных сниппетов. HTML даёт форму и контейнер списка, CSS может быть минимальным, главная логика в JavaScript. Состояние — массив строк задач в памяти; при каждом изменении ты перерисовываешь список и сохраняешь копию в localStorage, чтобы после F5 данные вернулись."
-    },
-    {
       "type": "heading",
-      "content": "Модули и разделение"
+      "content": "Что нужно сделать"
     },
     {
       "type": "paragraph",
-      "content": "Вынеси loadTasks и saveTasks в storage.js с export/import. main.js отвечает за DOM: render(), обработчики submit и удаления. Подключи main.js как <script type=\"module\" src=\"./main.js\">. Так проще тестировать storage отдельно и не смешивать JSON.parse с разметкой. Пустые строки после trim не добавляй — пользователь не должен создавать «пустые» задачи."
+      "content": "Итоговый проект модуля: список дел (todo) с сохранением. Это не набор отдельных сниппетов, а маленькое законченное приложение. HTML даёт форму и контейнер списка, CSS может быть минимальным, вся логика на JavaScript. Состояние — массив задач в памяти; при каждом изменении ты перерисовываешь список и сохраняешь копию в localStorage, чтобы после обновления страницы данные вернулись."
     },
     {
       "type": "heading",
-      "content": "Критерии готовности"
+      "content": "Минимальный набор"
     },
     {
       "type": "list",
       "items": [
-        "Поле #title и форма #form с preventDefault на submit.",
-        "Список #list перерисовывается из массива tasks.",
-        "Кнопка удаления у каждого пункта.",
-        "localStorage ключ todo, JSON.stringify/parse.",
-        "Опционально: classList.toggle('done') по клику на текст."
+        "Форма добавления: поле и кнопка, submit с preventDefault, пустые значения и пробелы отклоняются.",
+        "Список строится из массива функцией render(); у каждой задачи есть id, текст и признак выполнено.",
+        "Отметка выполнено и удаление через делегирование событий на списке.",
+        "Модули: storage.js (загрузка и сохранение с обработкой битых данных) и main.js (интерфейс).",
+        "Счётчик оставшихся дел и кнопка очистки выполненных."
       ]
+    },
+    {
+      "type": "heading",
+      "content": "Как проверить себя"
+    },
+    {
+      "type": "paragraph",
+      "content": "Добавь несколько дел, отметь одно, удали одно, обнови страницу: состояние должно сохраниться. Испорть данные в localStorage вручную (на вкладке Application) и проверь, что приложение не ломается, а начинает с пустого списка. Попробуй вставить в поле текст с тегом script: он должен показываться как текст. Пройди форму с клавиатуры. В README опиши структуру файлов, как запустить и что сделано. Типичные причины замечаний: innerHTML с пользовательским текстом, нет проверки пустых значений, нет обработки ошибки JSON.parse, дублирование отрисовки в нескольких местах, всё в одном файле без модулей. Перед сдачей запусти проект с нуля в чистом браузерном профиле, чтобы убедиться, что он не зависит от данных, оставшихся в localStorage после разработки."
     }
   ],
   "codeExample": "// storage.js\nexport function loadTasks() {\n  const raw = localStorage.getItem(\"todo\");\n  return raw ? JSON.parse(raw) : [];\n}\nexport function saveTasks(tasks) {\n  localStorage.setItem(\"todo\", JSON.stringify(tasks));\n}\n\n// main.js\nimport { loadTasks, saveTasks } from \"./storage.js\";\n\nconst form = document.querySelector(\"#form\");\nconst input = document.querySelector(\"#title\");\nconst list = document.querySelector(\"#list\");\nlet tasks = loadTasks();\n\nfunction render() {\n  list.innerHTML = \"\";\n  for (const task of tasks) {\n    const li = document.createElement(\"li\");\n    li.textContent = task;\n    const btn = document.createElement(\"button\");\n    btn.textContent = \"Удалить\";\n    btn.addEventListener(\"click\", () => {\n      tasks = tasks.filter((item) => item !== task);\n      saveTasks(tasks);\n      render();\n    });\n    li.append(\" \", btn);\n    list.append(li);\n  }\n}\n\nform.addEventListener(\"submit\", (event) => {\n  event.preventDefault();\n  const value = input.value.trim();\n  if (!value) return;\n  tasks.push(value);\n  saveTasks(tasks);\n  input.value = \"\";\n  render();\n});\n\nrender();",

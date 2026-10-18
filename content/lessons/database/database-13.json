@@ -7,24 +7,36 @@
   "goal": "Сделаешь offset и cursor пагинацию с поиском по title и поймёшь, где уместны Redis и Mongo.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Страницы: offset и cursor"
+    },
+    {
       "type": "paragraph",
-      "content": "Offset page/limit прост для UI, но на больших OFFSET Postgres всё равно «пролистывает» строки. Cursor: WHERE created_at < $cursor ORDER BY created_at DESC LIMIT 20 — стабильнее для ленты. Поиск: ILIKE '%node%' или to_tsvector для full-text позже."
+      "content": "Offset-пагинация (page и limit) проста для интерфейса с номерами страниц, но база вынуждена пролистывать пропущенные строки, и запрос на глубокой странице медленный. К тому же, если пока ты читаешь страницу 2, добавили новый пост, элементы сдвигаются и один может повториться. Cursor-пагинация (по последнему виденному значению) работает быстро и стабильно: WHERE created_at < $cursor ORDER BY created_at DESC LIMIT 20. Для детерминированности добавь id вторым ключом сортировки."
     },
     {
       "type": "heading",
-      "content": "Redis"
+      "content": "Поиск"
     },
     {
       "type": "paragraph",
-      "content": "Кэш популярных постов, rate limit counters, session store. Не основное хранилище блога на курсе. TTL ключей — автоматическое устаревание. Hands-on: урок database-15 (Redis в Docker, кэш списка и 429 на login)."
+      "content": "Простой поиск по заголовку: ILIKE '%node%' (регистр не учитывается). Такой запрос с процентом в начале не использует обычный индекс и на больших таблицах медленный. Для серьёзного поиска применяют полнотекстовые возможности PostgreSQL (tsvector и GIN-индекс) или расширение pg_trgm. В Prisma: where: { title: { contains: q, mode: 'insensitive' } }."
     },
     {
       "type": "heading",
-      "content": "MongoDB"
+      "content": "Redis и MongoDB: где уместны"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Redis: кэш популярных ответов, счётчики для лимитов запросов, хранилище сессий; ключи могут сами устаревать по TTL. Основным хранилищем блога он не служит (практика в уроке database-15).",
+        "MongoDB: гибкая схема документов, например комментарии внутри документа поста. Платишь отсутствием JOIN и строгих внешних ключей.",
+        "Для блога со связями пользователей, постов и комментариев Postgres с Prisma подходит лучше."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "Гибкая схема документов, вложенные комментарии в одном doc. Жертвуешь JOIN и строгими FK. Для relational blog Postgres + Prisma логичнее."
+      "content": "Выбирай хранилище по задаче, а не по моде: если сомневаешься, начинай с реляционной базы. Для курсора учитывай, что значение передаётся клиентом и должно быть проверено (zod), а в ответе API хорошо возвращать nextCursor: клиент не должен сам вычислять следующую страницу."
     }
   ],
   "codeExample": "// offset\nconst page = 2, limit = 10;\nconst items = await prisma.post.findMany({\n  skip: (page - 1) * limit,\n  take: limit,\n  where: { title: { contains: q, mode: \"insensitive\" } },\n});\n\n// cursor\nconst items = await prisma.post.findMany({\n  take: 10,\n  cursor: { id: lastId },\n  skip: 1,\n  orderBy: { createdAt: \"desc\" },\n});",
@@ -69,6 +81,68 @@
       "term": "Redis",
       "meaning": "In-memory store для кэша и счётчиков.",
       "example": "SET post:1:views 42 EX 3600"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "database-13-q1",
+      "prompt": "В чём проблема offset-пагинации на больших таблицах?",
+      "options": [
+        "База пролистывает пропущенные строки, запрос замедляется",
+        "Она шифрует данные",
+        "Она не работает",
+        "Она удаляет строки"
+      ],
+      "correctIndex": 0,
+      "explanation": "Cursor быстрее и стабильнее."
+    },
+    {
+      "id": "database-13-q2",
+      "prompt": "Что такое курсор в пагинации?",
+      "options": [
+        "Значение последней увиденной записи для выборки следующих",
+        "Номер страницы",
+        "Транзакция",
+        "Индекс"
+      ],
+      "correctIndex": 0,
+      "explanation": "WHERE created_at < $cursor."
+    },
+    {
+      "id": "database-13-q3",
+      "prompt": "Что делает ILIKE '%node%'?",
+      "options": [
+        "Сортировка",
+        "Точное совпадение",
+        "Поиск без учёта регистра, но без обычного индекса",
+        "Удаление"
+      ],
+      "correctIndex": 2,
+      "explanation": "Для больших таблиц нужен полнотекстовый поиск."
+    },
+    {
+      "id": "database-13-q4",
+      "prompt": "Когда MongoDB может быть уместна?",
+      "options": [
+        "Для строгих связей и финансов",
+        "Когда схема документов гибкая и связей мало",
+        "Всегда",
+        "Никогда"
+      ],
+      "correctIndex": 1,
+      "explanation": "Платишь отсутствием JOIN и строгих внешних ключей."
+    },
+    {
+      "id": "database-13-q5",
+      "prompt": "Что возвращать клиенту при cursor-пагинации?",
+      "options": [
+        "Только номер страницы",
+        "Пароль",
+        "Всю таблицу",
+        "nextCursor"
+      ],
+      "correctIndex": 3,
+      "explanation": "Клиент не вычисляет следующую страницу сам."
     }
   ]
 }

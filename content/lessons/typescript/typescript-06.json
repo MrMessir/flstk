@@ -7,8 +7,12 @@
   "goal": "Напишешь функцию и тип с параметром типа T, чтобы не дублировать код.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Дженерики: параметр типа"
+    },
+    {
       "type": "paragraph",
-      "content": "Generic — параметр типа в угловых скобках: function first<T>(arr: T[]): T | undefined { return arr[0]; }. Один и тот же код работает для string[] и number[], сохраняя связь «элемент массива того же T». TS выводит T из аргумента, но можно указать явно first<number>([1,2])."
+      "content": "Дженерик — тип, который подставляется при использовании. function first<T>(arr: T[]): T | undefined { return arr[0]; } работает со string[] и number[], и при этом сохраняет связь: из массива строк возвращается строка, а не any. T выводится из аргумента автоматически, но можно указать явно: first<number>([1, 2]). Без дженериков пришлось бы писать копии функции или терять типизацию через any."
     },
     {
       "type": "heading",
@@ -16,15 +20,20 @@
     },
     {
       "type": "paragraph",
-      "content": "function len<T extends { length: number }>(x: T): number { return x.length; } принимает строки и массивы, но не числа. keyof T даёт union ключей объекта — основа для типобезопасного pick. Несколько параметров: function pair<A, B>(a: A, b: B): [A, B]."
+      "content": "Иногда нужно, чтобы тип умел определённое: function len<T extends { length: number }>(x: T): number { return x.length; }. Теперь функция принимает строки, массивы и любые объекты с length, но не число. Ключи объекта ограничивают через keyof: function getProp<T, K extends keyof T>(obj: T, key: K): T[K] — опечатка в названии поля ловится при компиляции."
     },
     {
-      "type": "heading",
-      "content": "Generics в React и API"
+      "type": "list",
+      "items": [
+        "Имена параметров: T, U, K для коротких случаев или осмысленные (TItem) для сложных.",
+        "Дженерики бывают у типов: type ApiResponse<T> = { data: T; error?: string }.",
+        "Значение по умолчанию: type Box<T = string>.",
+        "Не добавляй дженерик, если тип используется один раз: достаточно обычного типа."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "useState<number>(0), useRef<HTMLInputElement>(null), Promise<User> — повседневные generics. Обёртка apiGet<T>(url): Promise<T> требует осторожности: без runtime-валидации T — только обещание компилятора. На курсе generics на функциях и type ApiResponse<T> достаточно для 80% задач."
+      "content": "Для React: useState<User | null>(null) задаёт тип состояния. Проверь себя: напиши identity<T>(x: T): T, затем pick двух ключей объекта и убедись, что передача несуществующего ключа даёт ошибку. Если в сигнатуре приходится писать any, подумай, не пропущен ли дженерик. Хороший признак правильного дженерика: тип результата зависит от типа аргумента, например из массива пользователей функция возвращает пользователя, а не «что-то». Дженерики полезны и у классов: class Repository<T> { items: T[] = [] } даёт типизированное хранилище для любой сущности."
     }
   ],
   "codeExample": "function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {\n  const out = {} as Pick<T, K>;\n  for (const k of keys) out[k] = obj[k];\n  return out;\n}\n\nconst user = { id: 1, name: \"Ada\", role: \"admin\" };\nconst lite = pick(user, [\"id\", \"name\"]);\n\nasync function apiGet<T>(url: string): Promise<T> {\n  const res = await fetch(url);\n  return res.json() as Promise<T>;\n}",
@@ -78,6 +87,68 @@
       "term": "inference",
       "meaning": "Вывод T из переданных аргументов.",
       "example": "first([1,2]) → number"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "typescript-06-q1",
+      "prompt": "Зачем нужен дженерик T в first<T>(arr: T[])?",
+      "options": [
+        "Ускорить код",
+        "Скрыть тип",
+        "Создать класс",
+        "Сохранить связь: из массива строк вернётся строка"
+      ],
+      "correctIndex": 3,
+      "explanation": "Не нужны копии функции для каждого типа."
+    },
+    {
+      "id": "typescript-06-q2",
+      "prompt": "Что значит T extends { length: number }?",
+      "options": [
+        "T должен иметь поле length",
+        "T пустой",
+        "T любой",
+        "T только число"
+      ],
+      "correctIndex": 0,
+      "explanation": "Принимает строки, массивы и объекты с length."
+    },
+    {
+      "id": "typescript-06-q3",
+      "prompt": "Что даёт K extends keyof T?",
+      "options": [
+        "Любую строку",
+        "Создаёт ключи",
+        "Удаляет ключи",
+        "Ключ должен существовать в объекте, опечатка ловится"
+      ],
+      "correctIndex": 3,
+      "explanation": "getProp(obj, key) безопасен."
+    },
+    {
+      "id": "typescript-06-q4",
+      "prompt": "Когда дженерик не нужен?",
+      "options": [
+        "Всегда нужен",
+        "Когда тип используется один раз",
+        "Для функций",
+        "Для массивов"
+      ],
+      "correctIndex": 1,
+      "explanation": "Достаточно обычного типа."
+    },
+    {
+      "id": "typescript-06-q5",
+      "prompt": "Как задать тип состояния в React?",
+      "options": [
+        "useState<any>",
+        "useType()",
+        "useState(User)",
+        "useState<User | null>(null)"
+      ],
+      "correctIndex": 3,
+      "explanation": "Дженерик задаёт тип значения."
     }
   ]
 }

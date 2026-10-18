@@ -7,24 +7,37 @@
   "goal": "Вынесешь повторяющуюся логику в useX hook с правилами хуков.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Своя функция с хуками"
+    },
+    {
       "type": "paragraph",
-      "content": "Custom hook — функция useSomething(), внутри которой другие хуки. Она не создаёт новый тип компонента, а переиспользует логику: useLocalStorage, useFetch, useToggle. Имя обязательно с use. Хуки нельзя вызывать в if/циклах — только на верхнем уровне hook или компонента."
+      "content": "Кастомный хук — обычная функция с именем useSomething, внутри которой вызываются другие хуки. Он переиспользует логику, а не разметку: useLocalStorage, useToggle, useFetchJson, useDebouncedValue. Каждый компонент, который вызывает хук, получает собственное состояние: общее состояние хук не создаёт. Это способ убрать копирование useState и useEffect из десяти компонентов."
     },
     {
       "type": "heading",
-      "content": "useLocalStorage пример"
+      "content": "Правила хуков"
     },
     {
-      "type": "paragraph",
-      "content": "function useLocalStorage<T>(key: string, initial: T) { const [value, setValue] = useState(() => read(key) ?? initial); useEffect(() => write(key, value), [key, value]); return [value, setValue] as const; } — синхронизация state и localStorage. Возвращай tuple или объект { data, setData, loading }."
+      "type": "list",
+      "items": [
+        "Хуки вызывают только на верхнем уровне компонента или другого хука: не внутри if, циклов и вложенных функций.",
+        "Хуки вызывают только из компонентов и кастомных хуков.",
+        "Имя кастомного хука начинается с use: по этому префиксу линтер проверяет правила.",
+        "Порядок вызовов хуков должен быть одинаковым при каждой отрисовке: React определяет хуки именно по порядку."
+      ]
     },
     {
       "type": "heading",
-      "content": "Тестируемость"
+      "content": "Пример: useLocalStorage"
     },
     {
       "type": "paragraph",
-      "content": "Логику fetch в useUser(id) проще покрыть тестом через renderHook из @testing-library/react, чем монтировать целый UserCard. Хук не должен знать про конкретную вёрстку — только data/error/reload."
+      "content": "function useLocalStorage<T>(key: string, initial: T) возвращает пару [value, setValue], как useState, но значение читается из localStorage при первом рендере и записывается туда при каждом изменении. Обрабатывай ошибки: JSON.parse может упасть на битой строке, а доступ к хранилищу может быть запрещён настройками браузера. Чтобы вернуть из хука массив с точным типом кортежа, используют as const."
+    },
+    {
+      "type": "paragraph",
+      "content": "useFetchJson(url) возвращает { data, error, loading } и использует эффект с отменой запроса. Следи за форматом ответа: единый вид { data, error, loading } облегчает использование. Для серьёзной работы с сервером берут React Query, но писать свой хук полезно, чтобы понять, что в нём происходит. Проверь свой хук отдельно: он должен работать в двух компонентах независимо, и при смене параметра (url) не показывать данные от предыдущего запроса."
     }
   ],
   "codeExample": "import { useCallback, useEffect, useState } from \"react\";\n\nexport function useFetchJson<T>(url: string) {\n  const [data, setData] = useState<T | null>(null);\n  const [error, setError] = useState<string | null>(null);\n  const [loading, setLoading] = useState(true);\n\n  const reload = useCallback(() => {\n    setLoading(true);\n    setError(null);\n    fetch(url)\n      .then((r) => r.json())\n      .then((json: T) => setData(json))\n      .catch(() => setError(\"Ошибка\"))\n      .finally(() => setLoading(false));\n  }, [url]);\n\n  useEffect(() => {\n    reload();\n  }, [reload]);\n\n  return { data, error, loading, reload };\n}",
@@ -78,6 +91,68 @@
       "term": "reload",
       "meaning": "Повторный запрос данных по действию пользователя.",
       "example": "reload() в useFetch"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-08-q1",
+      "prompt": "Что такое кастомный хук?",
+      "options": [
+        "Файл стилей",
+        "Класс",
+        "Новый тип компонента",
+        "Функция useSomething, внутри которой вызываются другие хуки"
+      ],
+      "correctIndex": 3,
+      "explanation": "Он переиспользует логику, а не разметку."
+    },
+    {
+      "id": "react-08-q2",
+      "prompt": "Где можно вызывать хуки?",
+      "options": [
+        "В любой функции",
+        "На верхнем уровне компонента или другого хука",
+        "Внутри if и циклов",
+        "Внутри обработчиков кликов"
+      ],
+      "correctIndex": 1,
+      "explanation": "Порядок вызовов должен быть одинаков."
+    },
+    {
+      "id": "react-08-q3",
+      "prompt": "Почему имя кастомного хука начинается с use?",
+      "options": [
+        "Так требует браузер",
+        "Для стилей",
+        "Для скорости",
+        "По нему линтер проверяет правила хуков"
+      ],
+      "correctIndex": 3,
+      "explanation": "Это соглашение, на котором работает проверка."
+    },
+    {
+      "id": "react-08-q4",
+      "prompt": "Что получают два компонента, вызывающие один и тот же хук?",
+      "options": [
+        "Каждый своё независимое состояние",
+        "Общее состояние",
+        "Ошибку",
+        "Ничего"
+      ],
+      "correctIndex": 0,
+      "explanation": "Хук не создаёт общее состояние."
+    },
+    {
+      "id": "react-08-q5",
+      "prompt": "Что нужно учесть в useLocalStorage?",
+      "options": [
+        "Только скорость",
+        "JSON.parse может упасть, а доступ к хранилищу может быть запрещён",
+        "Ничего",
+        "Только цвет"
+      ],
+      "correctIndex": 1,
+      "explanation": "Обрабатывай ошибки."
     }
   ]
 }

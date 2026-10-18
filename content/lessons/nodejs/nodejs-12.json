@@ -7,24 +7,41 @@
   "goal": "Подключишь загрузку файлов через multer и поймёшь схему отправки писем из API.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Как приходят файлы"
+    },
+    {
       "type": "paragraph",
-      "content": "multipart/form-data используют для аватаров и вложений: поле file плюс текстовые поля. multer — middleware для Express, кладёт файл в req.file или req.files. Хранить бинарник в PostgreSQL редко нужно: чаще S3-совместимое хранилище или локальная uploads/ с уникальным именем файла."
+      "content": "Файл отправляют формой multipart/form-data: поле file плюс обычные текстовые поля. Express не разбирает такое тело сам, для этого подключают multer: он кладёт файл в req.file (один) или req.files (несколько). Хранить бинарные данные в PostgreSQL бывает нужно редко: обычно файл идёт в S3-совместимое хранилище или в локальную папку uploads/, а в базе остаётся только имя или ссылка."
     },
     {
       "type": "heading",
-      "content": "Безопасность upload"
+      "content": "Безопасность загрузки"
     },
     {
-      "type": "paragraph",
-      "content": "Проверяй mime-type и расширение, лимит размера (limits.fileSize), не доверяй originalname клиента. Отдавай файлы статикой только из безопасной папки или signed URL из облака. Имена — uuid, не user-supplied path."
+      "type": "list",
+      "items": [
+        "Ограничь размер: multer({ limits: { fileSize: 2 * 1024 * 1024 } }) и число файлов.",
+        "Проверяй тип по содержимому (сигнатура файла, пакет file-type), а не по расширению и mimetype из запроса: клиент может прислать что угодно.",
+        "Сохраняй под своим случайным именем: randomUUID() плюс разрешённое расширение. Имя из originalname приводит к перезаписи файлов и обходу путей (../../).",
+        "Не отдавай загруженное как исполняемое: Content-Type из списка разрешённых и заголовок Content-Disposition."
+      ]
     },
     {
       "type": "heading",
-      "content": "Email из бэкенда"
+      "content": "diskStorage и ошибки"
     },
     {
       "type": "paragraph",
-      "content": "SMTP или API (Resend, SendGrid): шаблон письма, ссылка с одноразовым токеном. Отправку ставят в очередь, чтобы не блокировать HTTP-ответ. На курсе достаточно dev-режима: Ethereal или лог «письмо отправлено» с URL."
+      "content": "diskStorage задаёт папку и имя файла. Ошибки multer (слишком большой файл, лишнее поле) приходят как MulterError, их ловит центральный обработчик и превращает в 400 или 413. После сохранения записывай в базу путь и владельца, чтобы проверять права при скачивании."
+    },
+    {
+      "type": "heading",
+      "content": "Письма: схема отправки"
+    },
+    {
+      "type": "paragraph",
+      "content": "Письмо уходит через SMTP или API почтового сервиса (nodemailer, Resend). Отправку не выполняют внутри обработчика: она может быть долгой и упасть, поэтому её ставят в очередь или в фоновую задачу (подробнее в модуле full-stack). На учебном уровне достаточно функции sendMail-заглушки, которая пишет в лог, и понимания схемы: событие, шаблон, отправка, повтор при ошибке."
     }
   ],
   "codeExample": "import multer from \"multer\";\nimport path from \"node:path\";\nimport { randomUUID } from \"node:crypto\";\n\nconst storage = multer.diskStorage({\n  destination: \"uploads/\",\n  filename: (_req, file, cb) => {\n    cb(null, `${randomUUID()}${path.extname(file.originalname)}`);\n  },\n});\n\nconst upload = multer({ storage, limits: { fileSize: 2 * 1024 * 1024 } });\n\napp.post(\"/posts/:id/cover\", upload.single(\"cover\"), (req, res) => {\n  res.json({ filename: req.file?.filename });\n});",
@@ -69,6 +86,68 @@
       "term": "req.file",
       "meaning": "Метаданные одного загруженного файла.",
       "example": "req.file.filename"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-12-q1",
+      "prompt": "Что нужно, чтобы Express принял multipart/form-data?",
+      "options": [
+        "express.json()",
+        "Middleware multer",
+        "morgan",
+        "dotenv"
+      ],
+      "correctIndex": 1,
+      "explanation": "Он кладёт файл в req.file."
+    },
+    {
+      "id": "nodejs-12-q2",
+      "prompt": "Как проверять тип загружаемого файла?",
+      "options": [
+        "Не проверять",
+        "По имени",
+        "По расширению",
+        "По содержимому (сигнатуре), а не по расширению или присланному mimetype"
+      ],
+      "correctIndex": 3,
+      "explanation": "Клиент может прислать любое значение."
+    },
+    {
+      "id": "nodejs-12-q3",
+      "prompt": "Какое имя сохранять?",
+      "options": [
+        "Всегда file",
+        "originalname пользователя",
+        "Своё случайное, например randomUUID()",
+        "Пароль"
+      ],
+      "correctIndex": 2,
+      "explanation": "Иначе возможны перезапись и обход путей."
+    },
+    {
+      "id": "nodejs-12-q4",
+      "prompt": "Что остаётся в базе при хранении файла в S3 или папке?",
+      "options": [
+        "Сам файл целиком",
+        "Имя или ссылка на файл и владелец",
+        "Ничего",
+        "Пароль"
+      ],
+      "correctIndex": 1,
+      "explanation": "Права проверяют по владельцу."
+    },
+    {
+      "id": "nodejs-12-q5",
+      "prompt": "Почему письма отправляют не в обработчике запроса?",
+      "options": [
+        "Письма запрещены",
+        "Отправка может быть долгой или упасть, её ставят в очередь или фон",
+        "Так быстрее базе",
+        "Так требует Express"
+      ],
+      "correctIndex": 1,
+      "explanation": "Иначе пользователь ждёт."
     }
   ]
 }

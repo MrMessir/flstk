@@ -7,24 +7,41 @@
   "goal": "Спроектируешь one-time токены с TTL для reset password и verify email.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Одноразовый токен для письма"
+    },
+    {
       "type": "paragraph",
-      "content": "POST /auth/forgot-password принимает email, всегда отвечает 200 «если аккаунт есть, письмо отправлено». Токен — crypto.randomBytes(32) hex, hash в таблице password_reset_tokens с expiresAt. Ссылка https://app/reset?token=... одноразовая."
+      "content": "Сброс пароля и подтверждение email устроены одинаково: пользователю на почту уходит ссылка с одноразовым токеном, и тот, кто её открыл, доказал владение ящиком. Поэтому токен должен быть случайным и непредсказуемым: crypto.randomBytes(32).toString('hex'). Использовать для этого Math.random нельзя: его значения предсказуемы."
     },
     {
       "type": "heading",
-      "content": "Хранение токена"
+      "content": "Как хранить"
     },
     {
       "type": "paragraph",
-      "content": "В БД hash(token), не plaintext. При POST /auth/reset-password ищи по hash, проверь expiry, обнови passwordHash, delete token row. Email verification — тот же паттерн с флагом user.emailVerified."
+      "content": "В базе хранится не сам токен, а его хеш (sha256 достаточно, пароль-хеш с солью здесь не нужен, потому что токен длинный и случайный), срок expiresAt и привязка к пользователю. Сам токен есть только в письме. Так утечка базы не даёт готовых ссылок для сброса. При использовании токена ищи по хешу, проверяй срок, обновляй passwordHash и сразу удаляй запись (токен одноразовый)."
+    },
+    {
+      "type": "list",
+      "items": [
+        "Срок жизни 15–60 минут для сброса пароля, дольше для подтверждения email.",
+        "После смены пароля отзови все активные сессии и refresh-токены.",
+        "Не логируй сам токен: в журнале пишут событие и хеш email.",
+        "Ссылку из письма не отправляй по HTTP: токен в адресе может осесть в логах прокси, поэтому только HTTPS и короткий срок."
+      ]
     },
     {
       "type": "heading",
-      "content": "TTL и rate limit"
+      "content": "Нейтральный ответ"
     },
     {
       "type": "paragraph",
-      "content": "Reset token 15–60 минут. Не более N запросов forgot в час с IP. Логируй событие без token value."
+      "content": "POST /auth/forgot-password всегда отвечает 200 с текстом «Если такой аккаунт есть, мы отправили письмо». Иначе формой сброса можно проверять, какие email зарегистрированы. Добавь ограничение по частоте (например, не более 5 запросов в час на IP и на email): иначе форма превратится в способ завалить чужой ящик письмами."
+    },
+    {
+      "type": "paragraph",
+      "content": "Для подтверждения email то же самое, плюс флаг user.emailVerified. До подтверждения можно ограничить действия (например, не публиковать посты)."
     }
   ],
   "codeExample": "import { createHash, randomBytes } from \"node:crypto\";\n\nconst raw = randomBytes(32).toString(\"hex\");\nconst tokenHash = createHash(\"sha256\").update(raw).digest(\"hex\");\n\nawait prisma.passwordResetToken.create({\n  data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 3600_000) },\n});\n\nconst link = `${process.env.APP_URL}/reset?token=${raw}`;\nawait mailService.sendPasswordReset(user.email, link);",
@@ -69,6 +86,68 @@
       "term": "emailVerified",
       "meaning": "Флаг подтверждённого email пользователя.",
       "example": "User.emailVerified"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "security-08-q1",
+      "prompt": "Как генерировать токен для сброса пароля?",
+      "options": [
+        "Math.random()",
+        "crypto.randomBytes(32).toString('hex')",
+        "Email пользователя",
+        "Время в миллисекундах"
+      ],
+      "correctIndex": 1,
+      "explanation": "Токен должен быть непредсказуемым."
+    },
+    {
+      "id": "security-08-q2",
+      "prompt": "Что хранить в базе вместо токена?",
+      "options": [
+        "Пароль пользователя",
+        "Сам токен открыто",
+        "Хеш токена и срок expiresAt",
+        "Почту пользователя"
+      ],
+      "correctIndex": 2,
+      "explanation": "Утечка базы не даст рабочих ссылок."
+    },
+    {
+      "id": "security-08-q3",
+      "prompt": "Что нужно сделать после использования токена сброса?",
+      "options": [
+        "Отправить его пользователю",
+        "Оставить для повторного использования",
+        "Продлить срок",
+        "Удалить запись: токен одноразовый"
+      ],
+      "correctIndex": 3,
+      "explanation": "Повторное использование нельзя."
+    },
+    {
+      "id": "security-08-q4",
+      "prompt": "Как отвечать на forgot-password для несуществующего email?",
+      "options": [
+        "Тем же текстом 200, что и для существующего",
+        "Сказать, что такого email нет",
+        "Не отвечать",
+        "Вернуть 404"
+      ],
+      "correctIndex": 0,
+      "explanation": "Иначе можно проверять, кто зарегистрирован."
+    },
+    {
+      "id": "security-08-q5",
+      "prompt": "Что сделать после смены пароля?",
+      "options": [
+        "Отозвать активные сессии и refresh-токены",
+        "Удалить аккаунт",
+        "Выслать пароль письмом",
+        "Ничего"
+      ],
+      "correctIndex": 0,
+      "explanation": "Старые сессии могли быть украдены."
     }
   ]
 }

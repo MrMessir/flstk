@@ -7,24 +7,37 @@
   "goal": "Исправишь strictNullChecks, optional chaining и типовые TS-ошибки в чужом коде.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Строгая проверка null"
+    },
+    {
       "type": "paragraph",
-      "content": "strictNullChecks запрещает присваивать null и undefined туда, где ожидается string или number. Поле email?: string на практике string | undefined — перед вызовом email.toLowerCase() нужна проверка или optional chaining email?.toLowerCase(). Оператор ?? подставляет значение только для null/undefined, не для 0 или ''."
+      "content": "Включённая strictNullChecks запрещает присваивать null и undefined туда, где ожидается string или number. Необязательное поле email?: string на практике имеет тип string | undefined, поэтому email.toLowerCase() вызовет ошибку: нужно проверить значение. Три рабочих способа: условие if (email) { … }, optional chaining email?.toLowerCase() (вернёт undefined, если email нет) и значение по умолчанию через ??."
     },
     {
       "type": "heading",
-      "content": "Частые ошибки TS"
+      "content": "?? против ||"
     },
     {
       "type": "paragraph",
-      "content": "Object is possibly 'undefined' — сузь тип if (user) или optional chain. Type 'string | number' is not assignable — union не сузили. Property does not exist — опечатка или нужен type guard для вложенного JSON. noImplicitAny ругается на параметры без типа — добавь аннотацию или включи вывод из контекста."
+      "content": "Оператор ?? подставляет запасное значение только для null и undefined, а || делает это для любого «ложного» значения. Пример: count || 10 заменит 0 на 10, а count ?? 10 оставит 0. Для чисел, пустых строк и false нужен именно ??."
     },
     {
       "type": "heading",
-      "content": "Non-null assertion и when not to"
+      "content": "Опасные приёмы"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Non-null assertion (!): email! говорит компилятору «поверь, не null». Он ничего не проверяет, и ошибка уйдёт в рантайм. Используй редко и только с уверенностью.",
+        "Приведение as к чужому типу тоже отключает проверку. Сначала подумай о сужении или схеме zod.",
+        "Директива @ts-ignore скрывает любую ошибку; @ts-expect-error лучше: она сама сообщит, если ошибка исчезла.",
+        "Индексный доступ arr[i] может вернуть undefined; опция noUncheckedIndexedAccess помогает это учесть."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "user!.name говорит компилятору «здесь точно не null» — используй только после явной проверки выше или когда DOM-элемент гарантирован разметкой. Лучше if (!el) return; дальше el без !. satisfies operator проверяет, что объект соответствует типу, сохраняя literal types. as const делает объект неизменяемым на уровне типов."
+      "content": "Типичные ошибки новичков: «Object is possibly undefined» (нужна проверка), «Type string is not assignable to type number» (неверное присваивание), «Property does not exist on type» (опечатка или нужно сузить union). Читай сообщение от конца к началу: последняя строка обычно называет точную причину. Практика: возьми функцию с необязательным полем и сделай три версии исправления (if, ?., ??), сравнив их поведение на пустой строке и нуле."
     }
   ],
   "codeExample": "type Profile = { name: string; bio?: string };\n\nfunction headline(p: Profile): string {\n  const bio = p.bio?.trim();\n  return bio ?? `Привет, ${p.name}`;\n}\n\nfunction getInput(): HTMLInputElement | null {\n  return document.querySelector(\"#email\");\n}\n\nfunction readEmail(): string {\n  const el = getInput();\n  if (!el) return \"\";\n  return el.value;\n}",
@@ -78,6 +91,68 @@
       "term": "non-null assertion",
       "meaning": "Постфикс !: обещание компилятору.",
       "example": "el!.focus()"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "typescript-11-q1",
+      "prompt": "Чем ?? отличается от ||?",
+      "options": [
+        "|| только для null",
+        "?? подставляет запасное только для null и undefined, || для любого ложного",
+        "Это одно и то же",
+        "?? для строк"
+      ],
+      "correctIndex": 1,
+      "explanation": "count ?? 10 оставит 0."
+    },
+    {
+      "id": "typescript-11-q2",
+      "prompt": "Что делает optional chaining email?.toLowerCase()?",
+      "options": [
+        "Вернёт undefined, если email нет, и не упадёт",
+        "Всегда вызывает метод",
+        "Бросает ошибку",
+        "Удаляет email"
+      ],
+      "correctIndex": 0,
+      "explanation": "Безопасная цепочка."
+    },
+    {
+      "id": "typescript-11-q3",
+      "prompt": "Чем опасен оператор !?",
+      "options": [
+        "Он замедляет код",
+        "Он удаляет null",
+        "Он ничего не проверяет, ошибка уйдёт в рантайм",
+        "Он улучшает типы"
+      ],
+      "correctIndex": 2,
+      "explanation": "Используй редко."
+    },
+    {
+      "id": "typescript-11-q4",
+      "prompt": "Чем @ts-expect-error лучше @ts-ignore?",
+      "options": [
+        "Он быстрее",
+        "Скрывает все ошибки навсегда",
+        "Сообщит, если ошибка исчезла",
+        "Он новее"
+      ],
+      "correctIndex": 2,
+      "explanation": "Не оставляет мёртвых заглушек."
+    },
+    {
+      "id": "typescript-11-q5",
+      "prompt": "Что делает noUncheckedIndexedAccess?",
+      "options": [
+        "Учитывает, что arr[i] может вернуть undefined",
+        "Удаляет индексы",
+        "Сортирует массивы",
+        "Ускоряет код"
+      ],
+      "correctIndex": 0,
+      "explanation": "Дополнительная строгость."
     }
   ]
 }

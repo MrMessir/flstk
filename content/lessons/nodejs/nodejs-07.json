@@ -7,24 +7,36 @@
   "goal": "Напишешь свой middleware и подключишь HTTP-логер запросов.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Цепочка обработки"
+    },
+    {
       "type": "paragraph",
-      "content": "Middleware — функция (req, res, next). Она может изменить req/res, завершить ответ или вызвать next() для следующего звена. Цепочка идёт в порядке app.use. Ошибки передают в next(err) — их ловит error-handling middleware с четырьмя аргументами (err, req, res, next)."
+      "content": "Middleware — функция (req, res, next). Она может прочитать или изменить запрос и ответ, завершить ответ сама или вызвать next(), передавая управление следующему звену. Цепочка идёт в порядке регистрации app.use: логирование, разбор тела, авторизация, маршруты, обработчик 404, обработчик ошибок. Если забыть вызвать next() и не отправить ответ, запрос зависнет, и клиент будет ждать до таймаута."
+    },
+    {
+      "type": "heading",
+      "content": "Обработка ошибок"
+    },
+    {
+      "type": "paragraph",
+      "content": "Middleware с четырьмя аргументами (err, req, res, next) — специальный обработчик ошибок. Он регистрируется последним. В обычном коде ошибку передают через next(err), и она попадает в него, минуя остальные звенья. Не отправляй подробности ошибки клиенту: stack trace и тексты базы нужны разработчику, пользователю достаточно { error: 'Internal error' } и id запроса."
     },
     {
       "type": "heading",
       "content": "requestId и время ответа"
     },
     {
-      "type": "paragraph",
-      "content": "Для отладки полезно генерировать requestId (crypto.randomUUID) и класть в req.id и заголовок ответа X-Request-Id. Логируй метод, путь, статус и duration ms — так находишь медленные эндпоинты. morgan в режиме 'dev' пишет цветную строку в консоль; в production — JSON в pino."
+      "type": "list",
+      "items": [
+        "Генерируй идентификатор запроса: req.id = randomUUID() и возвращай его в заголовке X-Request-Id. По нему находят в логах всю цепочку одного обращения.",
+        "Для HTTP-логов используй morgan: в разработке формат dev, на проде формат с id и временем.",
+        "Не логируй тела запросов целиком и заголовок Authorization: там пароли и токены."
+      ]
     },
     {
-      "type": "heading",
-      "content": "Где ставить auth-middleware"
-    },
-    {
       "type": "paragraph",
-      "content": "Публичные маршруты (/health, /auth/login) — до проверки токена. Защищённые — router.use(requireAuth) только на /posts и /users. Не дублируй одну и ту же проверку в каждом handler."
+      "content": "Собственный middleware пишется так: (req, res, next) => { req.startedAt = Date.now(); res.on('finish', () => log(…)); next(); }. Событие finish срабатывает, когда ответ отправлен, и в нём удобно посчитать длительность. Порядок критичен: middleware, который читает req.body, должен стоять после express.json(), а обработчик ошибок — после всех маршрутов; если поменять их местами, логика тихо перестанет работать."
     }
   ],
   "codeExample": "import express from \"express\";\nimport morgan from \"morgan\";\nimport { randomUUID } from \"node:crypto\";\n\nconst app = express();\n\napp.use((req, res, next) => {\n  req.id = randomUUID();\n  res.setHeader(\"X-Request-Id\", req.id);\n  next();\n});\n\napp.use(morgan(\":method :url :status :response-time ms\"));\n\napp.get(\"/health\", (_req, res) => res.json({ ok: true }));",
@@ -69,6 +81,68 @@
       "term": "error middleware",
       "meaning": "Обработчик с сигнатурой (err, req, res, next).",
       "example": "app.use((err, req, res, next) => ...)"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-07-q1",
+      "prompt": "Что произойдёт, если middleware не вызвал next() и не отправил ответ?",
+      "options": [
+        "Запрос зависнет",
+        "Express выдаст 404",
+        "Сервер перезапустится",
+        "Ответ уйдёт автоматически"
+      ],
+      "correctIndex": 0,
+      "explanation": "Клиент будет ждать до таймаута."
+    },
+    {
+      "id": "nodejs-07-q2",
+      "prompt": "Чем отличается обработчик ошибок?",
+      "options": [
+        "Он вызывается на каждый запрос",
+        "У него четыре аргумента (err, req, res, next)",
+        "У него один аргумент",
+        "Он регистрируется первым"
+      ],
+      "correctIndex": 1,
+      "explanation": "Регистрируют его последним."
+    },
+    {
+      "id": "nodejs-07-q3",
+      "prompt": "Что нельзя отправлять клиенту в ответе на ошибку 500?",
+      "options": [
+        "Идентификатор запроса",
+        "Stack trace и тексты базы",
+        "Код ошибки",
+        "Короткое сообщение"
+      ],
+      "correctIndex": 1,
+      "explanation": "Подробности остаются в логах."
+    },
+    {
+      "id": "nodejs-07-q4",
+      "prompt": "Зачем requestId?",
+      "options": [
+        "Для шифрования",
+        "Для маршрутов",
+        "По нему находят в логах всю цепочку одного запроса",
+        "Для кэша"
+      ],
+      "correctIndex": 2,
+      "explanation": "Его возвращают и в заголовке X-Request-Id."
+    },
+    {
+      "id": "nodejs-07-q5",
+      "prompt": "Когда срабатывает событие finish у res?",
+      "options": [
+        "Когда ответ полностью отправлен",
+        "Когда пришёл запрос",
+        "Когда упал сервер",
+        "Когда закрыт браузер"
+      ],
+      "correctIndex": 0,
+      "explanation": "В нём считают длительность."
     }
   ]
 }

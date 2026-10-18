@@ -7,24 +7,33 @@
   "goal": "Загрузишь список через TanStack Query с cache, loading и refetch.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Серверное состояние — отдельная вещь"
+    },
+    {
       "type": "paragraph",
-      "content": "Серверное состояние отличается от UI state: его кэшируют, синхронизируют, инвалидируют. TanStack Query (React Query) даёт useQuery({ queryKey: ['posts'], queryFn: fetchPosts }) — loading, error, data, isFetching из коробки. queryKey идентифицирует кэш; смена key — новый запрос."
+      "content": "Данные с сервера отличаются от обычного состояния интерфейса: они живут в другом месте, могут устареть, их нужно загружать, кэшировать, обновлять и согласовывать. Писать это на useEffect и useState каждый раз долго и ошибочно. TanStack Query (React Query) берёт эту работу на себя: useQuery({ queryKey: ['posts'], queryFn: fetchPosts }) возвращает data, error, isLoading и isFetching, а ответы кэширует и переиспользует."
     },
     {
       "type": "heading",
-      "content": "QueryClientProvider"
+      "content": "queryKey и кэш"
     },
     {
       "type": "paragraph",
-      "content": "Обверни App в QueryClientProvider client={queryClient}. staleTime задаёт, как долго данные считаются свежими. refetchOnWindowFocus обновляет при возврате на вкладку. useMutation для POST/DELETE с onSuccess: queryClient.invalidateQueries({ queryKey: ['posts'] })."
+      "content": "queryKey — идентификатор кэша. Запрос с ключом ['posts', userId] для разных userId хранится отдельно; смена ключа запускает новый запрос. Если два компонента запрашивают один ключ, сеть будет использована один раз. staleTime говорит, сколько секунд данные считаются свежими: пока они свежие, повторный запрос не отправляется; после — данные показываются из кэша и обновляются в фоне."
     },
     {
-      "type": "heading",
-      "content": "Когда не React Query"
+      "type": "list",
+      "items": [
+        "QueryClientProvider оборачивает приложение, один QueryClient на всё приложение.",
+        "useMutation выполняет изменения (POST, PATCH, DELETE).",
+        "После успешной мутации вызывай queryClient.invalidateQueries({ queryKey: ['posts'] }), и список обновится.",
+        "isLoading означает первую загрузку без данных, isFetching — любой запрос, в том числе фоновый."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "Один fetch на mount в учебном todo можно оставить в useEffect. Query окупается при списках, пагинации, оптимистичных обновлениях и дедупликации одинаковых запросов. DevTools @tanstack/react-query-devtools показывают cache entries."
+      "content": "Состояния ошибки и загрузки обрабатывай явно: показывай скелетон, текст ошибки и кнопку «Повторить» (refetch). Не копируй data в useState: используй его напрямую, иначе потеряешь обновления. Для разработки подключи React Query Devtools: видно, какие запросы в кэше и в каком состоянии. Типичная ошибка новичка: создавать new QueryClient() внутри компонента, и тогда кэш сбрасывается при каждой отрисовке; клиент создают один раз вне компонента."
     }
   ],
   "codeExample": "import { QueryClient, QueryClientProvider, useQuery } from \"@tanstack/react-query\";\n\nconst client = new QueryClient();\n\nasync function fetchPosts() {\n  const res = await fetch(\"https://jsonplaceholder.typicode.com/posts?_limit=5\");\n  return res.json() as Promise<{ id: number; title: string }[]>;\n}\n\nfunction Posts() {\n  const { data, isLoading, error } = useQuery({ queryKey: [\"posts\"], queryFn: fetchPosts });\n  if (isLoading) return <p>Загрузка…</p>;\n  if (error) return <p role=\"alert\">Ошибка</p>;\n  return (\n    <ul>\n      {data!.map((p) => (\n        <li key={p.id}>{p.title}</li>\n      ))}\n    </ul>\n  );\n}\n\nexport function AppWithQuery() {\n  return (\n    <QueryClientProvider client={client}>\n      <Posts />\n    </QueryClientProvider>\n  );\n}",
@@ -83,36 +92,63 @@
   "quiz": [
     {
       "id": "react-10-q1",
-      "prompt": "Зачем нужен queryKey в useQuery?",
+      "prompt": "Что такое queryKey в React Query?",
       "options": [
-        "Идентифицировать запись в кэше и связать refetch",
-        "Задать CSS-класс списка",
-        "Отключить React Strict Mode",
-        "Заменить ключ в localStorage браузера"
+        "Название файла",
+        "Идентификатор кэша запроса",
+        "Пароль",
+        "Тип компонента"
       ],
-      "correctIndex": 0
+      "correctIndex": 1,
+      "explanation": "Смена ключа запускает новый запрос."
     },
     {
       "id": "react-10-q2",
-      "prompt": "Что делает invalidateQueries после mutation?",
+      "prompt": "Что делает staleTime?",
       "options": [
-        "Помечает кэш устаревшим и запускает refetch",
-        "Удаляет компонент из дерева React",
-        "Очищает всю историю браузера",
-        "Отключает QueryClientProvider"
+        "Удаляет данные",
+        "Ускоряет сервер",
+        "Задаёт порт",
+        "Определяет, сколько данные считаются свежими без повторного запроса"
       ],
-      "correctIndex": 0
+      "correctIndex": 3,
+      "explanation": "После — данные обновляются в фоне."
     },
     {
       "id": "react-10-q3",
-      "prompt": "Когда React Query обычно окупается?",
+      "prompt": "Что нужно после успешной мутации, чтобы список обновился?",
       "options": [
-        "Списки, пагинация, дедупликация и синхронизация серверных данных",
-        "Только для анимаций CSS",
-        "Вместо HTML-семантики",
-        "Только в Internet Explorer"
+        "Ничего",
+        "invalidateQueries с нужным ключом",
+        "Перезагрузить страницу",
+        "Удалить кэш браузера"
       ],
-      "correctIndex": 0
+      "correctIndex": 1,
+      "explanation": "Запрос выполнится заново."
+    },
+    {
+      "id": "react-10-q4",
+      "prompt": "Чем isLoading отличается от isFetching?",
+      "options": [
+        "isLoading только мутации",
+        "Это одно и то же",
+        "isFetching только ошибки",
+        "isLoading — первая загрузка без данных, isFetching — любой запрос, включая фоновый"
+      ],
+      "correctIndex": 3,
+      "explanation": "Фоновое обновление не скрывает уже показанные данные."
+    },
+    {
+      "id": "react-10-q5",
+      "prompt": "Почему не стоит копировать data из useQuery в useState?",
+      "options": [
+        "Это быстрее",
+        "Так нельзя типизировать",
+        "Потеряешь обновления кэша",
+        "Это запрещено"
+      ],
+      "correctIndex": 2,
+      "explanation": "Используй data напрямую."
     }
   ]
 }

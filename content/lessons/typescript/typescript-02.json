@@ -7,24 +7,36 @@
   "goal": "Подберёшь string, number, boolean и unknown вместо any для новых переменных.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Примитивы и массивы"
+    },
+    {
       "type": "paragraph",
-      "content": "Примитивы в TS совпадают с JS: string для текста, number для любых чисел, boolean для true/false. null и undefined — отдельные значения; при strictNullChecks тип string не принимает null без явного string | null. Массив пишут number[] или Array<number>, объект — { name: string; age: number }."
+      "content": "Базовые типы совпадают с JavaScript: string для текста, number для любых чисел (целых и дробных), boolean для true и false. Массив записывают number[] или Array<number>, объект — { name: string; age: number }. Типы часто выводятся сами: const n = 5 уже имеет тип number, аннотацию пишут там, где вывод невозможен или хочется зафиксировать контракт (параметры функций, возвращаемые значения, публичные интерфейсы)."
     },
     {
       "type": "heading",
-      "content": "any и unknown"
+      "content": "null и undefined"
     },
     {
       "type": "paragraph",
-      "content": "any отключает проверку — типы «отпускают» любую операцию, это ломает смысл TS. unknown безопаснее: значение можно присвоить, но перед использованием нужно сузить тип через typeof, проверку in или пользовательский type guard. Для JSON с API сначала unknown, потом валидация, а не сразу any."
+      "content": "При strict тип string не принимает null и undefined. Если значение может отсутствовать, это записывают явно: string | null. Тогда компилятор заставит проверить значение перед использованием. Это убирает целый класс ошибок, связанных с «пустыми» значениями."
     },
     {
       "type": "heading",
-      "content": "Вывод типов"
+      "content": "any против unknown"
+    },
+    {
+      "type": "list",
+      "items": [
+        "any отключает проверку для значения: можно вызвать что угодно, ошибки уедут в рантайм. Он «заразен»: any распространяется по коду.",
+        "unknown означает «тип не известен, сначала проверь»: напрямую использовать значение нельзя, пока не сузишь его (typeof, in, схема zod).",
+        "Данные снаружи (JSON.parse, ответ сервера, ввод пользователя) начинай с unknown, а не с any."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "Если написать const title = \"Курс\", TS выведет тип string без аннотации. let counter = 0 выведет number. Явные аннотации нужны на границах: параметры функций, пустые массивы const items: string[] = [], поля API. as string — type assertion; используй редко, когда ты увереннее компилятора (например, после проверки)."
+      "content": "Пример: let input: unknown = JSON.parse(text); теперь компилятор не позволит написать input.id. Нужно сначала проверить: typeof input === 'object' && input !== null && 'id' in input. Для сложных данных надёжнее схема zod, о ней позже. Кортеж [string, number] фиксирует порядок и длину массива, а литеральный тип 'asc' | 'desc' ограничивает значения конкретным набором. Для неизменяемых констант удобен as const: массив ['a', 'b'] as const получает точные литеральные типы вместо string[]. Не путай типы с рантаймом: проверка typeof в коде работает, а сам тип number в выполняемом коде не существует."
     }
   ],
   "codeExample": "let input: unknown = JSON.parse('{\"id\":1}');\n\nif (typeof input === \"object\" && input !== null && \"id\" in input) {\n  const obj = input as { id: number };\n  console.log(obj.id);\n}\n\nconst tags: string[] = [];\ntags.push(\"ts\");\n\n// const bad: any = 1; bad.foo(); // any не ругается — избегай",
@@ -78,6 +90,68 @@
       "term": "inference",
       "meaning": "Автовывод типа компилятором.",
       "example": "const s = \"a\" // string"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "typescript-02-q1",
+      "prompt": "Чем unknown лучше any?",
+      "options": [
+        "Он ничего не проверяет",
+        "Он разрешает всё",
+        "Требует сузить тип перед использованием значения",
+        "Он быстрее"
+      ],
+      "correctIndex": 2,
+      "explanation": "any отключает проверку и «заражает» код."
+    },
+    {
+      "id": "typescript-02-q2",
+      "prompt": "Как записать, что значение может отсутствовать?",
+      "options": [
+        "any",
+        "string?",
+        "null string",
+        "string | null"
+      ],
+      "correctIndex": 3,
+      "explanation": "При strict компилятор заставит проверить значение."
+    },
+    {
+      "id": "typescript-02-q3",
+      "prompt": "С какого типа начинают работу с данными из JSON.parse?",
+      "options": [
+        "number",
+        "object",
+        "unknown",
+        "any"
+      ],
+      "correctIndex": 2,
+      "explanation": "Данные снаружи нужно проверять."
+    },
+    {
+      "id": "typescript-02-q4",
+      "prompt": "Что фиксирует кортеж [string, number]?",
+      "options": [
+        "Только тип строк",
+        "Ничего",
+        "Только длину",
+        "Порядок и длину массива"
+      ],
+      "correctIndex": 3,
+      "explanation": "Элементы имеют разные типы."
+    },
+    {
+      "id": "typescript-02-q5",
+      "prompt": "Что делает литеральный тип 'asc' | 'desc'?",
+      "options": [
+        "Делает число",
+        "Скрывает поле",
+        "Ограничивает значения конкретным набором",
+        "Разрешает любую строку"
+      ],
+      "correctIndex": 2,
+      "explanation": "Опечатка ловится при компиляции."
     }
   ]
 }

@@ -7,24 +7,37 @@
   "goal": "Сделаешь live search с задержкой запроса и отменой устаревших fetch.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Проблема живого поиска"
+    },
+    {
       "type": "paragraph",
-      "content": "Поиск на каждый keypress бьёт API. Debounce ждёт паузу в вводе: 300 ms после последнего символа — только тогда query. Реализация в useEffect с setTimeout и cleanup clearTimeout. Контролируемый input query + setQuery как в формах."
+      "content": "Если запрос в API уходит на каждое нажатие клавиши, сервер получает десятки лишних запросов, а интерфейс мигает. Debounce ждёт паузу: запрос отправляется, когда пользователь перестал печатать на 300–500 мс. Реализация — кастомный хук useDebouncedValue(value, delay): внутри useEffect с setTimeout, а в функции очистки clearTimeout. Новое нажатие отменяет предыдущий таймер, поэтому значение обновляется только после паузы."
     },
     {
       "type": "heading",
-      "content": "AbortController"
+      "content": "Поле и результаты"
     },
     {
-      "type": "paragraph",
-      "content": "const ac = new AbortController(); fetch(url, { signal: ac.signal }); return () => ac.abort(); — отменяет запрос, если query сменился. Лови AbortError и не показывай как «ошибку сети». React Query делает это в queryFn автоматически при смене key."
+      "type": "list",
+      "items": [
+        "Поле ввода управляемое: query хранится в state, обновляется на каждый символ мгновенно.",
+        "Запрос выполняется по debouncedQuery, а не по query: поле отзывчиво, сервер не перегружен.",
+        "Пустой запрос не отправляй вообще: показывай подсказку.",
+        "Отдельно обрабатывай загрузку, пустой результат («Ничего не найдено») и ошибку."
+      ]
     },
     {
       "type": "heading",
-      "content": "UX поиска"
+      "content": "Отмена устаревших запросов"
     },
     {
       "type": "paragraph",
-      "content": "Показывай loading только если запрос дольше 200 ms (optional). Пустой query — не fetch. Сохраняй результаты при back navigation optional. aria-live=\"polite\" для числа результатов."
+      "content": "Пользователь ввёл «re», затем «react». Запрос по «re» может вернуться позже запроса по «react» и перезаписать правильный результат. Для защиты используют AbortController: в эффекте создают контроллер, передают signal в fetch и вызывают abort() в функции очистки. Тогда старый запрос отменяется, а ошибку AbortError игнорируют, это не сбой. Альтернатива: React Query сам отменяет и кэширует запросы по ключу."
+    },
+    {
+      "type": "paragraph",
+      "content": "Проверь на практике: в DevTools на вкладке Network выбери медленную сеть, быстро набери слово и убедись, что отправляется один запрос, а не по запросу на каждый символ, и что результаты соответствуют последнему тексту. Дополнительно проверь пустую строку, строку из пробелов и очень быстрый набор с последующим стиранием: интерфейс не должен показывать результаты для уже удалённого запроса."
     }
   ],
   "codeExample": "import { useEffect, useState } from \"react\";\n\nexport function useDebouncedValue<T>(value: T, delayMs: number) {\n  const [debounced, setDebounced] = useState(value);\n  useEffect(() => {\n    const id = setTimeout(() => setDebounced(value), delayMs);\n    return () => clearTimeout(id);\n  }, [value, delayMs]);\n  return debounced;\n}\n\nexport function UserSearch() {\n  const [q, setQ] = useState(\"\");\n  const debouncedQ = useDebouncedValue(q, 300);\n  const [hits, setHits] = useState<{ id: number; name: string }[]>([]);\n\n  useEffect(() => {\n    if (!debouncedQ.trim()) {\n      setHits([]);\n      return;\n    }\n    const ac = new AbortController();\n    fetch(`https://jsonplaceholder.typicode.com/users?name_like=${debouncedQ}`, { signal: ac.signal })\n      .then((r) => r.json())\n      .then(setHits)\n      .catch(() => {});\n    return () => ac.abort();\n  }, [debouncedQ]);\n\n  return (\n    <>\n      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder=\"Поиск\" />\n      <ul>{hits.map((u) => <li key={u.id}>{u.name}</li>)}</ul>\n    </>\n  );\n}",
@@ -78,6 +91,68 @@
       "term": "race condition",
       "meaning": "Старый ответ перекрывает новый.",
       "example": "решается abort"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-17-q1",
+      "prompt": "Что делает debounce в поиске?",
+      "options": [
+        "Блокирует поле",
+        "Удаляет результаты",
+        "Отправляет запрос на каждую клавишу",
+        "Отправляет запрос после паузы в наборе, а не на каждую клавишу"
+      ],
+      "correctIndex": 3,
+      "explanation": "Обычно 300–500 мс."
+    },
+    {
+      "id": "react-17-q2",
+      "prompt": "По какому значению выполняют запрос при debounce?",
+      "options": [
+        "По случайному",
+        "По ref",
+        "По query",
+        "По debouncedQuery, а не по query"
+      ],
+      "correctIndex": 3,
+      "explanation": "Поле остаётся отзывчивым."
+    },
+    {
+      "id": "react-17-q3",
+      "prompt": "Для чего AbortController в поиске?",
+      "options": [
+        "Ускоряет сервер",
+        "Отменяет устаревший запрос при новом вводе",
+        "Кэширует",
+        "Шифрует"
+      ],
+      "correctIndex": 1,
+      "explanation": "Иначе старый ответ может перезаписать новый."
+    },
+    {
+      "id": "react-17-q4",
+      "prompt": "Как ведёт себя ошибка AbortError?",
+      "options": [
+        "Логируют как критичную",
+        "Показывают пользователю",
+        "Останавливают приложение",
+        "Её игнорируют: это не сбой"
+      ],
+      "correctIndex": 3,
+      "explanation": "Это штатная отмена."
+    },
+    {
+      "id": "react-17-q5",
+      "prompt": "Что показать при пустой строке поиска?",
+      "options": [
+        "Белый экран",
+        "Все данные",
+        "Ошибку",
+        "Подсказку, запрос не отправлять"
+      ],
+      "correctIndex": 3,
+      "explanation": "Запрос по пустому значению не нужен."
     }
   ]
 }

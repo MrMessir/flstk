@@ -7,24 +7,40 @@
   "goal": "Сделаешь CRUD постов, комментариев и категорий с валидацией, слоями и OpenAPI.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что нужно собрать"
+    },
+    {
       "type": "paragraph",
-      "content": "Итоговый модуль собирает Express-приложение: ресурсы posts, comments, categories, пагинация list через query page/limit, поиск по title (substring). Данные пока in-memory Map или JSON-файл через repository — БД подключишь в модуле database без переписывания routes."
+      "content": "Итог модуля — REST API блога на Express: ресурсы posts, comments и categories, список с пагинацией (page и limit) и поиском по заголовку (q). Данные пока лежат в памяти (Map) или в JSON-файле, но доступ к ним идёт только через repository, поэтому в модуле про базы данных ты подключишь PostgreSQL, не переписывая маршруты и сервисы."
     },
     {
       "type": "heading",
-      "content": "Критерии готовности"
+      "content": "Обязательный минимум"
     },
     {
-      "type": "paragraph",
-      "content": "Минимум: zod на create/update, AppError + error middleware, morgan или pino, структура routes/services/repositories, docs/openapi.yaml синхронизирован с реальными путями, Postman-коллекция в docs/postman/."
+      "type": "list",
+      "items": [
+        "CRUD всех трёх ресурсов с понятными кодами ответа (201, 204, 400, 404, 409).",
+        "Валидация zod на создание и обновление, лишние поля отклоняются.",
+        "Центральный обработчик ошибок и класс AppError; ошибки не раскрывают внутренности.",
+        "Слои routes, services, repositories; в маршрутах нет бизнес-логики.",
+        "Конфигурация через .env, в репозитории только .env.example.",
+        "Логи pino с reqId и скрытием секретных полей.",
+        "Файл openapi.yaml и коллекция Postman с проверками."
+      ]
     },
     {
       "type": "heading",
-      "content": "README и запуск"
+      "content": "Как проверить себя"
     },
     {
       "type": "paragraph",
-      "content": "README: npm install, npm run dev, переменные .env.example, таблица эндпоинтов, скрин Postman или curl. Осознанно отложи: OAuth, загрузка файлов в S3, rate limit — перечисли в разделе «Out of scope»."
+      "content": "Запусти коллекцию Postman целиком на чистом запуске сервера: все проверки зелёные. Отправь заведомо плохие данные в каждый POST: сервер отвечает 400 и не падает. Попробуй получить несуществующий id: 404 с понятным сообщением. Убедись, что список возвращает { items, page, limit, total } и не отдаёт тысячи записей без лимита."
+    },
+    {
+      "type": "paragraph",
+      "content": "В README опиши: как запустить, какие эндпоинты есть (или ссылка на /docs), как запустить проверки. Типичные причины отказа при сдаче: req.body без проверки, ошибки наружу в виде стека, пароли и ключи в репозитории, бизнес-логика прямо в обработчиках. Заведи небольшой набор данных для проверки (seed) и держи его в репозитории, чтобы проверяющий мог получить рабочее состояние за минуту."
     }
   ],
   "codeExample": "GET /posts?page=1&limit=20&q=node\n→ 200 { items, page, limit, total }\n\nPOST /posts\nBody: { \"title\", \"body\", \"categoryIds\": [] }\n→ 201 Post\n\nGET /posts/:id/comments\n→ 200 { items: Comment[] }",

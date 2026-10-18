@@ -8,30 +8,32 @@
   "theory": [
     {
       "type": "heading",
-      "content": "Промис — результат потом"
+      "content": "Обещание результата"
     },
     {
       "type": "paragraph",
-      "content": "Промис — объект «обещание результата». Он pending, затем fulfilled или rejected. then обрабатывает успех, catch — ошибку. Цепочки then читаются проще вложенных колбэков."
+      "content": "Промис — объект, который представляет результат операции, ещё не завершённой. У него три состояния: pending (ожидание), fulfilled (успех) и rejected (ошибка). then обрабатывает успех, catch — ошибку, finally выполняется в любом случае. Цепочки then читаются проще вложенных колбэков: каждый then получает результат предыдущего и может вернуть новое значение или новый промис."
     },
     {
-      "type": "paragraph",
-      "content": "Не оставляй rejected без catch: в Console будет Unhandled Promise Rejection. На курсе дальше перейдёшь к async/await — это тот же промис, но удобнее читать."
-    },
-    {
-      "type": "paragraph",
-      "content": "Promise — обещание результата в будущем. Состояния: pending (ждём), fulfilled (успех), rejected (ошибка)."
+      "type": "heading",
+      "content": "Создание и комбинирование"
     },
     {
       "type": "list",
       "items": [
-        "new Promise((resolve, reject) => { ... })",
-        "then — что делать с успешным результатом.",
-        "catch — что делать с ошибкой.",
-        "finally — в любом случае.",
-        "Promise.all — ждать все. Promise.race — кто первый.",
-        "Promise.allSettled — дождаться всех, даже с ошибками."
+        "new Promise((resolve, reject) => { … }): вызов resolve(value) завершает успешно, reject(error) — с ошибкой.",
+        "Promise.all([...]) ждёт все промисы и падает, если упал любой; результат — массив значений в том же порядке.",
+        "Promise.allSettled ждёт все и сообщает результат каждого, даже ошибочного.",
+        "Promise.race возвращает первый завершившийся; удобен для таймаута."
       ]
+    },
+    {
+      "type": "heading",
+      "content": "Ошибки"
+    },
+    {
+      "type": "paragraph",
+      "content": "Ошибка внутри цепочки пролетает мимо then до ближайшего catch. Не оставляй отклонённые промисы без catch: в консоли появится Unhandled Promise Rejection, а в Node такое событие может завершить процесс. Не забывай возвращать значение из then: если вернуть ничего, следующий then получит undefined. Не вкладывай then в then без причины, превращая цепочку в «лесенку». Пример для тренировки: функция wait(ms, value), которая возвращает промис, выполняющийся через ms миллисекунд; соедини три вызова цепочкой, затем выполни их параллельно через Promise.all и сравни время. Дальше ты перейдёшь к async/await: он написан поверх тех же промисов, и если понимаешь промисы, он станет простым. Проверь и ошибку: пусть один из промисов завершится через reject, и убедись, что catch перехватил её, а следующие then не выполнились."
     }
   ],
   "codeExample": "function wait(ms, value) {\n  return new Promise((resolve) => {\n    setTimeout(() => resolve(value), ms);\n  });\n}\n\nwait(500, \"один\")\n  .then((value) => {\n    console.log(value);\n    return wait(500, \"два\");\n  })\n  .then((value) => console.log(value))\n  .catch((error) => console.error(error));\n\nPromise.all([wait(300, 1), wait(500, 2)]).then((values) => {\n  console.log(values); // [1, 2]\n});",
@@ -80,6 +82,68 @@
       "term": "Promise.all",
       "meaning": "Дождаться нескольких промисов сразу.",
       "example": "Promise.all([p1, p2])"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "js-17-q1",
+      "prompt": "Какие состояния у промиса?",
+      "options": [
+        "sync, async",
+        "open, closed",
+        "start, run, stop",
+        "pending, fulfilled, rejected"
+      ],
+      "correctIndex": 3,
+      "explanation": "Ожидание, успех, ошибка."
+    },
+    {
+      "id": "js-17-q2",
+      "prompt": "Что делает Promise.all?",
+      "options": [
+        "Запускает последовательно",
+        "Игнорирует ошибки",
+        "Ждёт только первый",
+        "Ждёт все промисы и падает, если упал любой"
+      ],
+      "correctIndex": 3,
+      "explanation": "Результат — массив значений."
+    },
+    {
+      "id": "js-17-q3",
+      "prompt": "Что делает Promise.allSettled?",
+      "options": [
+        "Ждёт все и сообщает результат каждого, даже ошибочного",
+        "Берёт самый быстрый",
+        "Отменяет промисы",
+        "Падает при первой ошибке"
+      ],
+      "correctIndex": 0,
+      "explanation": "Удобно, когда нужен результат по каждому."
+    },
+    {
+      "id": "js-17-q4",
+      "prompt": "Куда попадает ошибка внутри цепочки then?",
+      "options": [
+        "В finally всегда",
+        "В console.log сама",
+        "Теряется",
+        "В ближайший catch"
+      ],
+      "correctIndex": 3,
+      "explanation": "Мимо промежуточных then."
+    },
+    {
+      "id": "js-17-q5",
+      "prompt": "Чем опасен промис без catch?",
+      "options": [
+        "Появится Unhandled Promise Rejection",
+        "Ничем",
+        "Промис завершится успехом",
+        "Ускорится выполнение"
+      ],
+      "correctIndex": 0,
+      "explanation": "В Node процесс может завершиться."
     }
   ]
 }

@@ -7,8 +7,12 @@
   "goal": "Соберёшь одну страницу-резюме только на HTML: шапка, разделы, таблица навыков, картинка и форма.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что нужно собрать"
+    },
+    {
       "type": "paragraph",
-      "content": "Это сборка всего модуля HTML без CSS. Страница может выглядеть просто, но структура должна быть честной: семантика, подписи форм, alt у картинки, один main."
+      "content": "Итог модуля — страница-резюме, написанная только на HTML, без CSS. Она может выглядеть просто, но структура должна быть честной: смысловые теги, подписи у форм, alt у картинки, один main. Это первая работа, которую можно показать: с неё начинается портфолио."
     },
     {
       "type": "heading",
@@ -17,21 +21,25 @@
     {
       "type": "list",
       "items": [
-        "header с именем и nav из 3–4 якорей (#about, #skills, …).",
-        "main с section: «Обо мне», «Навыки», «Опыт» или «Учёба», «Контакты».",
-        "table: колонки «Навык» и «Уровень», caption по желанию.",
-        "figure с img (alt!) и figcaption.",
-        "form: имя, email, textarea, required, method=\"get\" для проверки без сервера.",
-        "footer с годом."
+        "header с именем (h1) и nav из 3–4 якорных ссылок (#about, #skills и т. д.).",
+        "main с несколькими section: «Обо мне», «Навыки», «Опыт» или «Учёба», «Контакты».",
+        "Таблица навыков: колонки «Навык» и «Уровень», заголовки через th, подпись caption.",
+        "Картинка с осмысленным alt и размерами.",
+        "Форма обратной связи: имя, почта, сообщение; подписи связаны с полями, поля обязательные.",
+        "footer с ссылкой на GitHub и почтой."
       ]
     },
     {
       "type": "heading",
-      "content": "Как сдавать"
+      "content": "Чек-лист перед сдачей"
     },
     {
       "type": "paragraph",
-      "content": "Один файл resume.html в репозитории html-resume или в папке курса. Открой двойным щелчком или Live Server. Клик по якорю в nav прокручивает к section. Отправка формы с method=\"get\" покажет поля в query string адреса — так проверяешь name у input."
+      "content": "Проверь: один h1 и заголовки по порядку; один main; все ссылки-якоря работают; у всех полей есть label и name; у картинки есть alt; в head есть title, description и charset; валидатор W3C не показывает ошибок; страница открывается двойным щелчком без интернета (кроме внешних картинок). Пройди страницу только клавишей Tab: всё доступно. Открой её на телефоне или в режиме эмуляции в инструментах разработчика: даже без CSS страница должна читаться и не требовать горизонтальной прокрутки."
+    },
+    {
+      "type": "paragraph",
+      "content": "Залей работу на GitHub и добавь README с описанием и ссылкой на страницу (GitHub Pages можно включить бесплатно). Типичные причины замечаний: несколько h1, поля без label, alt вроде «картинка», div вместо button, незакрытые теги и пропущенный charset. Попроси знакомого открыть страницу по ссылке без твоих пояснений: если ему понятно, чьё это резюме и как связаться, ты справился."
     }
   ],
   "codeExample": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Резюме — Аня</title>\n</head>\n<body>\n  <header>\n    <h1>Аня Ковалева</h1>\n    <nav>\n      <a href=\"#about\">Обо мне</a>\n      <a href=\"#skills\">Навыки</a>\n      <a href=\"#contact\">Контакты</a>\n    </nav>\n  </header>\n  <main>\n    <section id=\"about\">\n      <h2>Обо мне</h2>\n      <p>Учусь fullstack с нуля.</p>\n      <figure>\n        <img src=\"https://placehold.co/240x240/png\" alt=\"Портрет-заглушка\" width=\"240\" height=\"240\" />\n        <figcaption>Учебное фото.</figcaption>\n      </figure>\n    </section>\n    <section id=\"skills\">\n      <h2>Навыки</h2>\n      <table>\n        <caption>Стек</caption>\n        <thead><tr><th>Навык</th><th>Уровень</th></tr></thead>\n        <tbody>\n          <tr><td>HTML</td><td>уверенно</td></tr>\n        </tbody>\n      </table>\n    </section>\n    <section id=\"contact\">\n      <h2>Написать</h2>\n      <form method=\"get\">\n        <p><label for=\"name\">Имя</label><br /><input id=\"name\" name=\"name\" required /></p>\n        <p><label for=\"email\">Почта</label><br /><input id=\"email\" name=\"email\" type=\"email\" required /></p>\n        <p><label for=\"msg\">Сообщение</label><br /><textarea id=\"msg\" name=\"msg\" required minlength=\"10\"></textarea></p>\n        <button type=\"submit\">Отправить</button>\n      </form>\n    </section>\n  </main>\n  <footer><p>2026</p></footer>\n</body>\n</html>",

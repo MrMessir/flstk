@@ -7,24 +7,37 @@
   "goal": "Проверишь 5–6 эндпоинтов блога коллекцией Postman с переменными окружения.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Зачем коллекция запросов"
+    },
+    {
       "type": "paragraph",
-      "content": "Ручной curl на каждый релиз утомляет. Postman Environment хранит baseUrl и token — меняешь localhost на staging одним кликом. Collection Runner прогоняет цепочку: login → сохранить accessToken → создать пост → получить по id. Tests на вкладке Tests (pm.response.to.have.status(201)) ловят регрессии."
+      "content": "Проверять API командами curl вручную перед каждым релизом утомительно и непостоянно. Коллекция Postman хранит запросы, переменные и проверки, и её можно прогнать целиком. Заведи Environment с переменными baseUrl и token: смена localhost на staging происходит одним переключением, а в запросах пишешь {{baseUrl}}/posts. Отдельное окружение для staging с другими адресами и тестовыми данными защищает от случайных запросов в боевую систему."
     },
     {
       "type": "heading",
-      "content": "Порядок сценария"
+      "content": "Цепочка сценария"
     },
     {
-      "type": "paragraph",
-      "content": "Сначала health, потом CRUD posts, затем негативные кейсы (404, 400 validation). Сохраняй postId из ответа POST в переменную коллекции: const json = pm.response.json(); pm.collectionVariables.set('postId', json.id)."
+      "type": "list",
+      "items": [
+        "Сначала health, затем регистрация и вход.",
+        "В скрипте Tests после входа сохрани токен: pm.environment.set('accessToken', pm.response.json().token).",
+        "Далее создание поста, получение по id, обновление, удаление и проверка, что после удаления приходит 404.",
+        "Collection Runner прогоняет всю цепочку по порядку."
+      ]
     },
     {
       "type": "heading",
-      "content": "Экспорт коллекции"
+      "content": "Проверки"
     },
     {
       "type": "paragraph",
-      "content": "Export collection v2.1 в репозиторий docs/postman/blog-api.json — ревьюер и CI (newman) смогут повторить прогон. Не клади реальные пароли: используй {{testPassword}} из env example."
+      "content": "На вкладке Tests пиши утверждения: pm.test('created', () => { pm.response.to.have.status(201); const body = pm.response.json(); pm.expect(body.id).to.be.a('string'); }). Проверяй не только успех, но и негативные случаи: без токена 401, чужой пост 403, невалидное тело 400. Такие проверки ловят регрессии, когда правишь код."
+    },
+    {
+      "type": "paragraph",
+      "content": "Коллекцию экспортируй в репозиторий (docs/postman), а файл Environment храни без секретов: токены и пароли не коммитят. В CI коллекцию можно запускать утилитой newman после старта сервера. Тогда ручная проверка превращается в автоматическую, и это уже шаг к интеграционным тестам. Держи в коллекции папки по ресурсам и пометки, какие запросы требуют токен: так сценарии читаются, а новый разработчик быстро находит нужный запрос."
     }
   ],
   "codeExample": "// Postman Tests (POST /posts)\npm.test(\"created\", () => {\n  pm.response.to.have.status(201);\n  const body = pm.response.json();\n  pm.expect(body.title).to.eql(\"Draft\");\n  pm.collectionVariables.set(\"postId\", body.id);\n});",
@@ -69,6 +82,68 @@
       "term": "newman",
       "meaning": "CLI для запуска Postman-коллекций в CI.",
       "example": "newman run collection.json"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-14-q1",
+      "prompt": "Зачем Postman Environment?",
+      "options": [
+        "Для базы",
+        "Переменные baseUrl и token позволяют менять адрес одним переключением",
+        "Для кэша",
+        "Для шифрования"
+      ],
+      "correctIndex": 1,
+      "explanation": "В запросах пишут {{baseUrl}}."
+    },
+    {
+      "id": "nodejs-14-q2",
+      "prompt": "Как сохранить токен после входа?",
+      "options": [
+        "Записать вручную",
+        "Не сохранять",
+        "Скопировать в README",
+        "pm.environment.set в скрипте Tests"
+      ],
+      "correctIndex": 3,
+      "explanation": "Следующие запросы подставляют {{accessToken}}."
+    },
+    {
+      "id": "nodejs-14-q3",
+      "prompt": "Что полезно проверять, кроме успешных ответов?",
+      "options": [
+        "Только 200",
+        "Размер заголовков",
+        "Цвет ответа",
+        "Негативные случаи: без токена 401, чужой пост 403, невалидное тело 400"
+      ],
+      "correctIndex": 3,
+      "explanation": "Они ловят регрессии."
+    },
+    {
+      "id": "nodejs-14-q4",
+      "prompt": "Что нельзя коммитить из экспорта Postman?",
+      "options": [
+        "Описание",
+        "Названия запросов",
+        "Коллекцию запросов",
+        "Секреты: токены и пароли в Environment"
+      ],
+      "correctIndex": 3,
+      "explanation": "Environment хранят без секретов."
+    },
+    {
+      "id": "nodejs-14-q5",
+      "prompt": "Для чего newman?",
+      "options": [
+        "Для запуска коллекции Postman из командной строки и CI",
+        "Для логов",
+        "Для базы",
+        "Для вёрстки"
+      ],
+      "correctIndex": 0,
+      "explanation": "Ручная проверка становится автоматической."
     }
   ]
 }

@@ -7,24 +7,37 @@
   "goal": "Разобьёшь экран на компоненты и передашь данные через props только вниз.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Props: данные вниз"
+    },
+    {
       "type": "paragraph",
-      "content": "Props — read-only аргументы компонента: function Avatar({ name, size }: { name: string; size?: number }). Родитель решает, что показать; ребёнок не меняет props напрямую. Композиция: вместо prop type=\"primary\" иногда передают children или slot-компонент Button внутри Card."
+      "content": "Props — аргументы компонента, которые передаёт родитель: <Avatar name=\"Аня\" size={48} />. Внутри компонента они только для чтения: изменять props напрямую нельзя. Родитель решает, что показывать, а потомок отображает. Так данные текут сверху вниз в одном направлении, и по дереву легко понять, откуда взялось значение. В TypeScript props описывают типом: function Avatar({ name, size = 32 }: { name: string; size?: number })."
     },
     {
       "type": "heading",
-      "content": "Декомпозиция"
+      "content": "Композиция и children"
     },
     {
       "type": "paragraph",
-      "content": "Один файл — один ответственный компонент: ProductCard, Price, Badge. App.tsx только собирает layout и передаёт данные. Имена компонентов с большой буквы, файлы PascalCase.tsx. Default export vs named — в курсе предпочитаем named export для рефакторинга и поиска."
+      "content": "Вместо десятка флагов в одном компоненте (variant, hasIcon, hasFooter) передают содержимое: prop children принимает всё, что вложено между тегами. <Card><h3>Заголовок</h3><Button>Купить</Button></Card> гибче, чем Card с кучей настроек. Тип для children в TypeScript — ReactNode. Когда нужно несколько «слотов», передают их отдельными props: header и footer."
     },
     {
       "type": "heading",
-      "content": "PropsWithChildren"
+      "content": "Декомпозиция экрана"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Один компонент отвечает за одно: ProductCard показывает карточку, ProductList строит список из карточек.",
+        "Если компонент разросся больше 150 строк или в нём три независимые части, выдели их.",
+        "Данные передавай только вниз; чтобы потомок сообщил родителю о событии, родитель передаёт функцию: onAdd={() => addToCart(product.id)}.",
+        "Не копируй props в state без причины: получится два источника правды."
+      ]
     },
     {
       "type": "paragraph",
-      "content": "type CardProps = { title: string; children: React.ReactNode }. Layout оборачивает контент: <Card title=\"Итого\">{children}</Card>. spread props осторожно: {...rest} на нативный button — ок для aria; на кастомный компонент — только если тип явно разрешает."
+      "content": "Запрет мутации props проверь экспериментом: попробуй изменить props.items.push(...) и увидишь, что состояние родителя ломается, а интерфейс не обновляется. Правильный путь: родитель создаёт новое значение и передаёт его заново. Для каждого компонента полезно спросить себя: что он получает на вход и что показывает на выходе, а если это не ясно с первого взгляда, компонент, скорее всего, делает слишком много."
     }
   ],
   "codeExample": "type ProductCardProps = {\n  title: string;\n  price: number;\n  onAdd: () => void;\n};\n\nexport function ProductCard({ title, price, onAdd }: ProductCardProps) {\n  return (\n    <article>\n      <h2>{title}</h2>\n      <p>{price} ₽</p>\n      <button type=\"button\" onClick={onAdd}>В корзину</button>\n    </article>\n  );\n}",
@@ -78,6 +91,68 @@
       "term": "ReactNode",
       "meaning": "Тип «что угодно renderable».",
       "example": "string | JSX | null"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-03-q1",
+      "prompt": "Можно ли изменять props внутри компонента?",
+      "options": [
+        "Только объекты",
+        "Нет, props только для чтения",
+        "Только строки",
+        "Да, всегда"
+      ],
+      "correctIndex": 1,
+      "explanation": "Родитель передаёт новое значение."
+    },
+    {
+      "id": "react-03-q2",
+      "prompt": "Для чего нужен prop children?",
+      "options": [
+        "Описывает стили",
+        "Принимает содержимое, вложенное между тегами компонента",
+        "Выполняет запросы",
+        "Хранит состояние"
+      ],
+      "correctIndex": 1,
+      "explanation": "Композиция гибче, чем десяток флагов."
+    },
+    {
+      "id": "react-03-q3",
+      "prompt": "Как потомок сообщает родителю о событии?",
+      "options": [
+        "Никак",
+        "Изменяет props родителя",
+        "Родитель передаёт функцию в props, потомок её вызывает",
+        "Через глобальную переменную"
+      ],
+      "correctIndex": 2,
+      "explanation": "Данные текут вниз, события вверх через колбэки."
+    },
+    {
+      "id": "react-03-q4",
+      "prompt": "Какой тип в TypeScript у children?",
+      "options": [
+        "Element[]",
+        "string",
+        "any",
+        "ReactNode"
+      ],
+      "correctIndex": 3,
+      "explanation": "ReactNode включает строки, элементы и массивы."
+    },
+    {
+      "id": "react-03-q5",
+      "prompt": "Почему не стоит копировать props в state без причины?",
+      "options": [
+        "Получится два источника правды",
+        "Так нельзя вызывать хуки",
+        "Это быстрее",
+        "Это запрещено"
+      ],
+      "correctIndex": 0,
+      "explanation": "Они могут разойтись."
     }
   ]
 }

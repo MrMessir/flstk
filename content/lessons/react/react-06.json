@@ -7,24 +7,37 @@
   "goal": "Загрузишь данные при монтировании и отменишь подписку в cleanup.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что делает useEffect"
+    },
+    {
       "type": "paragraph",
-      "content": "useEffect(() => { ... }, [deps]) выполняется после отрисовки. Пустой deps [] — один раз при mount (и cleanup при unmount). С deps [userId] — при смене userId эффект перезапускается: сначала cleanup прошлого запуска, потом новый effect. Без deps эффект после каждого render — почти никогда не нужно."
+      "content": "Эффект — код, который нужно выполнить после отрисовки: загрузка данных, подписка на событие, изменение document.title, таймер. useEffect(() => { ... }, [deps]) запускается после того, как компонент отрисован, а массив зависимостей говорит, когда его повторять. Пустой массив [] — один раз при появлении компонента. [userId] — при каждой смене userId. Без массива — после каждой отрисовки, это почти всегда ошибка."
     },
     {
       "type": "heading",
-      "content": "Fetch в effect"
+      "content": "Очистка"
     },
     {
       "type": "paragraph",
-      "content": "let ignore = false; fetch(...).then(data => { if (!ignore) setData(data); }); return () => { ignore = true; } — защита от гонки, когда id сменился быстрее ответа. Альтернатива — AbortController signal. loading и error state рядом с data."
+      "content": "Из эффекта можно вернуть функцию очистки: она вызывается перед следующим запуском эффекта и при удалении компонента. В ней отписываются от событий, очищают таймеры (clearTimeout) и отменяют запросы. Без очистки получаешь утечки памяти и странные ошибки: компонент уже исчез, а подписка продолжает работать."
     },
     {
       "type": "heading",
-      "content": "Cleanup"
+      "content": "Загрузка данных и гонка запросов"
     },
     {
       "type": "paragraph",
-      "content": "return () => clearInterval(id), removeEventListener, socket.close(). Cleanup перед следующим effect и при размонтировании. document.title = ... в effect синхронизирует вкладку с route. Не клади весь бизнес-fetch без deps в App — только осознанные зависимости."
+      "content": "Пользователь быстро переключает userId с 1 на 2: сначала уходит запрос 1, затем 2, но ответ 1 может прийти позже и перезаписать данные. Это состояние гонки (race condition). Защита: флаг let ignore = false в эффекте, который выставляется в true при очистке, или AbortController, отменяющий старый fetch: const ac = new AbortController(); fetch(url, { signal: ac.signal }); return () => ac.abort()."
+    },
+    {
+      "type": "list",
+      "items": [
+        "В зависимости попадают все значения из компонента, которые использует эффект.",
+        "В режиме разработки React намеренно запускает эффект дважды, чтобы выявить отсутствие очистки; на проде этого нет.",
+        "Не обновляй state в эффекте только для вычисления значения: вычисли его прямо в теле компонента.",
+        "Для данных с сервера в больших проектах используют React Query, а не ручные эффекты."
+      ]
     }
   ],
   "codeExample": "import { useEffect, useState } from \"react\";\n\nexport function UserCard({ userId }: { userId: string }) {\n  const [user, setUser] = useState<{ name: string } | null>(null);\n  const [error, setError] = useState<string | null>(null);\n\n  useEffect(() => {\n    let ignore = false;\n    setUser(null);\n    setError(null);\n    fetch(`https://jsonplaceholder.typicode.com/users/${userId}`)\n      .then((r) => r.json())\n      .then((data) => {\n        if (!ignore) setUser({ name: data.name });\n      })\n      .catch(() => {\n        if (!ignore) setError(\"Ошибка сети\");\n      });\n    return () => {\n      ignore = true;\n    };\n  }, [userId]);\n\n  if (error) return <p role=\"alert\">{error}</p>;\n  if (!user) return <p>Загрузка…</p>;\n  return <p>{user.name}</p>;\n}",
@@ -78,6 +91,68 @@
       "term": "race condition",
       "meaning": "Старый ответ перезаписывает новый запрос.",
       "example": "ignore / abort"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "react-06-q1",
+      "prompt": "Когда выполняется useEffect с пустым массивом зависимостей?",
+      "options": [
+        "Никогда",
+        "Один раз при появлении компонента",
+        "После каждой отрисовки",
+        "При каждом клике"
+      ],
+      "correctIndex": 1,
+      "explanation": "Очистка вызывается при удалении."
+    },
+    {
+      "id": "react-06-q2",
+      "prompt": "Для чего возвращают функцию из useEffect?",
+      "options": [
+        "Для стилей",
+        "Для маршрутов",
+        "Для рендера",
+        "Для очистки: отписки, таймеры, отмена запросов"
+      ],
+      "correctIndex": 3,
+      "explanation": "Она вызывается перед следующим запуском и при удалении."
+    },
+    {
+      "id": "react-06-q3",
+      "prompt": "Что такое гонка запросов (race condition)?",
+      "options": [
+        "Запросы идут слишком быстро",
+        "Браузер блокирует fetch",
+        "Сервер отвечает ошибкой",
+        "Старый ответ приходит позже нового и перезаписывает данные"
+      ],
+      "correctIndex": 3,
+      "explanation": "Защита: AbortController или флаг ignore."
+    },
+    {
+      "id": "react-06-q4",
+      "prompt": "Почему в режиме разработки эффект запускается дважды?",
+      "options": [
+        "React намеренно проверяет, что очистка написана правильно",
+        "Это ошибка",
+        "Так нужно кэшу",
+        "Так работает прод"
+      ],
+      "correctIndex": 0,
+      "explanation": "На проде такого нет."
+    },
+    {
+      "id": "react-06-q5",
+      "prompt": "Что значит эффект без массива зависимостей?",
+      "options": [
+        "Он запускается после каждой отрисовки",
+        "Только при ошибке",
+        "Один раз",
+        "Никогда"
+      ],
+      "correctIndex": 0,
+      "explanation": "Почти всегда это ошибка."
     }
   ]
 }

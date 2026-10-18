@@ -7,24 +7,41 @@
   "goal": "Настроишь httpOnly session cookie с secure и sameSite для SPA на том же site.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Как работает сессия"
+    },
+    {
       "type": "paragraph",
-      "content": "Session id — случайный token в cookie, данные сессии на сервере (Redis/PostgreSQL session table). express-session middleware создаёт req.session.userId после login. Cookie флаги: httpOnly (JS не читает), secure (только HTTPS), sameSite=Lax/Strict против CSRF."
+      "content": "При успешном входе сервер создаёт запись сессии (в Redis или таблице PostgreSQL) со случайным идентификатором и отправляет его браузеру в cookie. С каждым следующим запросом браузер сам присылает cookie, сервер находит сессию и узнаёт пользователя. Данные пользователя в браузер не попадают, поэтому сессию можно в любой момент отозвать на сервере. В Express это делает express-session: после login ты пишешь req.session.userId = user.id."
     },
     {
       "type": "heading",
-      "content": "SameSite и cross-origin"
+      "content": "Флаги cookie"
     },
     {
-      "type": "paragraph",
-      "content": "Фронт localhost:5173 и API localhost:3000 — разные origins. Cookie с SameSite=Lax может не ехать на XHR — тогда JWT или same-site proxy. Для cookie API часто SameSite=None; Secure на prod."
+      "type": "list",
+      "items": [
+        "httpOnly: JavaScript страницы не может прочитать cookie, значит XSS не украдёт идентификатор сессии.",
+        "secure: cookie отправляется только по HTTPS (в разработке выключают, на проде обязательно).",
+        "sameSite=Lax или Strict: браузер не добавляет cookie к запросам с чужих сайтов, это основная защита от CSRF.",
+        "Время жизни (maxAge): для обычных приложений 7 дней со скользящим продлением достаточно."
+      ]
     },
     {
       "type": "heading",
-      "content": "Rotation session"
+      "content": "Разные адреса фронтенда и API"
     },
     {
       "type": "paragraph",
-      "content": "regenerate session id после login против fixation. destroy на logout. TTL session 7d sliding optional."
+      "content": "Фронтенд на localhost:5173 и API на localhost:3000 — разные origin, поэтому cookie с SameSite=Lax к XHR может не поехать. Решения: проксировать API через тот же адрес, что и фронтенд (самое простое), либо настроить SameSite=None; Secure для боевых доменов и CORS с credentials. Не придумывай обходы вроде хранения токена в localStorage."
+    },
+    {
+      "type": "heading",
+      "content": "Защита сессии"
+    },
+    {
+      "type": "paragraph",
+      "content": "Фиксация сессии: злоумышленник заранее вручает жертве известный идентификатор, и после её входа получает доступ. Лечится выдачей нового идентификатора сразу после входа (req.session.regenerate). При выходе вызывай req.session.destroy и очищай cookie. SESSION_SECRET длинный, случайный и лежит в окружении, а не в репозитории."
     }
   ],
   "codeExample": "import session from \"express-session\";\n\napp.use(\n  session({\n    name: \"sid\",\n    secret: process.env.SESSION_SECRET,\n    resave: false,\n    saveUninitialized: false,\n    cookie: {\n      httpOnly: true,\n      secure: process.env.NODE_ENV === \"production\",\n      sameSite: \"lax\",\n      maxAge: 7 * 24 * 60 * 60 * 1000,\n    },\n  }),\n);\n\n// login\nreq.session.userId = user.id;",
@@ -69,6 +86,68 @@
       "term": "session fixation",
       "meaning": "Атака подмены session id до login victim.",
       "example": "regenerate после login"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "security-04-q1",
+      "prompt": "Что хранит браузер в cookie сессии?",
+      "options": [
+        "Пароль пользователя",
+        "Весь профиль",
+        "Хеш пароля",
+        "Только случайный идентификатор, данные лежат на сервере"
+      ],
+      "correctIndex": 3,
+      "explanation": "Идентификатор по себе ничего не раскрывает."
+    },
+    {
+      "id": "security-04-q2",
+      "prompt": "Что делает флаг httpOnly?",
+      "options": [
+        "JavaScript страницы не может прочитать cookie",
+        "Включает HTTPS",
+        "Запрещает отправку cookie",
+        "Увеличивает срок жизни"
+      ],
+      "correctIndex": 0,
+      "explanation": "Поэтому XSS не украдёт идентификатор сессии."
+    },
+    {
+      "id": "security-04-q3",
+      "prompt": "Против какой атаки защищает SameSite?",
+      "options": [
+        "CSRF: запросов с чужого сайта",
+        "SQL-инъекций",
+        "Перебора паролей",
+        "DDoS"
+      ],
+      "correctIndex": 0,
+      "explanation": "Браузер не добавляет cookie к запросам с чужих сайтов."
+    },
+    {
+      "id": "security-04-q4",
+      "prompt": "Как защититься от фиксации сессии?",
+      "options": [
+        "Хранить сессию в localStorage",
+        "Отключить cookie",
+        "Выдать новый идентификатор сессии сразу после входа",
+        "Использовать короткий пароль"
+      ],
+      "correctIndex": 2,
+      "explanation": "req.session.regenerate после login."
+    },
+    {
+      "id": "security-04-q5",
+      "prompt": "Что нужно сделать при выходе?",
+      "options": [
+        "Уничтожить сессию на сервере и очистить cookie",
+        "Только перейти на главную",
+        "Ничего",
+        "Удалить пользователя"
+      ],
+      "correctIndex": 0,
+      "explanation": "Иначе сессия остаётся действующей."
     }
   ]
 }

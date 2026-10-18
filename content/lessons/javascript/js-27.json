@@ -7,16 +7,25 @@
   "goal": "Создашь проект на Vite и запустишь линт и форматирование одной командой.",
   "theory": [
     {
+      "type": "heading",
+      "content": "npm и package.json"
+    },
+    {
       "type": "paragraph",
-      "content": "npm — менеджер пакетов Node: npm install lodash ставит зависимость в node_modules и записывает версию в package.json. Скрипты в \"scripts\": { \"dev\": \"vite\" } запускаются как npm run dev. Файл package-lock.json фиксирует точные версии — его коммитят в репозиторий, чтобы у всех сборка была одинаковой."
+      "content": "npm — менеджер пакетов Node: npm install lodash скачивает зависимость в node_modules и записывает версию в package.json. Раздел scripts содержит команды: \"dev\": \"vite\" запускается как npm run dev. Файл package-lock.json фиксирует точные версии, и его коммитят в репозиторий, чтобы у всех сборка была одинаковой. Папку node_modules в репозиторий не добавляют: она восстанавливается командой npm install, а в CI используют npm ci."
     },
     {
       "type": "heading",
-      "content": "Vite в разработке"
+      "content": "Vite"
     },
     {
-      "type": "paragraph",
-      "content": "npm create vite@latest my-app выбирает шаблон (Vanilla, React, TS). Vite поднимает dev-сервер с горячей заменой модулей: правки в main.js сразу видны без полной перезагрузки. npm run build собирает оптимизированные файлы в dist/ для деплоя. Для курса достаточно vanilla или react-ts шаблона — структура src/, index.html в корне, импорты ES modules."
+      "type": "list",
+      "items": [
+        "npm create vite@latest создаёт проект из шаблона (vanilla, react, vue и других).",
+        "npm run dev запускает сервер разработки с мгновенным обновлением страницы при правке файлов.",
+        "npm run build собирает оптимизированную сборку в dist, npm run preview показывает её локально перед выкладкой.",
+        "Файл index.html лежит в корне, а скрипты подключаются как модули."
+      ]
     },
     {
       "type": "heading",
@@ -24,7 +33,7 @@
     },
     {
       "type": "paragraph",
-      "content": "ESLint ищет ошибки и спорные места: неиспользуемые переменные, отсутствие return в ветках, неверное сравнение. Prettier не спорит о стиле — он переформатирует отступы, кавычки и переносы строк. Обычно eslint-config-prettier отключает правила ESLint, которые дублируют Prettier. Команды npx eslint . и npx prettier --write . вешают на npm run lint и npm run format в package.json."
+      "content": "ESLint находит ошибки и подозрительные места без запуска кода: неиспользуемые переменные, опечатки в именах, опасные конструкции. Prettier форматирует код единообразно: отступы, кавычки, переносы, и снимает споры о стиле. Их не путают: ESLint следит за качеством, Prettier за видом, а конфликты правил решает eslint-config-prettier. Скрипты lint и format делают проверку одной командой: npm run lint. Настрой редактор так, чтобы форматирование выполнялось при сохранении. Не отключай правила, чтобы заглушить предупреждение, пока не понял причину. Практика: создай проект на Vite, добавь ESLint и Prettier, намеренно оставь неиспользуемую переменную и убедись, что lint её находит, а затем запусти форматирование на «грязном» файле."
     }
   ],
   "codeExample": "/* package.json фрагмент */\n{\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\",\n    \"lint\": \"eslint src --ext .js\",\n    \"format\": \"prettier --write src\"\n  }\n}",
@@ -78,6 +87,68 @@
       "term": "Prettier",
       "meaning": "Автоформаттер исходников по правилам.",
       "example": "prettier --write ."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "js-27-q1",
+      "prompt": "Что хранит package-lock.json?",
+      "options": [
+        "Точные версии зависимостей",
+        "Историю коммитов",
+        "Пароли",
+        "Исходный код"
+      ],
+      "correctIndex": 0,
+      "explanation": "Его коммитят."
+    },
+    {
+      "id": "js-27-q2",
+      "prompt": "Что делает npm run dev?",
+      "options": [
+        "Публикует пакет",
+        "Запускает скрипт dev из package.json",
+        "Удаляет проект",
+        "Ставит Node"
+      ],
+      "correctIndex": 1,
+      "explanation": "Команды задаются в scripts."
+    },
+    {
+      "id": "js-27-q3",
+      "prompt": "Что делает ESLint?",
+      "options": [
+        "Подсвечивает ошибки и подозрительные места в коде",
+        "Собирает проект",
+        "Запускает сервер",
+        "Форматирует отступы"
+      ],
+      "correctIndex": 0,
+      "explanation": "Prettier форматирует."
+    },
+    {
+      "id": "js-27-q4",
+      "prompt": "Что делает Vite в разработке?",
+      "options": [
+        "Облако",
+        "Быстрый сервер разработки и сборщик",
+        "Тестовый фреймворк",
+        "База данных"
+      ],
+      "correctIndex": 1,
+      "explanation": "npm run build собирает проект."
+    },
+    {
+      "id": "js-27-q5",
+      "prompt": "Почему node_modules не коммитят?",
+      "options": [
+        "Это запрещено GitHub",
+        "Она секретная",
+        "Она пустая",
+        "Папка восстанавливается из lock-файла и очень большая"
+      ],
+      "correctIndex": 3,
+      "explanation": "Хватает package.json и lock."
     }
   ]
 }

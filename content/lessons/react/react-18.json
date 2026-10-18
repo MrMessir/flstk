@@ -7,25 +7,37 @@
   "goal": "Соберёшь App Router с layout, вложенным сегментом и loading.tsx.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Layout и вложенные маршруты"
+    },
+    {
       "type": "paragraph",
-      "content": "В App Router каждый сегмент папки может иметь layout.tsx — общий UI (шапка, сайдбар), который не размонтируется при навигации между дочерними page.tsx. loading.tsx показывает fallback на время серверного рендера сегмента. error.tsx ловит ошибки ниже по дереву. Параллельные маршруты и route groups (папки в скобках) не меняют URL, но помогают организовать layouts."
+      "content": "В App Router у каждого сегмента папки может быть layout.tsx: общий интерфейс (шапка, боковое меню), который не размонтируется при переходах между дочерними страницами. Состояние внутри layout сохраняется, а меняется только содержимое children. Вложенный сегмент app/dashboard/settings/page.tsx получит и свой layout, и родительский: layout-ы вкладываются друг в друга."
     },
     {
       "type": "heading",
-      "content": "Вложенность"
-    },
-    {
-      "type": "paragraph",
-      "content": "app/dashboard/layout.tsx оборачивает app/dashboard/page.tsx и app/dashboard/settings/page.tsx. Ссылки — через next/link, активное состояние можно читать из usePathname в клиентском компоненте. Не клади всё приложение в один «use client»: держи серверные page тонкими, интерактив выноси в листовые компоненты."
+      "content": "loading, error, not-found"
     },
     {
       "type": "list",
       "items": [
-        "layout.tsx — оболочка сегмента.",
-        "page.tsx — UI маршрута.",
-        "loading.tsx — мгновенный skeleton.",
-        "Link prefetch — по умолчанию для видимых ссылок."
+        "loading.tsx показывается, пока сегмент грузит данные на сервере; Next оборачивает страницу в Suspense сам.",
+        "error.tsx ловит ошибки ниже по дереву и должен быть клиентским компонентом ('use client'); он получает функцию reset, чтобы повторить попытку.",
+        "not-found.tsx показывается, когда вызвана notFound() или адрес не найден.",
+        "Группы маршрутов в скобках, например (marketing), группируют папки без влияния на URL."
       ]
+    },
+    {
+      "type": "heading",
+      "content": "Навигация"
+    },
+    {
+      "type": "paragraph",
+      "content": "Для переходов используй компонент Link из next/link: он подгружает следующую страницу заранее (prefetch) и не перезагружает страницу. Для кода есть useRouter из next/navigation (только в клиентском компоненте). Активный пункт меню определяют через usePathname. Динамические сегменты берутся из params: в новых версиях Next они приходят как промис, который нужно ожидать (await params), так что проверяй документацию установленной версии."
+    },
+    {
+      "type": "paragraph",
+      "content": "Практика: создай сегмент dashboard с layout, внутри два дочерних маршрута и loading.tsx. Добавь error.tsx и намеренно выбрось ошибку в одном из дочерних маршрутов: ошибка должна остаться в пределах сегмента, а шапка layout должна остаться на месте. Проверь, что при переходе между ними шапка не мигает, а при медленной загрузке видна заглушка."
     }
   ],
   "codeExample": "// app/dashboard/layout.tsx\nexport default function DashboardLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <div className=\"dashboard\">\n      <aside>Меню</aside>\n      <main>{children}</main>\n    </div>\n  );\n}\n\n// app/dashboard/loading.tsx\nexport default function Loading() {\n  return <p>Загрузка дашборда…</p>;\n}",
@@ -80,25 +92,63 @@
   "quiz": [
     {
       "id": "react-18-q1",
-      "prompt": "Что сохраняется при переходе между дочерними page одного layout?",
+      "prompt": "Что особенного в layout.tsx?",
       "options": [
-        "Состояние и DOM оболочки layout",
-        "Только CSS файлы сайта",
-        "Все cookies удаляются",
-        "Node process перезапускается"
+        "Это страница",
+        "Перезагружается каждый раз",
+        "Работает только на сервере",
+        "Не размонтируется при переходах между дочерними страницами"
       ],
-      "correctIndex": 0
+      "correctIndex": 3,
+      "explanation": "Состояние шапки сохраняется."
     },
     {
       "id": "react-18-q2",
       "prompt": "Для чего loading.tsx?",
       "options": [
-        "Показать fallback, пока сегмент грузится",
-        "Заменить nginx",
-        "Хранить JWT secret",
-        "Отключить TypeScript"
+        "Показывает заглушку, пока сегмент грузится на сервере",
+        "Хранит ошибки",
+        "Задаёт метаданные",
+        "Создаёт API"
       ],
-      "correctIndex": 0
+      "correctIndex": 0,
+      "explanation": "Next оборачивает страницу в Suspense."
+    },
+    {
+      "id": "react-18-q3",
+      "prompt": "Каким должен быть error.tsx?",
+      "options": [
+        "API-маршрутом",
+        "Клиентским компонентом с 'use client'",
+        "Серверным",
+        "Файлом стилей"
+      ],
+      "correctIndex": 1,
+      "explanation": "Получает функцию reset."
+    },
+    {
+      "id": "react-18-q4",
+      "prompt": "Что делает группа маршрутов (marketing)?",
+      "options": [
+        "Группирует папки без влияния на URL",
+        "Скрывает страницы",
+        "Удаляет layout",
+        "Добавляет /marketing в адрес"
+      ],
+      "correctIndex": 0,
+      "explanation": "Скобки не попадают в адрес."
+    },
+    {
+      "id": "react-18-q5",
+      "prompt": "Почему для переходов используют Link из next/link?",
+      "options": [
+        "Он нужен для стилей",
+        "Он шифрует",
+        "Он быстрее базы",
+        "Он подгружает страницу заранее и не перезагружает страницу"
+      ],
+      "correctIndex": 3,
+      "explanation": "Это prefetch."
     }
   ]
 }

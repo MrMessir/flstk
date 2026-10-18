@@ -7,8 +7,25 @@
   "goal": "Типизируешь DTO и ответы API и соберёшь проект через tsc или tsx.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Зачем типы на сервере"
+    },
+    {
       "type": "paragraph",
-      "content": "JavaScript на сервере прощает undefined до продакшена. TypeScript фиксирует форму req.body после zod (z.infer<typeof schema>), возвращаемые типы service и поля модели. tsconfig: module NodeNext, strict true, outDir dist. Запуск: tsx watch src/index.ts в dev, node dist/index.js в prod после tsc."
+      "content": "JavaScript на сервере прощает undefined до продакшена: ошибка «cannot read properties of undefined» обычно всплывает у пользователя. TypeScript проверяет форму данных при компиляции: поля req.body после zod, возвращаемые значения сервисов, модель репозитория. Типы не заменяют проверку данных в рантайме, потому что исчезают после компиляции, поэтому они выводятся из схем zod: type CreatePost = z.infer<typeof createPostSchema>."
+    },
+    {
+      "type": "heading",
+      "content": "tsconfig и запуск"
+    },
+    {
+      "type": "list",
+      "items": [
+        "strict: true включает строгие проверки, без него смысл типов пропадает.",
+        "module: NodeNext и moduleResolution: NodeNext: правильная работа ES-модулей в Node; в импортах между своими файлами указывай расширение .js, даже если файл .ts.",
+        "outDir: dist, rootDir: src: компиляция в отдельную папку.",
+        "Разработка: tsx watch src/index.ts. Прод: tsc, затем node dist/index.js."
+      ]
     },
     {
       "type": "heading",
@@ -16,15 +33,11 @@
     },
     {
       "type": "paragraph",
-      "content": "Пакет @types/express добавляет Request, Response. Расширь Request через declaration merging: interface Request { validated?: CreatePostDto }. Не используй any для res.json — опиши Post или ApiError."
-    },
-    {
-      "type": "heading",
-      "content": "Zod + TypeScript"
+      "content": "Пакеты @types/node и @types/express дают типы запросов и ответов. Request<Params, ResBody, ReqBody, Query> принимает типы параметров, но чаще проще проверять данные схемой и работать с типизированным результатом. Если middleware добавляет поле в запрос (например, req.user), расширь тип объявлением (declaration merging) в файле types/express.d.ts, а не используй any."
     },
     {
       "type": "paragraph",
-      "content": "export type CreatePostDto = z.infer<typeof createPostSchema> — один источник правды для runtime и compile-time. При изменении схемы TypeScript подсветит места, где поля устарели."
+      "content": "Избегай any и приведения типов «as»: они отключают проверку именно там, где она нужна. Если тип неизвестен, используй unknown и сузь проверкой. Запусти tsc --noEmit в CI, чтобы ошибки типов блокировали слияние. Проверь результат: преднамеренно передай в сервис строку вместо числа и убедись, что компилятор показывает ошибку до запуска."
     }
   ],
   "codeExample": "import { z } from \"zod\";\n\nexport const createPostSchema = z.object({\n  title: z.string().min(1),\n  body: z.string().min(1),\n});\n\nexport type CreatePostDto = z.infer<typeof createPostSchema>;\n\nexport type Post = CreatePostDto & {\n  id: string;\n  createdAt: string;\n};",
@@ -69,6 +82,68 @@
       "term": "strict",
       "meaning": "Строгий режим проверки типов TS.",
       "example": "\"strict\": true"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "nodejs-13-q1",
+      "prompt": "Почему типы TypeScript не заменяют валидацию?",
+      "options": [
+        "Типы исчезают после компиляции, а данные клиента приходят в рантайме",
+        "Валидация не нужна",
+        "Типы замедляют сервер",
+        "Типы запрещены в Node"
+      ],
+      "correctIndex": 0,
+      "explanation": "Тип выводят из схемы zod."
+    },
+    {
+      "id": "nodejs-13-q2",
+      "prompt": "Что делает z.infer<typeof schema>?",
+      "options": [
+        "Выводит тип TypeScript из схемы zod",
+        "Создаёт базу",
+        "Удаляет схему",
+        "Запускает схему"
+      ],
+      "correctIndex": 0,
+      "explanation": "Тип и схема не расходятся."
+    },
+    {
+      "id": "nodejs-13-q3",
+      "prompt": "Что нужно в импортах своих файлов при NodeNext?",
+      "options": [
+        "Полный путь диска",
+        ".ts",
+        "Указывать расширение .js",
+        "Ничего"
+      ],
+      "correctIndex": 2,
+      "explanation": "Даже если файл исходно .ts."
+    },
+    {
+      "id": "nodejs-13-q4",
+      "prompt": "Чем опасно приведение типов через as?",
+      "options": [
+        "Отключает проверку именно там, где она нужна",
+        "Ничем",
+        "Улучшает типы",
+        "Ускоряет сборку"
+      ],
+      "correctIndex": 0,
+      "explanation": "Лучше unknown и сужение проверкой."
+    },
+    {
+      "id": "nodejs-13-q5",
+      "prompt": "Что делает tsc --noEmit в CI?",
+      "options": [
+        "Проверяет типы без создания файлов",
+        "Удаляет dist",
+        "Собирает образ",
+        "Запускает сервер"
+      ],
+      "correctIndex": 0,
+      "explanation": "Ошибки типов блокируют слияние."
     }
   ]
 }

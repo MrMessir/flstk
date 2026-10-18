@@ -7,24 +7,41 @@
   "goal": "Сопоставишь пункты OWASP Top 10 с твоим Express API и отметишь уже закрытые риски.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Что такое OWASP Top 10"
+    },
+    {
       "type": "paragraph",
-      "content": "OWASP Top 10 — частые классы уязвимостей web. A01 Broken Access Control — IDOR, missing authz (ты закрываешь owner middleware). A02 Cryptographic Failures — plaintext passwords, weak TLS. A03 Injection — SQL через Prisma parameterized ok, но $queryRaw осторожно."
+      "content": "OWASP — некоммерческая организация, которая публикует список самых частых классов уязвимостей веб-приложений. Он нужен не для заучивания, а как чек-лист: пройди по нему и проверь свой API. Номера пунктов и их названия слегка меняются между редакциями, но сами классы остаются одними и теми же."
     },
     {
       "type": "heading",
-      "content": "A04–A07 кратко"
+      "content": "Самые важные для API блога"
     },
     {
-      "type": "paragraph",
-      "content": "Insecure Design — нет rate limit на login. Security Misconfiguration — debug stack in prod, default creds. Vulnerable Components — npm audit. Authentication Failures — weak session, JWT in localStorage XSS."
+      "type": "list",
+      "items": [
+        "Нарушенный контроль доступа (Broken Access Control): IDOR, отсутствие проверки владельца. Закрывается middleware владения из урока 6.",
+        "Криптографические ошибки: пароли открытым текстом, слабый TLS, секреты в репозитории.",
+        "Инъекции: SQL, собранный конкатенацией строк. Prisma с параметрами безопасна, но $queryRawUnsafe и ручная склейка опасны.",
+        "Небезопасная конфигурация: стек-трейсы в ответах на проде, пароли по умолчанию, лишние заголовки.",
+        "Уязвимые зависимости: npm audit и своевременное обновление.",
+        "Ошибки аутентификации: слабые сессии, нет лимита попыток, JWT в localStorage.",
+        "Недостаточное логирование: не видно неудачных входов.",
+        "SSRF: сервер ходит по адресу, который прислал пользователь."
+      ]
     },
     {
       "type": "heading",
-      "content": "A08–A10"
+      "content": "Как работать с чек-листом"
     },
     {
       "type": "paragraph",
-      "content": "Software/Data Integrity — supply chain. Logging Failures — нет audit login fail. SSRF — fetch user-supplied URL на backend. Для блога SSRF реже, но webhook URL — риск."
+      "content": "Создай файл owasp-map.md: для каждого пункта напиши «что у меня есть», «чего нет» и ссылку на код или тест. Это и документ для проверяющего, и твой собственный список задач. Пункты, которые ты не можешь подтвердить кодом, считай открытыми. Запусти npm audit и разберись хотя бы с критическими замечаниями: часто они в транзитивных зависимостях, и решение — обновление родительского пакета."
+    },
+    {
+      "type": "paragraph",
+      "content": "Безопасность — это не одна функция, а привычка: каждый новый маршрут проходит те же вопросы: кто может вызвать, какие данные принимаем, что отдаём и что логируем."
     }
   ],
   "codeExample": "// checklist map (comments in repo)\n// A01: requireOwner on PATCH/DELETE posts\n// A03: prisma.post.findUnique — no string concat SQL\n// A07: bcrypt + JWT exp 15m\n// A05: helmet() + hide x-powered-by\n// npm audit fix for transitive deps",
@@ -69,6 +86,68 @@
       "term": "misconfiguration",
       "meaning": "Небезопасные дефолты и заголовки.",
       "example": "stack trace in prod"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "security-09-q1",
+      "prompt": "Для чего нужен список OWASP Top 10?",
+      "options": [
+        "Для рекламы",
+        "Для получения сертификата",
+        "Для списка библиотек",
+        "Как чек-лист самых частых уязвимостей для проверки своего API"
+      ],
+      "correctIndex": 3,
+      "explanation": "Список помогает системно проверить приложение."
+    },
+    {
+      "id": "security-09-q2",
+      "prompt": "Какой класс описывает IDOR?",
+      "options": [
+        "Небезопасный дизайн",
+        "Криптографические ошибки",
+        "Нарушенный контроль доступа",
+        "Инъекции"
+      ],
+      "correctIndex": 2,
+      "explanation": "Нет проверки владельца."
+    },
+    {
+      "id": "security-09-q3",
+      "prompt": "Что делает npm audit?",
+      "options": [
+        "Запускает тесты",
+        "Исправляет код автоматически",
+        "Ищет известные уязвимости в зависимостях",
+        "Проверяет пароли"
+      ],
+      "correctIndex": 2,
+      "explanation": "Часто проблема в транзитивных зависимостях."
+    },
+    {
+      "id": "security-09-q4",
+      "prompt": "Что такое SSRF?",
+      "options": [
+        "Подделка токена",
+        "Перебор паролей",
+        "Подмена cookie",
+        "Сервер обращается по адресу, присланному пользователем, например во внутреннюю сеть"
+      ],
+      "correctIndex": 3,
+      "explanation": "Нужен allowlist доменов."
+    },
+    {
+      "id": "security-09-q5",
+      "prompt": "Как использовать файл owasp-map.md?",
+      "options": [
+        "Для каждого пункта записать, что сделано и где в коде",
+        "Хранить пароли",
+        "Хранить только ссылки на статьи",
+        "Не вести вообще"
+      ],
+      "correctIndex": 0,
+      "explanation": "Пункты без подтверждения кодом считай открытыми."
     }
   ]
 }

@@ -73,6 +73,7 @@ const migrations = [
   "006_security_hardening.sql",
   "007_security_fixes.sql",
   "008_refund_duel_slot.sql",
+  "009_quiz_attempts.sql",
 ];
 for (const file of migrations) {
   if (!existsSync(`supabase/migrations/${file}`)) {
@@ -91,7 +92,9 @@ function run(cmd, args, opts = {}) {
 }
 
 run("npm", ["run", "content:verify"]);
+run("npm", ["run", "content:verify:playground"]);
 run("npm", ["run", "test:judge"]);
+run("npm", ["run", "test:quiz"]);
 
 const smoke = spawnSync("npm", ["run", "test:security"], { stdio: "inherit" });
 if (smoke.status !== 0) {

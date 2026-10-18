@@ -8,30 +8,33 @@
   "theory": [
     {
       "type": "heading",
-      "content": "Форма без сюрпризов"
+      "content": "Остановить отправку и проверить"
     },
     {
       "type": "paragraph",
-      "content": "Считывай значения полей из form.elements или через querySelector. На submit вызывай preventDefault, проверь данные, покажи текст ошибки рядом с полем. HTML-валидация помогает, но сервер всё равно проверит позже."
+      "content": "По умолчанию форма отправляется и перезагружает страницу. Подпишись на событие submit у формы и вызови event.preventDefault(), затем проверь данные. Значения полей читай через form.elements.email.value или FormData: new FormData(form) собирает все поля с атрибутом name. Проверка на стороне браузера нужна для удобства: человек сразу видит ошибку. Но серверу доверять клиенту нельзя, потому что проверку легко обойти."
     },
     {
-      "type": "paragraph",
-      "content": "Пустые строки и пробелы ловят через trim. Сообщения пиши по-человечески: «Укажи email», а не «invalid\"."
+      "type": "heading",
+      "content": "Хорошие сообщения"
     },
     {
       "type": "list",
       "items": [
-        "form.addEventListener(\"submit\", handler)",
-        "event.preventDefault() — не перезагружать страницу.",
-        "form.elements.name — доступ к полю по name.",
-        "input.value — текст. checkbox.checked — галочка.",
-        "new FormData(form) — собрать пары имя/значение.",
-        "Ошибку показывай в соседнем элементе, например <p class=\"error\"></p>."
+        "Пустые значения и пробелы ловят через trim: if (!email.trim()).",
+        "Сообщение пиши по-человечески: «Укажи email» или «Пароль не короче 8 символов», а не «invalid input».",
+        "Показывай ошибку рядом с полем и очищай её при исправлении.",
+        "Помечай невалидное поле aria-invalid=\"true\" и связывай сообщение через aria-describedby: так ошибку озвучит скринридер.",
+        "Не блокируй вставку из менеджера паролей и не запрещай пробелы без причины."
       ]
     },
     {
+      "type": "heading",
+      "content": "Проверка email и пароля"
+    },
+    {
       "type": "paragraph",
-      "content": "После успешной проверки очисти сообщение об ошибке, чтобы не пугать пользователя старым текстом."
+      "content": "Простая проверка email: наличие символа @ и точки после него, остальное проверит сервер, ведь точной регулярки для всех адресов не существует: надёжно только письмо с подтверждением. Для пароля задай минимальную длину и не накладывай странных ограничений. После успешной проверки покажи состояние «отправка» и заблокируй кнопку, чтобы не отправить форму дважды. Практика: форма регистрации с email, паролем и галочкой согласия: при неверных данных остановить отправку и показать ошибки под полями; при успехе вывести «Готово» и очистить форму (form.reset()). Если событие submit не срабатывает, проверь, что слушатель повешен на форму, а не на кнопку, и что кнопка внутри формы имеет тип submit."
     }
   ],
   "codeExample": "<form id=\"reg\">\n  <label>Email <input name=\"email\" type=\"email\" /></label>\n  <p class=\"error\" id=\"emailError\"></p>\n  <label><input name=\"agree\" type=\"checkbox\" /> согласен</label>\n  <p class=\"error\" id=\"agreeError\"></p>\n  <button type=\"submit\">Отправить</button>\n</form>\n\n<script>\nconst form = document.querySelector(\"#reg\");\nform.addEventListener(\"submit\", (event) => {\n  event.preventDefault();\n  const email = form.elements.email.value.trim();\n  const agree = form.elements.agree.checked;\n  document.querySelector(\"#emailError\").textContent = email.includes(\"@\") ? \"\" : \"Нужна почта\";\n  document.querySelector(\"#agreeError\").textContent = agree ? \"\" : \"Нужно согласие\";\n});\n</script>",
@@ -85,36 +88,63 @@
   "quiz": [
     {
       "id": "js-15-q1",
-      "prompt": "Зачем на submit вызывают preventDefault?",
+      "prompt": "Что нужно сделать в submit, чтобы страница не перезагружалась?",
       "options": [
-        "Чтобы страница не перезагружалась при отправке формы",
-        "Чтобы очистить localStorage",
-        "Чтобы отключить CSS",
-        "Чтобы создать новый DOM-узел"
+        "location.reload()",
+        "event.preventDefault()",
+        "return",
+        "event.stop()"
       ],
-      "correctIndex": 0
+      "correctIndex": 1,
+      "explanation": "Затем проверь данные."
     },
     {
       "id": "js-15-q2",
-      "prompt": "Как обычно читают значение текстового поля формы?",
+      "prompt": "Почему серверу нельзя доверять клиентскую проверку?",
       "options": [
-        "input.value или form.elements.name.value",
-        "input.checked для любого поля",
-        "document.cookie только",
-        "window.location.hash"
+        "Браузер ошибается",
+        "Проверку в браузере легко обойти",
+        "Она запрещена",
+        "Сервер не получает данные"
       ],
-      "correctIndex": 0
+      "correctIndex": 1,
+      "explanation": "Сервер проверяет всегда."
     },
     {
       "id": "js-15-q3",
-      "prompt": "Что поставить при ошибке валидации для a11y?",
+      "prompt": "Как лучше сообщить об ошибке?",
       "options": [
-        "aria-invalid=\"true\" на поле",
-        "display:none на всей форме",
-        "Удалить label",
-        "type=\"hidden\""
+        "Только красным цветом",
+        "«invalid input»",
+        "По-человечески рядом с полем: «Укажи email»",
+        "alert без текста"
       ],
-      "correctIndex": 0
+      "correctIndex": 2,
+      "explanation": "Сообщение должно подсказывать, что исправить."
+    },
+    {
+      "id": "js-15-q4",
+      "prompt": "Что даёт aria-invalid=\"true\"?",
+      "options": [
+        "Проверяет данные",
+        "Помечает невалидное поле для скринридера",
+        "Удаляет ошибку",
+        "Скрывает поле"
+      ],
+      "correctIndex": 1,
+      "explanation": "Связывают с сообщением через aria-describedby."
+    },
+    {
+      "id": "js-15-q5",
+      "prompt": "Зачем блокировать кнопку при отправке?",
+      "options": [
+        "Для скорости",
+        "Для SEO",
+        "Для красоты",
+        "Чтобы не отправить форму дважды"
+      ],
+      "correctIndex": 3,
+      "explanation": "Показывай состояние отправки."
     }
   ]
 }

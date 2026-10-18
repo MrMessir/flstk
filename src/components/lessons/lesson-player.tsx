@@ -8,10 +8,10 @@ import {
   PART_LABELS,
   STEP_LABELS,
   isProjectLesson,
-  supportsPlayground,
 } from "@/lib/types/lesson";
 import { TheoryBlocks } from "@/components/lessons/theory-blocks";
 import { CodePlayground } from "@/components/lessons/code-playground";
+import { detectPlaygroundMode } from "@/lib/playground/mode";
 import { CompleteButton } from "@/components/lessons/complete-button";
 import { PracticeChecklist } from "@/components/lessons/practice-checklist";
 import { ProjectSubmit } from "@/components/lessons/project-submit";
@@ -63,9 +63,11 @@ function PracticeBody({
       {step.codeExample ? (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold tracking-tight">
-            {supportsPlayground(part) ? "Песочница" : "Пример кода"}
+            {detectPlaygroundMode(step.codeExample, part) !== "none"
+              ? "Песочница"
+              : "Пример кода"}
           </h3>
-          {supportsPlayground(part) ? (
+          {detectPlaygroundMode(step.codeExample, part) !== "none" ? (
             <p className="text-sm text-muted">
               Меняй код прямо здесь. Кнопка «Показать» / «Запустить» откроет
               результат ниже.
@@ -276,6 +278,7 @@ export function LessonPlayer({ lesson, prev, next }: LessonPlayerProps) {
             {step?.type === "quiz" ? (
               <QuizStepView
                 key={`${lesson.id}-quiz-${stepIndex}`}
+                lessonId={lesson.id}
                 questions={step.questions}
                 onAllCorrectChange={onQuizGate}
                 initiallyPassed={quizCleared}

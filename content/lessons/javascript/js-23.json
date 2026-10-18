@@ -7,24 +7,33 @@
   "goal": "Научишься бросать понятные ошибки и ловить их, не роняя весь скрипт.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Исключения"
+    },
+    {
       "type": "paragraph",
-      "content": "Когда функция не может продолжить работу с текущими данными, она бросает исключение через throw. Без try/catch необработанная ошибка останавливает дальнейший JavaScript на странице. Блок try { ... } catch (e) { ... } перехватывает ошибку внутри try: в e попадает объект Error с полями message и stack. Код после catch может показать пользователю текст и залогировать детали."
+      "content": "Когда функция не может продолжить работу с текущими данными, она бросает исключение: throw new Error(\"Нужен email\"). Выполнение функции прекращается, ошибка поднимается вверх по цепочке вызовов, пока не найдётся обработчик. Блок try { … } catch (e) { … } перехватывает её: в e попадает объект Error с полями message и stack. Без обработчика необработанная ошибка останавливает дальнейшее выполнение скрипта на странице."
     },
     {
       "type": "heading",
-      "content": "finally и цепочка async"
+      "content": "finally и свои ошибки"
     },
     {
-      "type": "paragraph",
-      "content": "Блок finally выполняется всегда — и после успеха, и после catch. Туда кладут снятие флага «идёт загрузка» или закрытие соединения. В async-функциях throw внутри await fetch(...) превращается в отклонённый промис; его ловят try/catch вокруг await или .catch на промисе. Не глотай ошибки пустым catch — хотя бы console.error(e)."
+      "type": "list",
+      "items": [
+        "finally выполняется всегда: и после успеха, и после ошибки. Идеально для сброса состояния «загрузка» и закрытия ресурсов.",
+        "Свой класс ошибки: class ValidationError extends Error с полем field; проверка через e instanceof ValidationError.",
+        "Различай ожидаемые ошибки (некорректный ввод, не найдено), которые показывают пользователю, и неожиданные (баг), которые логируют.",
+        "Не бросай строки: throw \"ошибка\" не даёт стека; бросай объекты Error."
+      ]
     },
     {
       "type": "heading",
-      "content": "Свои классы ошибок"
+      "content": "Что ловить, а что нет"
     },
     {
       "type": "paragraph",
-      "content": "class ValidationError extends Error { constructor(field) { super(`Поле ${field} неверно`); this.name = \"ValidationError\"; this.field = field; } } позволяет в catch отличать тип сбоя: if (e instanceof ValidationError) подсветить конкретное поле формы. Стандартные TypeError и RangeError тоже наследуют Error. Сообщение в super должно быть человекочитаемым — его часто показывают в UI."
+      "content": "Не оборачивай весь код в один огромный try: ловить нужно там, где ты знаешь, что делать с ошибкой. Пустой catch ({}) скрывает проблемы и делает отладку невозможной: как минимум залогируй. Если на этом уровне ошибку обработать нельзя, пробрось её дальше: throw e. Для асинхронного кода try/catch работает вместе с await, а для цепочек промисов используется catch. Практика: напиши parseEmail, бросающую ValidationError на пустое и некорректное значение, перехвати её и покажи сообщение пользователю, затем в finally сбрось индикатор загрузки; отдельно отличи свою ошибку от TypeError через instanceof."
     }
   ],
   "codeExample": "class ValidationError extends Error {\n  constructor(field, message) {\n    super(message);\n    this.name = \"ValidationError\";\n    this.field = field;\n  }\n}\n\nfunction parseAge(raw) {\n  const n = Number(raw);\n  if (raw.trim() === \"\") throw new ValidationError(\"age\", \"Введите возраст\");\n  if (Number.isNaN(n)) throw new ValidationError(\"age\", \"Нужно число\");\n  if (n < 0 || n > 120) throw new ValidationError(\"age\", \"Вне диапазона\");\n  return n;\n}\n\nfunction run(value) {\n  try {\n    console.log(\"Возраст:\", parseAge(value));\n  } catch (e) {\n    if (e instanceof ValidationError) {\n      console.log(`Ошибка в ${e.field}: ${e.message}`);\n    } else {\n      throw e;\n    }\n  } finally {\n    console.log(\"Проверка завершена\");\n  }\n}\n\nrun(\"\");\nrun(\"abc\");",
@@ -78,6 +87,68 @@
       "term": "instanceof",
       "meaning": "Проверка, что объект создан данным классом.",
       "example": "e instanceof ValidationError"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "js-23-q1",
+      "prompt": "Что делает throw?",
+      "options": [
+        "Пишет в консоль",
+        "Бросает исключение",
+        "Игнорирует ошибку",
+        "Ловит ошибку"
+      ],
+      "correctIndex": 1,
+      "explanation": "Останавливает выполнение функции."
+    },
+    {
+      "id": "js-23-q2",
+      "prompt": "Что произойдёт с необработанной ошибкой?",
+      "options": [
+        "Ошибка исчезнет",
+        "Остановится дальнейший JavaScript на странице",
+        "Страница перезагрузится",
+        "Ничего"
+      ],
+      "correctIndex": 1,
+      "explanation": "Поэтому используют try/catch."
+    },
+    {
+      "id": "js-23-q3",
+      "prompt": "Когда выполняется finally?",
+      "options": [
+        "Никогда",
+        "Только при успехе",
+        "В любом случае: и после успеха, и после ошибки",
+        "Только при ошибке"
+      ],
+      "correctIndex": 2,
+      "explanation": "Удобно сбросить состояние загрузки."
+    },
+    {
+      "id": "js-23-q4",
+      "prompt": "Зачем свой класс ошибки ValidationError?",
+      "options": [
+        "Для скорости",
+        "Чтобы отличать ожидаемые ошибки от других через instanceof",
+        "Для сети",
+        "Для стилей"
+      ],
+      "correctIndex": 1,
+      "explanation": "extends Error."
+    },
+    {
+      "id": "js-23-q5",
+      "prompt": "Что содержит объект Error?",
+      "options": [
+        "Только HTML",
+        "message и stack",
+        "Только имя",
+        "Только число"
+      ],
+      "correctIndex": 1,
+      "explanation": "stack помогает найти место."
     }
   ]
 }

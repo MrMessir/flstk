@@ -7,24 +7,38 @@
   "goal": "Применишь Partial, Required, Pick и Omit для DTO и форм редактирования.",
   "theory": [
     {
+      "type": "heading",
+      "content": "Типы, которые строят другие типы"
+    },
+    {
       "type": "paragraph",
-      "content": "Utility types встроены в TS и трансформируют существующий тип. Partial<User> делает все поля необязательными — удобно для патча updateUser. Required<User> наоборот убирает ?. Pick<User, 'id' | 'email'> и Omit<User, 'password'> строят подтипы без копирования полей вручную."
+      "content": "Утилитные типы встроены в TypeScript и преобразуют существующий тип, чтобы не копировать поля вручную. Если схема User изменилась, производные типы обновятся сами. Это основа типизации DTO (объектов передачи данных): создание, обновление, ответ API."
     },
     {
       "type": "heading",
-      "content": "Record и Readonly"
+      "content": "Основные"
     },
     {
-      "type": "paragraph",
-      "content": "Record<string, number> — словарь строка→число. Readonly<T> запрещает присвоение полям на уровне типов (не deep freeze в runtime). ReturnType<typeof fn> вытаскивает тип возврата функции. Parameters<typeof fn> — tuple аргументов. Эти утилиты экономят время при рефакторинге API."
+      "type": "list",
+      "items": [
+        "Partial<User> делает все поля необязательными: для обновления через PATCH.",
+        "Required<User> убирает необязательность.",
+        "Pick<User, 'id' | 'email'> выбирает нужные поля, Omit<User, 'password'> убирает лишние.",
+        "Record<string, number> описывает словарь ключ-значение.",
+        "Readonly<T> запрещает менять поля; ReturnType<typeof fn> извлекает тип результата функции."
+      ]
     },
     {
       "type": "heading",
-      "content": "Формы и API-слои"
+      "content": "Пример для API"
     },
     {
       "type": "paragraph",
-      "content": "type UserCreate = Omit<User, 'id' | 'createdAt'> — тело POST без серверных полей. type UserUpdate = Partial<UserCreate> — PATCH. Комбинируй утилиты: Pick + Partial для «редактируем только title и price». Не усложняй: иногда явный interface читается лучше цепочки Omit<Omit<...>>."
+      "content": "interface User { id: string; email: string; role: 'user' | 'admin'; passwordHash: string }. Тогда type UserCreate = Omit<User, 'id' | 'passwordHash'> описывает данные регистрации, type UserUpdate = Partial<Omit<User, 'id'>> — частичное обновление, а type PublicUser = Omit<User, 'passwordHash'> — то, что можно отдавать клиенту. Так хэш пароля физически невозможно вернуть по ошибке: поля нет в типе."
+    },
+    {
+      "type": "paragraph",
+      "content": "Утилитные типы можно комбинировать, но читать вложенные цепочки тяжело: если выражение стало слишком сложным, дай промежуточному типу имя. Проверь: объяви Readonly конфигурацию и убедись, что присваивание поля даёт ошибку компиляции. Помни, что Readonly действует только на уровне типов и не замораживает объект в рантайме, для настоящей защиты используют Object.freeze. Ещё полезный приём: keyof typeof config даёт тип из ключей объекта, а Awaited<ReturnType<typeof fn>> — результат асинхронной функции без промиса."
     }
   ],
   "codeExample": "interface User {\n  id: string;\n  email: string;\n  name: string;\n  role: \"user\" | \"admin\";\n}\n\ntype UserCreate = Omit<User, \"id\">;\ntype UserUpdate = Partial<UserCreate>;\n\ntype RoleMap = Record<User[\"role\"], string>;\n\nconst labels: RoleMap = { user: \"Пользователь\", admin: \"Админ\" };",
@@ -78,6 +92,68 @@
       "term": "ReturnType",
       "meaning": "Тип возвращаемого значения функции.",
       "example": "ReturnType<typeof fn>"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "typescript-07-q1",
+      "prompt": "Что делает Partial<User>?",
+      "options": [
+        "Удаляет поля",
+        "Копирует класс",
+        "Делает все поля необязательными",
+        "Делает поля обязательными"
+      ],
+      "correctIndex": 2,
+      "explanation": "Подходит для PATCH-обновления."
+    },
+    {
+      "id": "typescript-07-q2",
+      "prompt": "Чем Pick отличается от Omit?",
+      "options": [
+        "Pick удаляет",
+        "Это одно и то же",
+        "Pick выбирает поля, Omit убирает лишние",
+        "Omit добавляет"
+      ],
+      "correctIndex": 2,
+      "explanation": "Omit<User, 'passwordHash'> — публичный пользователь."
+    },
+    {
+      "id": "typescript-07-q3",
+      "prompt": "Что описывает Record<string, number>?",
+      "options": [
+        "Функцию",
+        "Класс",
+        "Массив",
+        "Словарь: строковые ключи, числовые значения"
+      ],
+      "correctIndex": 3,
+      "explanation": "Типизированный объект-словарь."
+    },
+    {
+      "id": "typescript-07-q4",
+      "prompt": "Что делает ReturnType<typeof fn>?",
+      "options": [
+        "Вызывает функцию",
+        "Удаляет функцию",
+        "Берёт тип результата функции",
+        "Создаёт тип параметров"
+      ],
+      "correctIndex": 2,
+      "explanation": "Типы обновляются вместе с функцией."
+    },
+    {
+      "id": "typescript-07-q5",
+      "prompt": "Замораживает ли Readonly объект в рантайме?",
+      "options": [
+        "Только в браузере",
+        "Только в Node",
+        "Да",
+        "Нет, действует только на уровне типов"
+      ],
+      "correctIndex": 3,
+      "explanation": "Для рантайма нужен Object.freeze."
     }
   ]
 }
